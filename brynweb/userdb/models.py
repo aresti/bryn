@@ -2,60 +2,60 @@ from __future__ import unicode_literals
 
 import uuid
 
-from django.db.models import *
+from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.template.loader import render_to_string
 
 from phonenumber_field.modelfields import PhoneNumberField
 
 
-class Region(Model):
-    name = CharField(max_length=40)
-    description = CharField(max_length=40)
-    disabled = BooleanField(default=False)
-    disable_new_instances = BooleanField(default=False)
+class Region(models.Model):
+    name = models.CharField(max_length=40)
+    description = models.CharField(max_length=40)
+    disabled = models.BooleanField(default=False)
+    disable_new_instances = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
 
 
-class Institution(Model):
-    name = CharField(max_length=100)
+class Institution(models.Model):
+    name = models.CharField(max_length=100)
 
 
-class Team(Model):    
-    name = CharField(max_length=50, verbose_name="Group or team name",
-                     help_text="e.g. Bacterial pathogenomics group")
-    creator = ForeignKey(User)
-    created_at = DateTimeField(auto_now_add=True)
-    position = CharField(
+class Team(models.Model):    
+    name = models.CharField(max_length=50, verbose_name="Group or team name",
+                            help_text="e.g. Bacterial pathogenomics group")
+    creator = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    created_at = models.DateTimeField(auto_now_add=True)
+    position = models.CharField(
         max_length=50,
         verbose_name="Position (e.g. Professor)")
-    department = CharField(
+    department = models.CharField(
         max_length=50,
         verbose_name="Department or Institute")
-    institution = CharField(
+    institution = models.CharField(
         max_length=100,
         verbose_name="Institution (e.g. University of St. Elsewhere)")
     phone_number = PhoneNumberField(max_length=20, verbose_name="Phone number")
-    research_interests = TextField(
+    research_interests = models.TextField(
         verbose_name="Research interests",
         help_text="Please supply a brief synopsis of your research programme")
-    intended_climb_use = TextField(
+    intended_climb_use = models.TextField(
         verbose_name="Intended use of CLIMB",
         help_text="Please let us know how you or your group intend to "
         "use CLIMB")
-    held_mrc_grants = TextField(
+    held_mrc_grants = models.TextField(
         verbose_name="Held MRC grants",
         help_text="If you currently or recent have held grant funding from "
         "the Medical Research Council it would be very helpful if you can "
         "detail it here to assist with reporting use of CLIMB")
-    verified = BooleanField(default=False)
-    default_region = ForeignKey(Region)
-    tenants_available = BooleanField(default=False)
+    verified = models.BooleanField(default=False)
+    default_region = models.ForeignKey(Region, null=True, on_delete=models.SET_NULL)
+    tenants_available = models.BooleanField(default=False)
 
     def new_registration_admin_email(self):
         if not settings.NEW_REGISTRATION_ADMIN_EMAILS:
@@ -102,24 +102,24 @@ class Team(Model):
         return self.name
 
 
-class TeamMember(Model):
-    team = ForeignKey(Team)
-    user = ForeignKey(User)
-    is_admin = BooleanField(default=False)
+class TeamMember(models.Model):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_admin = models.BooleanField(default=False)
 
     def __str__(self):
         return "%s belongs to %s" % (self.user, self.team)
 
 
-class Invitation(Model):
-    uuid = UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    to_team = ForeignKey(Team, on_delete=CASCADE,
-                         verbose_name="Team to invite user to")
-    made_by = ForeignKey(User, on_delete=CASCADE)
-    email = EmailField()
-    message = TextField()
-    accepted = BooleanField()
-    date = DateTimeField(auto_now_add=True)
+class Invitation(models.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    to_team = models.ForeignKey(Team, on_delete=models.CASCADE,
+                                verbose_name="Team to invite user to")
+    made_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    email = models.EmailField()
+    message = models.TextField()
+    accepted = models.BooleanField()
+    date = models.DateTimeField(auto_now_add=True)
 
     def send_invitation(self, user):
         self.made_by = user
@@ -148,12 +148,12 @@ class Invitation(Model):
         return "%s to %s" % (self.email, self.to_team)
 
 
-class UserProfile(Model):
-    user = OneToOneField(User, on_delete=CASCADE)
-    validation_link = UUIDField(primary_key=True, default=uuid.uuid4,
-                                editable=False)
-    email_validated = BooleanField(default=False)
-    current_region = ForeignKey(Region)
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    validation_link = models.UUIDField(primary_key=True, default=uuid.uuid4,
+                                       editable=False)
+    email_validated = models.BooleanField(default=False)
+    current_region = models.ForeignKey(Region, null=True, on_delete=models.SET_NULL)
 
     def send_validation_link(self, user):
         self.user = user

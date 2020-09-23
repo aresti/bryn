@@ -2,6 +2,8 @@ from django.conf.urls import url
 
 from . import views
 
+app_name = 'home'
+
 urlpatterns = [
     url(r'^status$', views.status, name='status'),
     url(r'^region-select$', views.region_select, name='region-select'),

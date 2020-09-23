@@ -1,18 +1,18 @@
-from __future__ import unicode_literals
-
-from django.db.models import *
+from django.db import models
 from django.contrib.auth.models import User
-from userdb.models import Team, Region
-from openstack.client import OpenstackClient
-from django_slack import slack_message
-import uuid
 
-class Tenant(Model):
-    team = ForeignKey(Team)
-    region = ForeignKey(Region)
-    created_tenant_id = CharField(max_length=50)
-    auth_password = CharField(max_length=50)
-    created_network_id = CharField(max_length=50, blank=True)
+from django_slack import slack_message
+from openstack.client import OpenstackClient
+
+from userdb.models import Team, Region
+
+
+class Tenant(models.Model):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    region = models.ForeignKey(Region, on_delete=models.CASCADE)
+    created_tenant_id = models.CharField(max_length=50)
+    auth_password = models.CharField(max_length=50)
+    created_network_id = models.CharField(max_length=50, blank=True)
 
     def get_tenant_name(self):
         return "bryn:%d_%s" % (self.team.pk, self.team.name)
@@ -81,12 +81,13 @@ class Tenant(Model):
     def __str__(self):
         return "%s" % (self.get_tenant_name())
 
-class ActionLog(Model):
-    tenant = ForeignKey(Tenant)
-    user = ForeignKey(User, default=None, null=True)
-    date = DateTimeField(auto_now_add=True)
-    message = TextField()
-    error = BooleanField()
+
+class ActionLog(models.Model):
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, default=None, null=True, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+    message = models.TextField()
+    error = models.BooleanField()
 
     def save(self, *args, **kwargs):
         super(ActionLog, self).save(self, *args, **kwargs)
@@ -102,33 +103,36 @@ class ActionLog(Model):
             error_type = 'SUCCESS'
         return "%s %s %s %s" % (self.date, error_type, self.tenant, self.message)
 
-class HypervisorStats(Model):
-    region = OneToOneField(Region, on_delete=CASCADE)
 
-    last_updated = DateTimeField(auto_now=True)
+class HypervisorStats(models.Model):
+    region = models.OneToOneField(Region, on_delete=models.CASCADE)
 
-    hypervisor_count = IntegerField()
-    disk_available_least = IntegerField()
-    free_disk_gb = IntegerField()
-    free_ram_mb = IntegerField()
-    local_gb = IntegerField()
-    local_gb_used = IntegerField()
-    memory_mb = IntegerField()
-    memory_mb_used = IntegerField()
-    running_vms = IntegerField()
-    vcpus = IntegerField()
-    vcpus_used = IntegerField()
+    last_updated = models.DateTimeField(auto_now=True)
 
-class RegionSettings(Model):
-    region = OneToOneField(Region)
-    gvl_image_id = CharField(max_length=50)
-    public_network_name = CharField(max_length=50)
-    public_network_id = CharField(max_length=50)
-    requires_network_setup = BooleanField(default=False)
-    floating_ip_pool = CharField(max_length=50, blank=True)
+    hypervisor_count = models.IntegerField()
+    disk_available_least = models.IntegerField()
+    free_disk_gb = models.IntegerField()
+    free_ram_mb = models.IntegerField()
+    local_gb = models.IntegerField()
+    local_gb_used = models.IntegerField()
+    memory_mb = models.IntegerField()
+    memory_mb_used = models.IntegerField()
+    running_vms = models.IntegerField()
+    vcpus = models.IntegerField()
+    vcpus_used = models.IntegerField()
+
+
+class RegionSettings(models.Model):
+    region = models.OneToOneField(Region, on_delete=models.CASCADE)
+    gvl_image_id = models.CharField(max_length=50)
+    public_network_name = models.CharField(max_length=50)
+    public_network_id = models.CharField(max_length=50)
+    requires_network_setup = models.BooleanField(default=False)
+    floating_ip_pool = models.CharField(max_length=50, blank=True)
 
     def __str__(self):
         return str(self.region)
+
 
 def get_tenant_for_team(team, region):
     tenant = Tenant.objects.filter(team=team, region=Region.objects.get(name=region))

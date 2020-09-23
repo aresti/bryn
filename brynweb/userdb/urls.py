@@ -3,6 +3,8 @@ from django.contrib.auth import views as auth_views
 
 from . import views
 
+app_name = 'user'
+
 urlpatterns = [
     url(r'^login/$', views.login, name='login'),
     url(r'^logout/$', auth_views.logout_then_login, name='logout'),
