@@ -1,7 +1,6 @@
-from django.conf.urls import url, patterns
+from django.conf.urls import url
 from . import views
 
 urlpatterns = [
     url(r'sso', views.sso),
 ]
-
