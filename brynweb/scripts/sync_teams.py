@@ -10,11 +10,11 @@ def run():
         for r in Region.objects.all():
             tenant = get_tenant_for_team(t, r)
             if not tenant:
-                print "%s does not have %s" % (t, r)
+                print("%s does not have %s" % (t, r))
                 try:
                     setup_tenant(t, r)
-                    print "success"
-                except Exception, e:
-                    print e
+                    print("success")
+                except Exception as e:
+                    print(e)
 
 

@@ -5,7 +5,7 @@ import django
 
 def run():
     from userdb.models import Team
-    print Team.objects.all()
+    print(Team.objects.all())
 
 
 from brynweb.openstack.client import OpenstackClient
@@ -27,12 +27,12 @@ keystone = client.get_keystone()
 
 for t in keystone.tenants.list():
     if t.description.startswith('bryn:'):
-        print "remove %s" % ( t.name, )
+        print("remove %s" % ( t.name, ))
         t.delete()
 
 for u in keystone.users.list():
     if u.name.startswith('bryn:'):
-        print "remove %s" % ( u.name, )
+        print("remove %s" % ( u.name, ))
         u.delete()
 
 t = keystone.tenants.create(tenant_name=tenant_name, description='bryn: test create tenant', enabled=True)
@@ -54,7 +54,7 @@ public_network = '311a2f36-b913-4b7c-94aa-e4d433985012'
 
 neutron.add_gateway_router(r['router']['id'], {"network_id" : public_network})
 
-print t.id
+print(t.id)
 
 # add subnet
 
@@ -83,7 +83,7 @@ neutron router-interface-add tenant1-router "tenant1-192.168.0.0/24"
 
 #	if t.name.startswith('bryn:'):
 #		quota = nova.quotas.get(t.id)
-#		print quota
+#		print(quota)
 #		quota.cores = 80
 #		nova.quotas.update(t.id, quota)
 

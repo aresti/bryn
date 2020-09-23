@@ -8,4 +8,4 @@ client = OpenstackClient('warwick', **get_admin_credentials('warwick'))
 glance = client.get_glance()
 
 for i in glance.images.list():
-    print i.__dict__
+    print(i.__dict__)

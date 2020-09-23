@@ -7,8 +7,8 @@ from neutronclient.v2_0 import client as neutronclient
 from cinderclient import client as cinderclient
 import copy
 
-import auth_settings
-import sys
+from . import auth_settings
+
 
 def get_admin_credentials(region):
     authsettings = auth_settings.AUTHENTICATION[region]
@@ -16,12 +16,13 @@ def get_admin_credentials(region):
             'password' : authsettings['AUTH_PASSWORD'],
             'project_name' : authsettings['TENANT_NAME']}
 
+
 class OpenstackClient:
     def __init__(self, region, username=None, password=None, project_name=None):
         self.region = region
         self.have_sess = False
         self.have_keystone = False
-        self.have_nova = False 
+        self.have_nova = False
         self.have_glance = False
         self.have_neutron = False
         self.have_cinder = False
@@ -92,7 +93,7 @@ class OpenstackClient:
 
         servers = nova.servers.list(detailed=True, search_opts=search_opts)
         for s in servers:
-            print keystone.tenants.get(s.tenant_id)
+            print(keystone.tenants.get(s.tenant_id))
 
     #    tenants = {}
     #    for s in servers:

@@ -16,7 +16,7 @@ def delete_instances(tenant):
 
     servers = []
     for s in nova.servers.list(detailed=True):
-        print s.name
+        print(s.name)
         s.delete()
 
     return servers

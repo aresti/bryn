@@ -12,12 +12,12 @@ def show_tenant_info(tenant):
     user = keystone.users.list()
     for u in user:
         if u.name == tenant.get_auth_username():
-            print u
+            print(u)
 
     t = keystone.tenants.get(tenant.created_tenant_id)
-    print t
+    print(t)
 
-    print tenant.auth_password
+    print(tenant.auth_password)
 
 def run():
     t = Team.objects.get(name='Loman Labz')

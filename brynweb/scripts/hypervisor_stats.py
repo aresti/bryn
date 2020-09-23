@@ -21,7 +21,7 @@ def run():
             except HypervisorStats.DoesNotExist:
                 h = HypervisorStats(region=region)
 
-            print stats.__dict__
+            print(stats.__dict__)
             h.hypervisor_count = stats.count
             h.disk_available_least = stats.disk_available_least
             h.free_disk_gb = stats.free_disk_gb

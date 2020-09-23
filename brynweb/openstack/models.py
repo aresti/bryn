@@ -12,7 +12,7 @@ class Tenant(Model):
     region = ForeignKey(Region)
     created_tenant_id = CharField(max_length=50)
     auth_password = CharField(max_length=50)
-    created_network_id = CharField(max_length=50)
+    created_network_id = CharField(max_length=50, blank=True)
 
     def get_tenant_name(self):
         return "bryn:%d_%s" % (self.team.pk, self.team.name)

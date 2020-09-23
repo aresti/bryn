@@ -16,7 +16,7 @@ def terminate_test_gvl_servers(tenant):
 
     for s in nova.servers.list(detailed=True):
         if s.name == 'Your first GVL server':
-            print s
+            print(s)
             s.delete()
 
 def run():

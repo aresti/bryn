@@ -10,7 +10,7 @@ keystone = get_keystone(sys.argv[1])
 for t in keystone.tenants.list():
 	if t.name.startswith('bryn:'):
 		quota = nova.quotas.get(t.id)
-		print quota
+		print(quota)
 		quota.cores = 80
 		nova.quotas.update(t.id, quota)
 

@@ -13,10 +13,10 @@ def run():
     ports = neutron.list_ports()
     for port in ports['ports']:
         if port['network_id'] in network_ids:
-            print port
+            print(port)
             neutron.delete_port(port['id'])
         else:
-            print "port not in network"
+            print("port not in network")
 
 #    for router in routers['routers']:
 #        neutron.delete_router(router['id'])

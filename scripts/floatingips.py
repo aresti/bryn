@@ -7,8 +7,8 @@ import sys
 nova = get_nova(sys.argv[1])
 
 f = nova.floating_ips.create('public')
-print f
+print(f)
 
 for f in nova.floating_ips.list():
-	print f
+	print(f)
 

@@ -10,5 +10,5 @@ def run():
     for team in Team.objects.filter():
         if team.tenants_available:
             tenant = Tenant.objects.filter(team=team, region=Region.objects.get(name='warwick'))[0]
-            print tenant.created_tenant_id
+            print(tenant.created_tenant_id)
  

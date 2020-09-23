@@ -13,7 +13,7 @@ from django_slack import slack_message
 
 from userdb.models import Team, Region, TeamMember
 from openstack.models import Tenant, get_tenant_for_team, ActionLog
-from forms import LaunchServerForm, LaunchImageServerForm, RegionSelectForm
+from .forms import LaunchServerForm, LaunchImageServerForm, RegionSelectForm
 from scripts.list_instances import list_instances
 from scripts.gvl_launch import launch_gvl
 from scripts.image_launch import launch_image
@@ -65,7 +65,7 @@ def home(request):
             t.launch_custom_form = LaunchImageServerForm(tenant.get_images(),tenant.get_flavors(), available_keys)
             t.tenant_access = tenant
             t.instances = list_instances(tenant)
-        except Exception, e:
+        except Exception as e:
             messages.error(
                 request,
                 'The %s region is currently unavailable. Check the community '
@@ -147,7 +147,7 @@ def launch_server(request, launch_type, tenant, server_name, *args, **kwargs):
                     image=dict(tenant.get_images())[args[0]]
                 )
             )
-    except Exception, e:
+    except Exception as e:
         messages.error(request, 'Error launching: %s' % (e,))
         log.error = True
         log.message = e
@@ -210,7 +210,7 @@ def stop(request, teamid, uuid):
     try:
         tenant.stop_server(uuid)
         messages.success(request, 'Server stopped.')
-    except Exception, e:
+    except Exception as e:
         messages.error(request, e)
     if request.is_ajax():
         return JsonResponse(messages_to_json(request))
@@ -224,7 +224,7 @@ def start(request, teamid, uuid):
     try:
         tenant.start_server(uuid)
         messages.success(request, 'Server started.')
-    except Exception, e:
+    except Exception as e:
         messages.error(request, e)
     if request.is_ajax():
         return JsonResponse(messages_to_json(request))
@@ -238,7 +238,7 @@ def reboot(request, teamid, uuid):
     try:
         tenant.reboot_server(uuid)
         messages.success(request, 'Server rebooted.')
-    except Exception, e:
+    except Exception as e:
         messages.error(request, e)
     if request.is_ajax():
         return JsonResponse(messages_to_json(request))
@@ -252,7 +252,7 @@ def terminate(request, teamid, uuid):
     try:
         tenant.terminate_server(uuid)
         messages.success(request, 'Server terminated.')
-    except Exception, e:
+    except Exception as e:
         messages.error(request, e)
     if request.is_ajax():
         return JsonResponse(messages_to_json(request))
@@ -264,7 +264,7 @@ def unshelve(request, teamid, uuid):
     try:
         tenant.unshelve_server(uuid)
         messages.success(request, 'Server unshelved.')
-    except Exception, e:
+    except Exception as e:
         messages.error(request, e)
     if request.is_ajax():
         return JsonResponse(messages_to_json(request))

@@ -4,7 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from novaclient import client
 from keystoneauth1 import loading
 from keystoneauth1 import session
-from pprint import pprint
+from pprint(import pprint)
 from keystoneclient.v2_0 import client as keystoneclient
 from brynweb.openstack import auth_settings
 from collections import defaultdict
@@ -49,15 +49,15 @@ for s in servers:
 	users["%s <%s>" % (s.user.name, s.user.email)].append(s)
 
 for u, serverlist in users.iteritems():
-	print "%s\n" % (u,)
+	print("%s\n" % (u,))
 	for s in serverlist:
-		print s.name
+		print(s.name)
 
 	print
 
 ##user_id
 	##s, nova.flavors.get(s.flavor['id'])
-##	print nova.flavors.list()
+##	print(nova.flavors.list())
 
 """
 { 'OS-DCF:diskConfig': u'AUTO',

@@ -12,14 +12,14 @@ def delete_tenant(tenant):
     user = keystone.users.list()
     for u in user:
         if u.name == tenant.get_auth_username():
-            print u
+            print(u)
             u.delete()
 
     try:
         t = keystone.tenants.get(tenant.created_tenant_id)
         t.delete()
     except Exception:
-        print "Cannot find tenant"
+        print("Cannot find tenant")
 
     tenant.delete()
 
