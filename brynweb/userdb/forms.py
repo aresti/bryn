@@ -8,26 +8,38 @@ from .models import Team, Invitation
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
-        fields = ("username", "first_name", "last_name", "email", "password1",
-                  "password2")
+        fields = (
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "password1",
+            "password2",
+        )
         model = User
 
 
 class TeamForm(ModelForm):
     class Meta:
         model = Team
-        exclude = ('creator', 'created_at', 'verified', 'default_region',
-                   'tenants_available')
-        widgets = {'phone_number': PhoneNumberInternationalFallbackWidget}
+        exclude = (
+            "creator",
+            "created_at",
+            "verified",
+            "default_region",
+            "tenants_available",
+        )
+        widgets = {"phone_number": PhoneNumberInternationalFallbackWidget}
 
 
 class InvitationForm(ModelForm):
     def __init__(self, user, *args, **kwargs):
         super(InvitationForm, self).__init__(*args, **kwargs)
-        self.fields['to_team'].queryset = Team.objects.filter(
-            teammember__user=user, teammember__is_admin=True)
-        self.fields['to_team'].empty_label = None
+        self.fields["to_team"].queryset = Team.objects.filter(
+            teammember__user=user, teammember__is_admin=True
+        )
+        self.fields["to_team"].empty_label = None
 
     class Meta:
         model = Invitation
-        fields = ('to_team', 'email', 'message')
+        fields = ("to_team", "email", "message")

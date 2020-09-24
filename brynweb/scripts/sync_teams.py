@@ -1,9 +1,7 @@
-
-from django.contrib.auth.models import User
 from userdb.models import Team, Region
-from openstack.client import OpenstackClient, get_admin_credentials
-from openstack.models import Tenant, get_tenant_for_team
+from openstack.models import get_tenant_for_team
 from scripts.setup_team import setup_tenant
+
 
 def run():
     for t in Team.objects.all():
@@ -16,5 +14,3 @@ def run():
                     print("success")
                 except Exception as e:
                     print(e)
-
-

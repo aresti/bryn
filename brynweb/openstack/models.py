@@ -21,10 +21,12 @@ class Tenant(models.Model):
         return "%s (%s)" % (self.team.name, self.team.creator.last_name)
 
     def get_client(self):
-        client = OpenstackClient(self.region.name,
-                                 username=self.get_auth_username(),
-                                 password=self.auth_password,
-                                 project_name=self.get_tenant_name())
+        client = OpenstackClient(
+            self.region.name,
+            username=self.get_auth_username(),
+            password=self.auth_password,
+            project_name=self.get_tenant_name(),
+        )
         return client
 
     def get_server(self, uuid):
@@ -69,13 +71,13 @@ class Tenant(models.Model):
 
     def reboot_server(self, uuid):
         server = self.get_server(uuid)
-        server.reboot(reboot_type='HARD') 
+        server.reboot(reboot_type="HARD")
 
     def get_network_id(self):
         if self.region.regionsettings.requires_network_setup:
             return self.created_network_id
         else:
-            #i.e. warwick
+            # i.e. warwick
             return self.region.regionsettings.public_network_id
 
     def __str__(self):
@@ -92,15 +94,15 @@ class ActionLog(models.Model):
     def save(self, *args, **kwargs):
         super(ActionLog, self).save(self, *args, **kwargs)
         if self.error:
-            slack_message('openstack/error.slack', {'log' : self})
+            slack_message("openstack/error.slack", {"log": self})
         else:
-            slack_message('openstack/success.slack', {'log' : self})
+            slack_message("openstack/success.slack", {"log": self})
 
     def __str__(self):
         if self.error:
-            error_type = 'ERROR'
+            error_type = "ERROR"
         else:
-            error_type = 'SUCCESS'
+            error_type = "SUCCESS"
         return "%s %s %s %s" % (self.date, error_type, self.tenant, self.message)
 
 

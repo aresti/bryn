@@ -4,4 +4,4 @@ from django.apps import AppConfig
 
 
 class UserdbConfig(AppConfig):
-    name = 'userdb'
+    name = "userdb"

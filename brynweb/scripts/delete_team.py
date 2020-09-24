@@ -1,12 +1,13 @@
-
-from django.contrib.auth.models import User
-from userdb.models import Team, Region
+from userdb.models import Region
 from openstack.client import OpenstackClient, get_admin_credentials
 from openstack.models import Tenant
 
+
 def delete_tenant(tenant):
-    client = OpenstackClient(tenant.region.name, **get_admin_credentials(tenant.region.name))
-    nova = client.get_nova()
+    client = OpenstackClient(
+        tenant.region.name, **get_admin_credentials(tenant.region.name)
+    )
+    client.get_nova()
     keystone = client.get_keystone()
 
     user = keystone.users.list()
@@ -23,7 +24,8 @@ def delete_tenant(tenant):
 
     tenant.delete()
 
+
 def run():
-    tenant = Tenant.objects.filter(region=Region.objects.get(name='cardiff'))
+    tenant = Tenant.objects.filter(region=Region.objects.get(name="cardiff"))
     for t in tenant:
         delete_tenant(tenant)

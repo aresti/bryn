@@ -26,33 +26,34 @@ class Institution(models.Model):
     name = models.CharField(max_length=100)
 
 
-class Team(models.Model):    
-    name = models.CharField(max_length=50, verbose_name="Group or team name",
-                            help_text="e.g. Bacterial pathogenomics group")
+class Team(models.Model):
+    name = models.CharField(
+        max_length=50,
+        verbose_name="Group or team name",
+        help_text="e.g. Bacterial pathogenomics group",
+    )
     creator = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
-    position = models.CharField(
-        max_length=50,
-        verbose_name="Position (e.g. Professor)")
-    department = models.CharField(
-        max_length=50,
-        verbose_name="Department or Institute")
+    position = models.CharField(max_length=50, verbose_name="Position (e.g. Professor)")
+    department = models.CharField(max_length=50, verbose_name="Department or Institute")
     institution = models.CharField(
-        max_length=100,
-        verbose_name="Institution (e.g. University of St. Elsewhere)")
+        max_length=100, verbose_name="Institution (e.g. University of St. Elsewhere)"
+    )
     phone_number = PhoneNumberField(max_length=20, verbose_name="Phone number")
     research_interests = models.TextField(
         verbose_name="Research interests",
-        help_text="Please supply a brief synopsis of your research programme")
+        help_text="Please supply a brief synopsis of your research programme",
+    )
     intended_climb_use = models.TextField(
         verbose_name="Intended use of CLIMB",
-        help_text="Please let us know how you or your group intend to "
-        "use CLIMB")
+        help_text="Please let us know how you or your group intend to " "use CLIMB",
+    )
     held_mrc_grants = models.TextField(
         verbose_name="Held MRC grants",
         help_text="If you currently or recent have held grant funding from "
         "the Medical Research Council it would be very helpful if you can "
-        "detail it here to assist with reporting use of CLIMB")
+        "detail it here to assist with reporting use of CLIMB",
+    )
     verified = models.BooleanField(default=False)
     default_region = models.ForeignKey(Region, null=True, on_delete=models.SET_NULL)
     tenants_available = models.BooleanField(default=False)
@@ -60,13 +61,16 @@ class Team(models.Model):
     def new_registration_admin_email(self):
         if not settings.NEW_REGISTRATION_ADMIN_EMAILS:
             return
-        context = {'user': self.creator, 'team': self}
+        context = {"user": self.creator, "team": self}
         subject = render_to_string(
-            'userdb/email/new_registration_admin_subject.txt', context)
+            "userdb/email/new_registration_admin_subject.txt", context
+        )
         text_content = render_to_string(
-            'userdb/email/new_registration_admin_email.txt', context)
+            "userdb/email/new_registration_admin_email.txt", context
+        )
         html_content = render_to_string(
-            'userdb/email/new_registration_admin_email.html', context)
+            "userdb/email/new_registration_admin_email.html", context
+        )
 
         send_mail(
             subject,
@@ -74,17 +78,20 @@ class Team(models.Model):
             settings.DEFAULT_FROM_EMAIL,
             settings.NEW_REGISTRATION_ADMIN_EMAILS,
             html_message=html_content,
-            fail_silently=True
+            fail_silently=True,
         )
 
     def verify_and_send_notification_email(self):
-        context = {'user': self.creator, 'team': self}
+        context = {"user": self.creator, "team": self}
         subject = render_to_string(
-            'userdb/email/notify_team_verified_subject.txt', context)
+            "userdb/email/notify_team_verified_subject.txt", context
+        )
         text_content = render_to_string(
-            'userdb/email/notify_team_verified_email.txt', context)
+            "userdb/email/notify_team_verified_email.txt", context
+        )
         html_content = render_to_string(
-            'userdb/email/notify_team_verified_email.html', context)
+            "userdb/email/notify_team_verified_email.html", context
+        )
 
         send_mail(
             subject,
@@ -92,7 +99,7 @@ class Team(models.Model):
             settings.DEFAULT_FROM_EMAIL,
             [self.creator.email],
             html_message=html_content,
-            fail_silently=False
+            fail_silently=False,
         )
 
         self.verified = True
@@ -113,8 +120,9 @@ class TeamMember(models.Model):
 
 class Invitation(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    to_team = models.ForeignKey(Team, on_delete=models.CASCADE,
-                                verbose_name="Team to invite user to")
+    to_team = models.ForeignKey(
+        Team, on_delete=models.CASCADE, verbose_name="Team to invite user to"
+    )
     made_by = models.ForeignKey(User, on_delete=models.CASCADE)
     email = models.EmailField()
     message = models.TextField()
@@ -126,14 +134,13 @@ class Invitation(models.Model):
         self.accepted = False
         self.save()
 
-        context = {'invitation': self,
-                   'url': reverse('user:accept-invite', args=[self.uuid])}
-        subject = render_to_string(
-            'userdb/email/user_invite_subject.txt', context)
-        text_content = render_to_string(
-            'userdb/email/user_invite_email.txt', context)
-        html_content = render_to_string(
-            'userdb/email/user_invite_email.html', context)
+        context = {
+            "invitation": self,
+            "url": reverse("user:accept-invite", args=[self.uuid]),
+        }
+        subject = render_to_string("userdb/email/user_invite_subject.txt", context)
+        text_content = render_to_string("userdb/email/user_invite_email.txt", context)
+        html_content = render_to_string("userdb/email/user_invite_email.html", context)
 
         send_mail(
             subject,
@@ -141,7 +148,7 @@ class Invitation(models.Model):
             settings.DEFAULT_FROM_EMAIL,
             [self.email],
             html_message=html_content,
-            fail_silently=False
+            fail_silently=False,
         )
 
     def __str__(self):
@@ -150,8 +157,9 @@ class Invitation(models.Model):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    validation_link = models.UUIDField(primary_key=True, default=uuid.uuid4,
-                                       editable=False)
+    validation_link = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False
+    )
     email_validated = models.BooleanField(default=False)
     current_region = models.ForeignKey(Region, null=True, on_delete=models.SET_NULL)
 
@@ -160,15 +168,21 @@ class UserProfile(models.Model):
         self.email_validated = False
         self.save()
 
-        context = {'user': user,
-                   'validation_link': reverse('user:validate-email',
-                                              args=[self.validation_link])}
+        context = {
+            "user": user,
+            "validation_link": reverse(
+                "user:validate-email", args=[self.validation_link]
+            ),
+        }
         subject = render_to_string(
-            'userdb/email/user_verification_subject.txt', context)
+            "userdb/email/user_verification_subject.txt", context
+        )
         text_content = render_to_string(
-            'userdb/email/user_verification_email.txt', context)
+            "userdb/email/user_verification_email.txt", context
+        )
         html_content = render_to_string(
-            'userdb/email/user_verification_email.html', context)
+            "userdb/email/user_verification_email.html", context
+        )
 
         send_mail(
             subject,
@@ -176,5 +190,5 @@ class UserProfile(models.Model):
             settings.DEFAULT_FROM_EMAIL,
             [user.email],
             html_message=html_content,
-            fail_silently=False
+            fail_silently=False,
         )

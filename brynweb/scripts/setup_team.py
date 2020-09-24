@@ -1,49 +1,53 @@
-
 from django.contrib.auth.models import User
 from userdb.models import Team, Region
 from openstack.client import OpenstackClient, get_admin_credentials
 from openstack.models import Tenant
 from scripts.set_quotas import set_quota
 
+
 def setup_network(client, region, tenant_id):
     neutron = client.get_neutron()
 
-    network = {'tenant_id'      : tenant_id,
-               'name'           : 'bryn:tenant-private',
-               'admin_state_up' : True}
-    n = neutron.create_network({'network':network})
+    network = {
+        "tenant_id": tenant_id,
+        "name": "bryn:tenant-private",
+        "admin_state_up": True,
+    }
+    n = neutron.create_network({"network": network})
 
-    router = {"tenant_id"      : tenant_id,
-              "name"           : "bryn:tenant-router",
-              "admin_state_up" : True}
-    r = neutron.create_router({'router':router})
+    router = {
+        "tenant_id": tenant_id,
+        "name": "bryn:tenant-router",
+        "admin_state_up": True,
+    }
+    r = neutron.create_router({"router": router})
 
     public_network = region.regionsettings.public_network_id
 
-    neutron.add_gateway_router(r['router']['id'], {"network_id" : public_network})
+    neutron.add_gateway_router(r["router"]["id"], {"network_id": public_network})
 
     # add subnet
 
-    subnet = {"name": "tenant1-192.168.0.0/24",
-              "enable_dhcp": True,
-              "network_id": n['network']['id'],
-              "tenant_id": tenant_id,
-              "allocation_pools": [{"start": "192.168.0.50", "end": "192.168.0.200"}],
-              "gateway_ip": "192.168.0.1",
-              "ip_version": 4,
-              "cidr": "192.168.0.0/24"}
+    subnet = {
+        "name": "tenant1-192.168.0.0/24",
+        "enable_dhcp": True,
+        "network_id": n["network"]["id"],
+        "tenant_id": tenant_id,
+        "allocation_pools": [{"start": "192.168.0.50", "end": "192.168.0.200"}],
+        "gateway_ip": "192.168.0.1",
+        "ip_version": 4,
+        "cidr": "192.168.0.0/24",
+    }
 
     # add name servers
 
-
-
-    s = neutron.create_subnet({'subnet' : subnet})
+    s = neutron.create_subnet({"subnet": subnet})
 
     # router-interface-add
 
-    neutron.add_interface_router(r['router']['id'], {'subnet_id' : s['subnet']['id']})
+    neutron.add_interface_router(r["router"]["id"], {"subnet_id": s["subnet"]["id"]})
 
-    return n['network']['id']
+    return n["network"]["id"]
 
 
 def setup_tenant(team, region):
@@ -57,45 +61,49 @@ def setup_tenant(team, region):
     tenant_description = tenant.get_tenant_description()
 
     openstack_tenant = keystone.tenants.create(
-        tenant_name=tenant_name,   
-        description=tenant_description,
-        enabled=True)
+        tenant_name=tenant_name, description=tenant_description, enabled=True
+    )
 
     username = tenant.get_auth_username()
     password = User.objects.make_random_password(length=16)
 
-    user = keystone.users.create(
-        name=username,
-        password=password,
-        tenant_id=openstack_tenant.id)
+    keystone.users.create(
+        name=username, password=password, tenant_id=openstack_tenant.id
+    )
 
     tenant.created_tenant_id = openstack_tenant.id
     tenant.auth_password = password
 
-    ## flip to user tenant
-    client = OpenstackClient(region.name,
-                             username=tenant.get_auth_username(),
-                             password=tenant.auth_password,
-                             project_name=tenant.get_tenant_name())
+    # flip to user tenant
+    client = OpenstackClient(
+        region.name,
+        username=tenant.get_auth_username(),
+        password=tenant.auth_password,
+        project_name=tenant.get_tenant_name(),
+    )
     nova = client.get_nova()
 
-    security_group_name = "bryn:default"
-
-#    group = nova.security_groups.create(
-#        security_group_name,
-#        'Automatic security group for %s' % (tenant_name)
-#    )
+    # security_group_name = "bryn:default"
+    #    group = nova.security_groups.create(
+    #        security_group_name,
+    #        'Automatic security group for %s' % (tenant_name)
+    #    )
     group = nova.security_groups.find(name="default")
 
-    nova.security_group_rules.create(group.id, ip_protocol="tcp",
-                                     from_port=22, to_port=22)
-    nova.security_group_rules.create(group.id, ip_protocol="tcp",
-                                     from_port=80, to_port=80)
-    nova.security_group_rules.create(group.id, ip_protocol="tcp",
-                                     from_port=443, to_port=443) 
+    nova.security_group_rules.create(
+        group.id, ip_protocol="tcp", from_port=22, to_port=22
+    )
+    nova.security_group_rules.create(
+        group.id, ip_protocol="tcp", from_port=80, to_port=80
+    )
+    nova.security_group_rules.create(
+        group.id, ip_protocol="tcp", from_port=443, to_port=443
+    )
 
     if region.regionsettings.requires_network_setup:
-        tenant.created_network_id = setup_network(client, region, tenant.created_tenant_id)
+        tenant.created_network_id = setup_network(
+            client, region, tenant.created_tenant_id
+        )
 
     set_quota(tenant)
 
@@ -104,8 +112,11 @@ def setup_tenant(team, region):
     team.tenants_available = True
     team.save()
 
-#openstack quota set --cores 128 --ram 650000 --gigabytes 10000 --snapshots 100 6a0797bfd90d4aba820c427d4e8a60d9
+
+# openstack quota set --cores 128 --ram 650000 --gigabytes 10000
+# --snapshots 100 6a0797bfd90d4aba820c427d4e8a60d9
+
 
 def run():
     t = Team.objects.get(pk=1)
-    setup_tenant(t, Region.objects.get(name='bham'))
+    setup_tenant(t, Region.objects.get(name="bham"))
