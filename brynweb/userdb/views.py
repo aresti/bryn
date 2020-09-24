@@ -148,64 +148,6 @@ def validate_email(request, uuid):
     return HttpResponseRedirect(reverse('home:home'))
 
 
-def login(request):
-    """
-    Copied from django source, but modified to reject where email not verified
-    Displays the login form and handles the login action.
-    """
-    redirect_to = request.POST.get(REDIRECT_FIELD_NAME,
-                                   request.GET.get(REDIRECT_FIELD_NAME, ''))
-
-    if request.method == "POST":
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-
-            # Ensure the user-originating redirection url is safe.
-            if not is_safe_url(url=redirect_to, host=request.get_host()):
-                redirect_to = resolve_url(settings.LOGIN_REDIRECT_URL)
-
-            print("Redirect to " + redirect_to)
-
-            # Okay, security check complete. Log the user in.
-            user = authenticate(username=form.cleaned_data['username'],
-                                password=form.cleaned_data['password'])
-
-            if user:
-                teams = Team.objects.filter(teammember__user=user)
-                if not user.userprofile.email_validated:
-                    messages.error(
-                        request,
-                        "Please validate your email address "
-                        "by following the link sent to your email first.")
-                elif not user.is_active:
-                    messages.error(
-                        request,
-                        "Sorry, your account is disabled.")
-                elif not any(team.verified for team in teams):
-                    messages.error(
-                        request,
-                        "Your team hasn't been verified yet. Please "
-                        "check back later.")
-                else:
-                    # All conditions met, login
-                    auth_login(request, user)
-                    return HttpResponseRedirect(redirect_to)
-
-            return HttpResponseRedirect(reverse('user:login'))
-    else:
-        form = AuthenticationForm(request)
-
-    current_site = get_current_site(request)
-
-    context = {
-        'form': form,
-        REDIRECT_FIELD_NAME: redirect_to,
-        'site': current_site,
-        'site_name': current_site.name,
-    }
-
-    return TemplateResponse(request, 'userdb/login.html', context)
-
 @user_passes_test(lambda u: u.is_superuser)
 def active_users(request):
     recordset = TeamMember.objects.filter(team__verified=True)
