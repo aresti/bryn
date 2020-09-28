@@ -156,12 +156,12 @@ class Invitation(models.Model):
 
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
     validation_link = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False
+        default=uuid.uuid4, editable=False, primary_key=True
     )
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     email_validated = models.BooleanField(default=False)
-    current_region = models.ForeignKey(Region, null=True, on_delete=models.SET_NULL)
+    current_region = models.ForeignKey(Region, on_delete=models.CASCADE)
 
     def send_validation_link(self, user):
         self.user = user
