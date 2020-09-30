@@ -13,40 +13,6 @@ SERVER_TYPE_CHOICES = [
 ]
 
 
-class LaunchServerForm(forms.Form):
-    server_name = forms.CharField(
-        label="Server name",
-        max_length=50,
-        required=True,
-        validators=[
-            RegexValidator(
-                regex=r"^([a-zA-Z0-9\-]+)$",
-                message="Only letters, numbers and hyphens in server name",
-            )
-        ],
-    )
-    server_type = forms.ChoiceField(choices=SERVER_TYPE_CHOICES)
-
-    password = forms.CharField(
-        label="New server password",
-        widget=forms.widgets.PasswordInput,
-        required=True,
-        validators=[
-            RegexValidator(
-                regex="^(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z]).{8,}$",
-                message="Weak password! At least one CAPITAL letter and one number required, minimum 8 characters.",
-            )
-        ],
-    )
-
-    def __init__(self, flavors, *args, **kwargs):
-        super(LaunchServerForm, self).__init__(*args, **kwargs)
-        flavors_sorted = sorted(flavors, key=lambda i: i[1])
-        i = next((i for i, (x, y) in enumerate(flavors_sorted) if y == "climb.user"), 0)
-        flavors_sorted[0], flavors_sorted[i] = flavors_sorted[i], flavors_sorted[0]
-        self.fields["server_type"].choices = flavors_sorted
-
-
 class LaunchImageServerForm(forms.Form):
     server_name = forms.CharField(
         label="Server name",

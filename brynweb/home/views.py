@@ -10,11 +10,10 @@ from django_slack import slack_message
 from userdb.models import Team, Region, TeamMember
 from openstack.models import get_tenant_for_team, ActionLog
 from scripts.list_instances import list_instances
-from scripts.gvl_launch import launch_gvl
 from scripts.image_launch import launch_image
 
 from .utils import messages_to_json
-from .forms import LaunchServerForm, LaunchImageServerForm, RegionSelectForm
+from .forms import LaunchImageServerForm, RegionSelectForm
 
 
 @login_required
@@ -61,7 +60,6 @@ def home(request):
             t.horizon_endpoint = "https://swansea.climb.ac.uk"
 
         try:
-            t.launch_form = LaunchServerForm(tenant.get_flavors())
             available_keys = [key for key in tenant.get_keys() if key[0] != "cloudman"]
             t.launch_custom_form = LaunchImageServerForm(
                 tenant.get_images(), tenant.get_flavors(), available_keys
@@ -117,7 +115,7 @@ def validate_and_get_tenant(request, teamid):
     return tenant
 
 
-def launch_server(request, launch_type, tenant, server_name, *args, **kwargs):
+def launch_server(request, tenant, server_name, *args, **kwargs):
     log = ActionLog(tenant=tenant, user=request.user)
 
     if tenant.region.disable_new_instances:
@@ -129,20 +127,12 @@ def launch_server(request, launch_type, tenant, server_name, *args, **kwargs):
         return
 
     try:
-        if launch_type == "gvl":
-            launch_gvl(tenant, server_name, *args, **kwargs)
-            log.message = "Name: {server_name}, Flavour: {flavour}, Image: GVL".format(
-                server_name=server_name, flavour=args[1]
-            )
-        elif launch_type == "image":
-            launch_image(tenant, server_name, *args, **kwargs)
-            log.message = (
-                "Name: {server_name}, Flavour: {flavour}, Image: {image}".format(
-                    server_name=server_name,
-                    flavour=args[3],
-                    image=dict(tenant.get_images())[args[0]],
-                )
-            )
+        launch_image(tenant, server_name, *args, **kwargs)
+        log.message = "Name: {server_name}, Flavour: {flavour}, Image: {image}".format(
+            server_name=server_name,
+            flavour=args[3],
+            image=dict(tenant.get_images())[args[0]],
+        )
     except Exception as e:
         messages.error(request, "Error launching: %s" % (e,))
         log.error = True
@@ -151,32 +141,6 @@ def launch_server(request, launch_type, tenant, server_name, *args, **kwargs):
         messages.success(request, "Successfully launched server!")
         log.error = False
     log.save()
-
-
-@login_required
-def launch(request, teamid):
-    tenant = validate_and_get_tenant(request, teamid)
-
-    f = LaunchServerForm(tenant.get_flavors(), request.POST)
-    if not f.is_valid():
-        if request.is_ajax():
-            return JsonResponse({"errors": f.errors}, status=400)
-        messages.error(request, "Problem with form items.")
-        return render(request, "home/launch-fail.html", context={"form": f})
-
-    launch_server(
-        request,
-        "gvl",
-        tenant,
-        f.cleaned_data["server_name"],
-        f.cleaned_data["password"],
-        f.cleaned_data["server_type"],
-    )
-
-    if request.is_ajax():
-        return JsonResponse(messages_to_json(request))
-    else:
-        return HttpResponseRedirect("/")
 
 
 @login_required
@@ -200,7 +164,6 @@ def launchcustom(request, teamid):
                 key_value = ""
             launch_server(
                 request,
-                "image",
                 tenant,
                 f.cleaned_data["server_name"],
                 f.cleaned_data["server_image"],

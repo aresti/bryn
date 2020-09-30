@@ -126,7 +126,6 @@ class HypervisorStats(models.Model):
 
 class RegionSettings(models.Model):
     region = models.OneToOneField(Region, on_delete=models.CASCADE)
-    gvl_image_id = models.CharField(max_length=50)
     public_network_name = models.CharField(max_length=50)
     public_network_id = models.CharField(max_length=50)
     requires_network_setup = models.BooleanField(default=False)

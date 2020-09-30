@@ -7,7 +7,6 @@ app_name = "home"
 urlpatterns = [
     url(r"^status$", views.status, name="status"),
     url(r"^region-select$", views.region_select, name="region-select"),
-    url(r"^launch/(?P<teamid>\d+)$", views.launch, name="launch"),
     url(r"^launchcustom/(?P<teamid>\d+)$", views.launchcustom, name="launchcustom"),
     url(r"^start/(?P<teamid>\d+)/(?P<uuid>[^/]+)$", views.start, name="start"),
     url(r"^stop/(?P<teamid>\d+)/(?P<uuid>[^/]+)$", views.stop, name="stop"),
