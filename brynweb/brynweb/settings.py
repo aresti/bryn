@@ -26,7 +26,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_extensions",
-    "bootstrap3",
+    "bootstrap4",
     "reporting",
     "userdb",
     "home",
@@ -51,9 +51,7 @@ ROOT_URLCONF = "brynweb.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [
-            os.path.join(BASE_DIR, "templates"),
-        ],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -87,15 +85,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 # Login settings
@@ -155,10 +147,7 @@ PIPELINE = {
             "output_filename": "js/brynweb.min.js",
         },
         "home_dashboard": {
-            "source_filenames": (
-                "home/js/ajax-forms.js",
-                "home/js/dashboard.js",
-            ),
+            "source_filenames": ("home/js/ajax-forms.js", "home/js/dashboard.js",),
             "output_filename": "home/js/dashboard.min.js",
         },
     },
@@ -172,7 +161,7 @@ PHONENUMBER_DEFAULT_REGION = "GB"
 
 # django-bootstrap settings
 
-BOOTSTRAP3 = {
+bootstrap4 = {
     # The URL to the jQuery JavaScript file
     "jquery_url": "//code.jquery.com/jquery.min.js",
     # The Bootstrap base URL
@@ -194,31 +183,20 @@ BOOTSTRAP3 = {
     # Class to indicate success, meaning the field has valid input (better to set this in your Django form)
     "success_css_class": "has-success",
     # Renderers (only set these if you have studied the source and understand the inner workings)
-    "formset_renderers": {
-        "default": "bootstrap3.renderers.FormsetRenderer",
-    },
-    "form_renderers": {
-        "default": "bootstrap3.renderers.FormRenderer",
-    },
+    "formset_renderers": {"default": "bootstrap4.renderers.FormsetRenderer"},
+    "form_renderers": {"default": "bootstrap4.renderers.FormRenderer"},
     "field_renderers": {
-        "default": "bootstrap3.renderers.FieldRenderer",
-        "inline": "bootstrap3.renderers.InlineFieldRenderer",
+        "default": "bootstrap4.renderers.FieldRenderer",
+        "inline": "bootstrap4.renderers.InlineFieldRenderer",
     },
 }
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "filters": {
-        "require_debug_false": {
-            "()": "django.utils.log.RequireDebugFalse",
-        },
-    },
+    "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
     "handlers": {
-        "console": {
-            "level": "DEBUG",
-            "class": "logging.StreamHandler",
-        },
+        "console": {"level": "DEBUG", "class": "logging.StreamHandler"},
         "logfile": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
@@ -230,12 +208,7 @@ LOGGING = {
             "class": "django_slack.log.SlackExceptionHandler",
         },
     },
-    "loggers": {
-        "django": {
-            "level": "ERROR",
-            "handlers": ["slack_admins"],
-        },
-    },
+    "loggers": {"django": {"level": "ERROR", "handlers": ["slack_admins"]}},
     "root": {"level": "INFO", "handlers": ["console", "logfile"]},
 }
 

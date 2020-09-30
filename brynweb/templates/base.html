@@ -1,4 +1,4 @@
-{% load static pipeline bootstrap3 %}
+{% load static pipeline bootstrap4 %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -32,20 +32,22 @@
     {% endblock %}
   </head>
 
-  <body class="site-body {% block body_class %}{% endblock %}">
-    {% include "includes/top_menu.html" %}
+  <body class="site-body d-flex flex-column justify-content-between {% block body_class %}{% endblock %}">
+    <div>
+      {% include "includes/top_menu.html" %}
 
-    <header class="site-header">
-        <img src="{% static 'images/climb_logo.png' %}" alt="CLIMB logo" class="header-logo" />
-    {% block full_jumbo %}{% endblock %}
-    </header>
-   
-    <main class="site-content clearfix">{% block content %}{% endblock %}</main>
-
+      <header class="site-header">
+      <img src="/static/images/climb_logo.png" alt="CLIMB logo" class="header-logo d-none d-md-block">
+      {% block full_jumbo %}{% endblock %}
+      </header>
+    
+      <main class="site-content">{% block content %}{% endblock %}</main>
+    </div>
+    
     <footer class="site-footer">{% include "includes/footer.html" %}</footer>
 
     {# Global javascript #}
-    {% bootstrap_javascript jquery=1 %}
+    {% bootstrap_javascript jquery='full' %}
     {% javascript 'brynweb' %}
     <script src="https://use.fontawesome.com/ab6fe5d3cc.js"></script>
 
