@@ -32,8 +32,8 @@ INSTALLED_APPS = [
     "home",
     "discourse",
     "openstack",
-    "pipeline",
     "django_slack",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
@@ -113,12 +113,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
-STATICFILES_STORAGE = "pipeline.storage.PipelineManifestStorage"
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 
 STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
-    "pipeline.finders.PipelineFinder",
 ]
 
 STATIC_ROOT = os.path.join(BASE_DIR, "../static")
@@ -127,31 +126,6 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
-
-# Pipeline
-
-PIPELINE = {
-    "STYLESHEETS": {
-        "brynweb": {
-            "source_filenames": ("css/brynweb.css",),
-            "output_filename": "css/brynweb.min.css",
-        },
-        "home": {
-            "source_filenames": ("home/css/dashboard.css",),
-            "output_filename": "css/home.min.css",
-        },
-    },
-    "JAVASCRIPT": {
-        "brynweb": {
-            "source_filenames": ("js/brynweb.js",),
-            "output_filename": "js/brynweb.min.js",
-        },
-        "home_dashboard": {
-            "source_filenames": ("home/js/ajax-forms.js", "home/js/dashboard.js",),
-            "output_filename": "home/js/dashboard.min.js",
-        },
-    },
-}
 
 
 # django-phonenumber-field settings

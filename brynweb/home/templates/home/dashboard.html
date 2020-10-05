@@ -1,8 +1,9 @@
 {% extends "home/base.html" %}
-{% load bootstrap4 static pipeline %}
+{% load bootstrap4 static %}
 
 {% block extra_js %}
-  {% javascript 'home_dashboard' %}
+  <script src="{% static 'home/js/dashboard.js' %}"></script>
+  <script src="{% static 'home/js/ajax-forms.js' %}"></script>
 {% endblock %}
 
 {% block full_jumbo %}

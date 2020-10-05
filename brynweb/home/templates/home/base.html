@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% load pipeline %}
+{% load static %}
 
 {% block extra_css %}
-  {% stylesheet "home" %}
+  <link href="{% static 'home/css/dashboard.css' %}" rel="stylesheet">
 {% endblock %}
