@@ -36,10 +36,10 @@
             {% elif i.status == 'SHELVED_OFFLOADED' %}
               <a class="dropdown-item" href="{% url 'home:unshelve' t.pk i.id %}"><span class="text-success">Unshelve</span></a>
             {% else %}
-              <a class="dropdown-item" href="{% url 'home:stop' t.pk i.id %}">Stop</a></li>
-              <li><a class="dropdown-item" href="{% url 'home:reboot' t.pk i.id %}">Reboot</a></li>
+              <a class="dropdown-item" href="{% url 'home:stop' t.pk i.id %}">Stop</a>
+              <a class="dropdown-item" href="{% url 'home:reboot' t.pk i.id %}">Reboot</a>
             {% endif %}
-            <a class="dropdown-item" href="{% url 'home:terminate' t.pk i.id %}" onclick="return false;"><span class="text-danger">Terminate</span></a>
+            <a class="dropdown-item" href="{% url 'home:terminate' t.pk i.id %}"><span class="text-danger">Terminate</span></a>
           </div>
         </div>
       </td>
