@@ -99,10 +99,11 @@
               <div class="col-md-6">
                 <h2>Team members</h2>
                 <div id="team-app">
-                  <team-member-app :team-id="623"></team-member-app>
+                  <team-member-app :team-id="{{ t.id }}"></team-member-app>
                 </div>
 
                 <script src="{% static 'js/dashboard.js' %}"></script>
+                <link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
               </div>
             </div>
           {% endif %}

@@ -164,10 +164,10 @@ class TeamMemberListView(generics.ListAPIView):
         )
 
 
-class TeamMemberDetailView(generics.DestroyAPIView):
+class TeamMemberDetailView(generics.RetrieveDestroyAPIView):
     """
     API detail endpoint for TeamMember.
-    Supports 'destroy' action only.
+    Supports 'get' and 'destroy' actions.
     Authenticated user & team admin permissions required.
     """
 
