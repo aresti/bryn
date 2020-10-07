@@ -1,12 +1,15 @@
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import user_passes_test
+
+from rest_framework import generics, permissions
 
 from .forms import CustomUserCreationForm, TeamForm, InvitationForm
 from .models import Institution, TeamMember, Invitation, UserProfile, Region
+from .serializers import TeamMemberSerializer
+from .permissions import IsTeamMembershipAdmin
 
 
 def register(request):
@@ -142,20 +145,35 @@ def validate_email(request, uuid):
     return HttpResponseRedirect(reverse("home:home"))
 
 
-@user_passes_test(lambda u: u.is_superuser)
-def active_users(request):
-    recordset = TeamMember.objects.filter(team__verified=True)
-    txt = "\n".join(
-        [
-            "%s\t%s\t%s\t%s\t%s"
-            % (
-                u.user.first_name,
-                u.user.last_name,
-                u.user.email,
-                u.team.institution,
-                u.team.name,
-            )
-            for u in recordset
-        ]
-    )
-    return HttpResponse(txt, content_type="text/plain")
+class TeamMemberListView(generics.ListAPIView):
+    """
+    API list endpoint for TeamMember.
+    Supports GET.
+    Authenticated user & team admin permissions required.
+    """
+
+    serializer_class = TeamMemberSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsTeamMembershipAdmin,
+    ]
+
+    def get_queryset(self):
+        return TeamMember.objects.filter(
+            team=self.request.resolver_match.kwargs["team_id"]
+        )
+
+
+class TeamMemberDetailView(generics.DestroyAPIView):
+    """
+    API detail endpoint for TeamMember.
+    Supports 'destroy' action only.
+    Authenticated user & team admin permissions required.
+    """
+
+    serializer_class = TeamMemberSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsTeamMembershipAdmin,
+    ]
+    queryset = TeamMember.objects.all()

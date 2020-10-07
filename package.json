@@ -1,0 +1,36 @@
+{
+  "name": "bryn",
+  "version": "1.0.0",
+  "description": "The CLIMB management web interface",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack --mode development",
+    "start:dev": "webpack-dev-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aresti/bryn.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aresti/bryn/issues"
+  },
+  "homepage": "https://github.com/aresti/bryn#readme",
+  "devDependencies": {
+    "@babel/core": "^7.11.6",
+    "@babel/preset-env": "^7.11.5",
+    "babel-loader": "^8.1.0",
+    "webpack": "^4.44.2",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
+  },
+  "dependencies": {
+    "@vue/compiler-sfc": "^3.0.0",
+    "axios": "^0.20.0",
+    "vue": "^3.0.0",
+    "vue-loader": "^16.0.0-beta.8"
+  }
+}

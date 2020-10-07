@@ -1,4 +1,4 @@
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, path
 from django.conf.urls import url
 from django.contrib.auth import views as auth_views
 
@@ -9,9 +9,7 @@ app_name = "user"
 urlpatterns = [
     url(
         r"^login/$",
-        auth_views.LoginView.as_view(
-            template_name="userdb/login.html",
-        ),
+        auth_views.LoginView.as_view(template_name="userdb/login.html",),
         name="login",
     ),
     url(r"^logout/$", auth_views.logout_then_login, name="logout"),
@@ -59,5 +57,14 @@ urlpatterns = [
         views.institution_typeahead,
         name="institution_typeahead",
     ),
-    url(r"^active-users$", views.active_users, name="active-users"),
+    path(
+        "api/teams/<int:team_id>/members/<int:pk>",
+        views.TeamMemberDetailView.as_view(),
+        name="api-teammembers-detail",
+    ),
+    path(
+        "api/teams/<int:team_id>/members/",
+        views.TeamMemberListView.as_view(),
+        name="api-teammembers-list",
+    ),
 ]

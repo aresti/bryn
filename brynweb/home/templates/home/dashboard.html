@@ -95,6 +95,15 @@
                   {% endbuttons %}
                 </form>
               </div>
+
+              <div class="col-md-6">
+                <h2>Team members</h2>
+                <div id="team-app">
+                  <team-member-app :team-id="623"></team-member-app>
+                </div>
+
+                <script src="{% static 'js/dashboard.js' %}"></script>
+              </div>
             </div>
           {% endif %}
 

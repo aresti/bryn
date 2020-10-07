@@ -57,6 +57,7 @@ class Team(models.Model):
     verified = models.BooleanField(default=False)
     default_region = models.ForeignKey(Region, null=True, on_delete=models.SET_NULL)
     tenants_available = models.BooleanField(default=False)
+    users = models.ManyToManyField(User, through="TeamMember", related_name="teams")
 
     def new_registration_admin_email(self):
         if not settings.NEW_REGISTRATION_ADMIN_EMAILS:
