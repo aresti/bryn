@@ -1,14 +1,9 @@
 <template>
-  <template v-if="erroredOnGet">
-    <base-alert context="danger">
-      Sorry, team data doesn't seem to be available right now.
-      <hr />
-      Please try back later.
-    </base-alert>
-  </template>
+  <fetch-error-alert v-if="erroredOnGet" />
 
   <template v-else>
     <base-alert v-if="loading" context="light">Loading...</base-alert>
+
     <ul class="list-group">
       <team-member-list-item
         v-for="member in teamMembers"
@@ -50,6 +45,7 @@ import BaseAlert from "./BaseAlert.vue";
 import BaseModal from "./BaseModal.vue";
 import CancelButton from "./CancelButton.vue";
 import DeleteButton from "./DeleteButton.vue";
+import FetchErrorAlert from "./FetchErrorAlert.vue";
 
 export default {
   inject: ["axios"],
@@ -59,6 +55,7 @@ export default {
     BaseModal,
     CancelButton,
     DeleteButton,
+    FetchErrorAlert,
   },
   props: {
     teamId: {
@@ -88,7 +85,6 @@ export default {
         .get(`/user/api/teams/${this.teamId}/members/?format=json`)
         .then((response) => (this.teamMembers = response.data))
         .catch((error) => {
-          console.log(error.toJSON());
           this.erroredOnGet = true;
         })
         .finally(() => (this.loading = false));
