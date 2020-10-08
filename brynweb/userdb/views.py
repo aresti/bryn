@@ -8,7 +8,7 @@ from rest_framework import generics, permissions
 
 from .forms import CustomUserCreationForm, TeamForm, InvitationForm
 from .models import Institution, TeamMember, Invitation, UserProfile, Region
-from .serializers import TeamMemberSerializer
+from .serializers import TeamMemberSerializer, InvitationSerializer
 from .permissions import IsTeamMembershipAdmin
 
 
@@ -177,3 +177,25 @@ class TeamMemberDetailView(generics.RetrieveDestroyAPIView):
         IsTeamMembershipAdmin,
     ]
     queryset = TeamMember.objects.all()
+
+
+class InvitationListView(generics.ListCreateAPIView):
+    """
+    API list endpoint for Invitation.
+    Supports 'get' and 'create' actions.
+    Get displays pending invitations for the team.
+    Authenticated user & team admin permissions required.
+    Invitation email handled by post_save signal.
+    """
+
+    serializer_class = InvitationSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsTeamMembershipAdmin,
+    ]
+
+    def get_queryset(self):
+        """Filter by team"""
+        return Invitation.objects.filter(
+            to_team=self.request.resolver_match.kwargs["team_id"], accepted=False
+        )

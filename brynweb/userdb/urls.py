@@ -67,4 +67,9 @@ urlpatterns = [
         views.TeamMemberListView.as_view(),
         name="api-teammembers-list",
     ),
+    path(
+        "api/teams/<int:team_id>/invitations/",
+        views.InvitationListView.as_view(),
+        name="api-invitation-list",
+    ),
 ]

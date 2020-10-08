@@ -127,30 +127,15 @@ class Invitation(models.Model):
     made_by = models.ForeignKey(User, on_delete=models.CASCADE)
     email = models.EmailField()
     message = models.TextField()
-    accepted = models.BooleanField()
+    accepted = models.BooleanField(default=False)
     date = models.DateTimeField(auto_now_add=True)
 
-    def send_invitation(self, user):
-        self.made_by = user
-        self.accepted = False
-        self.save()
-
-        context = {
-            "invitation": self,
-            "url": reverse("user:accept-invite", args=[self.uuid]),
-        }
-        subject = render_to_string("userdb/email/user_invite_subject.txt", context)
-        text_content = render_to_string("userdb/email/user_invite_email.txt", context)
-        html_content = render_to_string("userdb/email/user_invite_email.html", context)
-
-        send_mail(
-            subject,
-            text_content,
-            settings.DEFAULT_FROM_EMAIL,
-            [self.email],
-            html_message=html_content,
-            fail_silently=False,
-        )
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["to_team", "email"], name="unique_invitation"
+            )
+        ]
 
     def __str__(self):
         return "%s to %s" % (self.email, self.to_team)
