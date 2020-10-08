@@ -14,7 +14,7 @@
         v-for="member in teamMembers"
         v-bind:member="member"
         v-bind:key="member.id"
-        @delete-member="deleteMember(member)"
+        @delete-member="confirmDeleteMember(member)"
       ></team-member-list-item>
     </ul>
   </template>
@@ -29,17 +29,36 @@
       Sorry, an error occurred when trying to remove this team member.
     </base-alert>
   </template>
+
+  <base-modal v-if="showDeleteModal" @close-modal="showDeleteModal = false">
+    <template v-slot:header>Remove {{ deleteName }}?</template>
+
+    <template v-slot:default>
+      <p>Are you sure you wish to remove {{ deleteName }} from the team?</p>
+    </template>
+
+    <template v-slot:footer>
+      <cancel-button @click="showDeleteModal = false">Cancel</cancel-button>
+      <delete-button @click="deleteMember">Remove</delete-button>
+    </template>
+  </base-modal>
 </template>
 
 <script>
 import TeamMemberListItem from "./TeamMemberListItem.vue";
 import BaseAlert from "./BaseAlert.vue";
+import BaseModal from "./BaseModal.vue";
+import CancelButton from "./CancelButton.vue";
+import DeleteButton from "./DeleteButton.vue";
 
 export default {
   inject: ["axios"],
   components: {
     TeamMemberListItem,
     BaseAlert,
+    BaseModal,
+    CancelButton,
+    DeleteButton,
   },
   props: {
     teamId: {
@@ -53,7 +72,15 @@ export default {
       loading: true,
       erroredOnGet: false,
       erroredOnDelete: false,
+      memberToDelete: null,
+      showDeleteModal: false,
     };
+  },
+  computed: {
+    deleteName() {
+      const user = this.memberToDelete.user;
+      return [user.first_name, user.last_name].join(" ");
+    },
   },
   methods: {
     getMembers() {
@@ -66,11 +93,19 @@ export default {
         })
         .finally(() => (this.loading = false));
     },
-    deleteMember: async function (member) {
+    confirmDeleteMember(member) {
+      this.memberToDelete = member;
+      this.showDeleteModal = true;
+    },
+    deleteMember: async function () {
+      if (!this.memberToDelete) {
+        return;
+      }
       this.erroredOnDelete = false;
+
       try {
         await this.axios.delete(
-          `/user/api/teams/${this.teamId}/members/${member.id}`
+          `/user/api/teams/${this.teamId}/members/${this.memberToDelete.id}`
         );
         this.getMembers();
       } catch (error) {

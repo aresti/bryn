@@ -6,33 +6,32 @@
     <span v-if="member.is_admin" class="badge badge-pill badge-success ml-auto"
       >Team Admin</span
     >
-    <base-button
-      v-else
-      context="danger"
-      class="ml-auto"
-      is-outline
-      is-small
-      @click="deleteMember"
-      >Remove</base-button
+    <delete-button v-else class="ml-auto btn-sm" @click="deleteMember"
+      >Remove</delete-button
     >
   </li>
 </template>
 
 <script>
-import BaseButton from "./BaseButton.vue";
+import DeleteButton from "./DeleteButton.vue";
 
 export default {
   emits: {
     "delete-member": null,
   },
   components: {
-    BaseButton,
+    DeleteButton,
   },
   props: {
     member: {
       required: true,
       type: Object,
     },
+  },
+  data() {
+    return {
+      showDeleteModal: true,
+    };
   },
   methods: {
     deleteMember() {
