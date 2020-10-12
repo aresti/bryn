@@ -1,22 +1,18 @@
-from django.conf.urls import url
+from django.urls import path
 
 from . import views
 
 app_name = "home"
 
 urlpatterns = [
-    url(r"^status$", views.status, name="status"),
-    url(r"^region-select$", views.region_select, name="region-select"),
-    url(r"^launchcustom/(?P<teamid>\d+)$", views.launchcustom, name="launchcustom"),
-    url(r"^start/(?P<teamid>\d+)/(?P<uuid>[^/]+)$", views.start, name="start"),
-    url(r"^stop/(?P<teamid>\d+)/(?P<uuid>[^/]+)$", views.stop, name="stop"),
-    url(r"^reboot/(?P<teamid>\d+)/(?P<uuid>[^/]+)$", views.reboot, name="reboot"),
-    url(
-        r"^terminate/(?P<teamid>\d+)/(?P<uuid>[^/]+)$",
-        views.terminate,
-        name="terminate",
-    ),
-    url(r"^unshelve/(?P<teamid>\d+)/(?P<uuid>[^/]+)$", views.unshelve, name="unshelve"),
-    url(r"^get_instances_table", views.get_instances_table, name="get_instances_table"),
-    url(r"^$", views.home, name="home"),
+    path("status", views.status, name="status"),
+    path("region-select", views.region_select, name="region-select"),
+    path("launchcustom/<int:teamid>", views.launchcustom, name="launchcustom"),
+    path("start/<int:teamid>/<uuid:uuid>", views.start, name="start"),
+    path("stop/<int:teamid>/<uuid:uuid>", views.stop, name="stop"),
+    path("reboot/<int:teamid>/<uuid:uuid>", views.reboot, name="reboot"),
+    path("terminate/<int:teamid>/<uuid:uuid>", views.terminate, name="terminate",),
+    path("unshelve/<int:teamid>/<uuid:uuid>", views.unshelve, name="unshelve"),
+    path("get_instances_table", views.get_instances_table, name="get_instances_table"),
+    path("", views.home, name="home"),
 ]

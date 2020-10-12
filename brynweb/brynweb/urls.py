@@ -1,10 +1,10 @@
-from django.conf.urls import url, include
+from django.urls import path, include
 from django.contrib import admin
 
 urlpatterns = [
-    url(r"", include("home.urls")),
-    url(r"^admin/", admin.site.urls),
-    url(r"^discourse/", include("discourse.urls")),
-    url(r"^reports/", include("reporting.urls")),
-    url(r"^user/", include("userdb.urls")),
+    path("", include("home.urls")),
+    path("admin/", admin.site.urls),
+    path("discourse/", include("discourse.urls")),
+    path("reports/", include("reporting.urls")),
+    path("user/", include("userdb.urls")),
 ]
