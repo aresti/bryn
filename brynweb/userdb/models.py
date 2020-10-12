@@ -59,6 +59,20 @@ class Team(models.Model):
     tenants_available = models.BooleanField(default=False)
     users = models.ManyToManyField(User, through="TeamMember", related_name="teams")
 
+    @property
+    def admin_users(self):
+        """
+        Return users with admin privileges for this team (queryset)
+        """
+        return self.users.filter(teammember__is_admin=True)
+
+    @property
+    def regular_users(self):
+        """
+        Return users with regular privileges for this team (queryset)
+        """
+        return self.users.filter(teammember__is_admin=False)
+
     def new_registration_admin_email(self):
         if not settings.NEW_REGISTRATION_ADMIN_EMAILS:
             return

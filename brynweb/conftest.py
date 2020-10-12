@@ -13,7 +13,7 @@ def test_password():
 
 
 @pytest.fixture
-def region_factory(db):
+def region_factory():
     def create_region(**kwargs):
         defaults = {
             "name": "Birmingham",
@@ -33,7 +33,7 @@ def region_a(region_factory):
 
 
 @pytest.fixture
-def user_factory(db, django_user_model, test_password):
+def user_factory(django_user_model, test_password):
     def create_user(**kwargs):
         kwargs["password"] = test_password
         if "username" not in kwargs:
@@ -44,20 +44,25 @@ def user_factory(db, django_user_model, test_password):
 
 
 @pytest.fixture
-def user_a(user_factory):
-    return user_factory()
+def teammember_factory(user_factory):
+    def create_teammember(team, user=None, is_admin=False):
+        if not user:
+            user = user_factory()
+        return TeamMember.objects.create(team=team, user=user, is_admin=is_admin)
+
+    return create_teammember
 
 
 @pytest.fixture
-def team_with_admin_factory(db, user_a, region_a):
-    def create_team_with_admin(**kwargs):
-        if "user" not in kwargs:
-            user = user_a
+def team_factory(user_factory, teammember_factory, region_a):
+    def create_team(extra_members=0, **kwargs):
+        if "creator" not in kwargs:
+            creator = user_factory()
         if "default_region" not in kwargs:
-            region = region_a
+            default_region = region_a
         defaults = {
             "name": "Test Team",
-            "creator": user,
+            "creator": creator,
             "position": "PI",
             "department": "Test Department",
             "institution": "Quadram",
@@ -66,20 +71,32 @@ def team_with_admin_factory(db, user_a, region_a):
             "intended_climb_use": "Breaking stuff",
             "held_mrc_grants": "CLIMB-BIG-DATA",
             "verified": True,
-            "default_region": region,
+            "default_region": default_region,
             "tenants_available": True,
         }
         kwargs = {**defaults, **kwargs}
-        team = Team.objects.create(**kwargs)
-        TeamMember.objects.create(team=team, user=user, is_admin=True)
-        return team, user
 
-    return create_team_with_admin
+        # Make creator team admin
+        team = Team.objects.create(**kwargs)
+        teammember_factory(team, creator, is_admin=True)
+
+        # Add extra team members
+        for _ in range(extra_members):
+            teammember_factory(team)
+
+        return team
+
+    return create_team
 
 
 @pytest.fixture
-def team_a(team_with_admin_factory):
-    return team_with_admin_factory()
+def team_a(team_factory):
+    return team_factory(extra_members=3)
+
+
+@pytest.fixture
+def team_b(team_factory):
+    return team_factory(extra_members=3)
 
 
 @pytest.fixture

@@ -11,6 +11,7 @@ urlpatterns = [
         auth_views.LoginView.as_view(template_name="userdb/login.html",),
         name="login",
     ),
+    path("logout/", auth_views.logout_then_login, name="logout"),
     path(
         "password_reset/",
         auth_views.PasswordResetView.as_view(

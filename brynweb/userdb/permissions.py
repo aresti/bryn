@@ -4,10 +4,13 @@ from .models import TeamMember
 
 class IsTeamMembershipAdmin(permissions.BasePermission):
     """
-    Only allow team admins to edit team memberships.
+    Only allow team admins.
     """
 
-    def has_object_permission(self, request, view, obj):
+    def has_permission(self, request, view):
+        """
+        Check whether the current user is admin for the team.
+        """
         try:
             team_id = request.resolver_match.kwargs["team_id"]
             team_member = TeamMember.objects.get(team=team_id, user=request.user)
