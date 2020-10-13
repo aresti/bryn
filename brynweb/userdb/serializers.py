@@ -23,7 +23,7 @@ class TeamFromUrlDefault:
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["username", "first_name", "last_name"]
+        fields = ["id", "username", "first_name", "last_name"]
 
 
 class TeamMemberSerializer(serializers.ModelSerializer):
@@ -40,7 +40,7 @@ class InvitationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Invitation
-        fields = ["email", "date", "message", "made_by", "to_team"]
+        fields = ["uuid", "email", "date", "message", "made_by", "to_team"]
 
         # Ensure only one invite per email, per team
         validators = [

@@ -1,5 +1,6 @@
-from rest_framework import permissions
-from .models import TeamMember
+from rest_framework import permissions, exceptions
+
+from .models import Team, TeamMember
 
 
 class IsTeamMembershipAdmin(permissions.BasePermission):
@@ -13,7 +14,10 @@ class IsTeamMembershipAdmin(permissions.BasePermission):
         """
         try:
             team_id = request.resolver_match.kwargs["team_id"]
+            Team.objects.get(pk=team_id)
             team_member = TeamMember.objects.get(team=team_id, user=request.user)
+        except Team.DoesNotExist:
+            raise exceptions.NotFound  # No team
         except TeamMember.DoesNotExist:
-            return False
+            return False  # Team exists, but user is not a member
         return team_member.is_admin

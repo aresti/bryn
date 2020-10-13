@@ -4,7 +4,7 @@ import pytest
 
 from rest_framework.test import APIClient
 
-from userdb.models import Team, TeamMember, Region
+from userdb.models import Team, TeamMember, Region, Invitation
 
 
 @pytest.fixture
@@ -51,6 +51,24 @@ def teammember_factory(user_factory):
         return TeamMember.objects.create(team=team, user=user, is_admin=is_admin)
 
     return create_teammember
+
+
+@pytest.fixture
+def invitation_factory(team_a):
+    def create_invitation(to_team=None, **kwargs):
+        if not to_team:
+            to_team = team_a
+        defaults = {
+            "to_team": to_team,
+            "made_by": to_team.admin_users.first(),
+            "email": f"{uuid.uuid4()}@gmail.com",
+            "message": "Join us!",
+            "accepted": False,
+        }
+        kwargs = {**defaults, **kwargs}
+        return Invitation.objects.create(**kwargs)
+
+    return create_invitation
 
 
 @pytest.fixture
