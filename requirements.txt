@@ -14,6 +14,7 @@ click==7.1.2
 cliff==3.1.0
 cmd2==0.8.9
 colorama==0.4.3
+coverage==5.3
 cryptography==3.1
 debtcollector==1.22.0
 decorator==4.4.2
@@ -21,7 +22,7 @@ distlib==0.3.1
 Django==3.1.1
 django-bootstrap4==2.2.0
 django-extensions==3.0.9
-django-phonenumber-field==1.1.0
+django-phonenumber-field==5.0.0
 django-slack==5.15.2
 djangorestframework==3.12.1
 dogpile.cache==1.0.0
@@ -35,6 +36,7 @@ identify==1.5.5
 idna==2.10
 importlib-metadata==1.7.0
 importlib-resources==3.0.0
+iniconfig==1.0.1
 invoke==1.4.1
 ipaddress==1.0.23
 iso8601==0.1.13
@@ -62,13 +64,16 @@ oslo.i18n==3.25.1
 oslo.log==3.45.2
 oslo.serialization==2.29.2
 oslo.utils==3.42.1
+packaging==20.4
 paramiko==2.7.2
 pathspec==0.8.0
 pbr==5.5.0
-phonenumberslite==8.12.9
+phonenumberslite==8.12.11
+pluggy==0.13.1
 positional==1.2.1
 pre-commit==2.7.1
 prettytable==0.7.2
+py==1.9.0
 pyasn1==0.4.8
 pycodestyle==2.6.0
 pycparser==2.20
@@ -79,6 +84,11 @@ pyOpenSSL==19.1.0
 pyparsing==2.4.7
 pyperclip==1.8.0
 pyrsistent==0.17.3
+pytest==6.1.1
+pytest-cov==2.10.1
+pytest-django==3.10.0
+pytest-lazy-fixture==0.6.3
+pytest-pythonpath==0.7.3
 python-cinderclient==6.0.0
 python-dateutil==2.8.1
 python-glanceclient==3.0.0
