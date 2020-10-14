@@ -57,12 +57,17 @@ urlpatterns = [
     path(
         "api/teams/<int:team_id>/members/<int:pk>",
         views.TeamMemberDetailView.as_view(),
-        name="api-teammembers-detail",
+        name="api-teammember-detail",
     ),
     path(
         "api/teams/<int:team_id>/members/",
         views.TeamMemberListView.as_view(),
-        name="api-teammembers-list",
+        name="api-teammember-list",
+    ),
+    path(
+        "api/teams/<int:team_id>/invitations/<uuid:pk>",
+        views.InvitationDetailView.as_view(),
+        name="api-invitation-detail",
     ),
     path(
         "api/teams/<int:team_id>/invitations/",

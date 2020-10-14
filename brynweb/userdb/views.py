@@ -200,3 +200,18 @@ class InvitationListView(generics.ListCreateAPIView):
         return Invitation.objects.filter(
             to_team=self.request.resolver_match.kwargs["team_id"], accepted=False
         )
+
+
+class InvitationDetailView(generics.RetrieveDestroyAPIView):
+    """
+    API detail endpoint for Invitation.
+    Supports 'get' and 'destroy' actions.
+    Authenticated user & team admin permissions required.
+    """
+
+    serializer_class = InvitationSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsTeamMembershipAdmin,
+    ]
+    queryset = Invitation.objects.all()

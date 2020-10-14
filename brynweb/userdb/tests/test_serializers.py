@@ -21,15 +21,15 @@ def user_serializer_instance(team_a):
 
 
 @pytest.fixture
-def invitation_instance(invitation_factory):
-    return InvitationSerializer(invitation_factory())
+def invitation_serializer_instance(team_a):
+    return InvitationSerializer(team_a.invitations.first())
 
 
 @pytest.mark.parametrize(
     "serializer_instance,expected",
     [
         (
-            pytest.lazy_fixture("invitation_instance"),
+            pytest.lazy_fixture("invitation_serializer_instance"),
             ["uuid", "email", "date", "message"],
         ),
         (
@@ -67,13 +67,13 @@ def invitation_context_team_a(team_a):
 
 
 def test_invitation_serializer_enforces_unique_invites(
-    invitation_factory, invitation_context_team_a
+    team_a, invitation_context_team_a
 ):
     """
     Does the InvitationSerializer enforce unique invites?
     """
     # Need context, since serializer uses CurrentUserDefault() & TeamFromUrlDefault()
-    first = InvitationSerializer(invitation_factory())
+    first = InvitationSerializer(team_a.invitations.first())
     second = InvitationSerializer(data=first.data, context=invitation_context_team_a)
     assert not second.is_valid()
     assert second.errors["non_field_errors"][0].code == "unique"

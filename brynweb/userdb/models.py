@@ -136,7 +136,10 @@ class TeamMember(models.Model):
 class Invitation(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     to_team = models.ForeignKey(
-        Team, on_delete=models.CASCADE, verbose_name="Team to invite user to"
+        Team,
+        on_delete=models.CASCADE,
+        verbose_name="Team to invite user to",
+        related_name="invitations",
     )
     made_by = models.ForeignKey(User, on_delete=models.CASCADE)
     email = models.EmailField()

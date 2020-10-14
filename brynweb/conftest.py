@@ -54,10 +54,8 @@ def teammember_factory(user_factory):
 
 
 @pytest.fixture
-def invitation_factory(team_a):
-    def create_invitation(to_team=None, **kwargs):
-        if not to_team:
-            to_team = team_a
+def invitation_factory():
+    def create_invitation(to_team, **kwargs):
         defaults = {
             "to_team": to_team,
             "made_by": to_team.admin_users.first(),
@@ -72,8 +70,8 @@ def invitation_factory(team_a):
 
 
 @pytest.fixture
-def team_factory(user_factory, teammember_factory, region_a):
-    def create_team(extra_members=0, **kwargs):
+def team_factory(user_factory, teammember_factory, invitation_factory, region_a):
+    def create_team(extra_members=0, invitations=0, **kwargs):
         if "creator" not in kwargs:
             creator = user_factory()
         if "default_region" not in kwargs:
@@ -102,6 +100,10 @@ def team_factory(user_factory, teammember_factory, region_a):
         for _ in range(extra_members):
             teammember_factory(team)
 
+        # Add invitations
+        for _ in range(invitations):
+            invitation_factory(team)
+
         return team
 
     return create_team
@@ -109,12 +111,12 @@ def team_factory(user_factory, teammember_factory, region_a):
 
 @pytest.fixture
 def team_a(team_factory):
-    return team_factory(extra_members=3)
+    return team_factory(extra_members=3, invitations=2)
 
 
 @pytest.fixture
 def team_b(team_factory):
-    return team_factory(extra_members=3)
+    return team_factory(extra_members=3, invitations=2)
 
 
 @pytest.fixture
