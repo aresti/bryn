@@ -21,3 +21,17 @@ class IsTeamMembershipAdmin(permissions.BasePermission):
         except TeamMember.DoesNotExist:
             return False  # Team exists, but user is not a member
         return team_member.is_admin
+
+
+class TeamMembershipDeleteIsNotSelf(permissions.BasePermission):
+    """
+    Forbid action to delete own team membership.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Reject if the TeamMembership user is also the request user.
+        """
+        if request.method != "DELETE":
+            return True
+        return request.user != obj.user

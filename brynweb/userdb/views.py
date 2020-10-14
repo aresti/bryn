@@ -9,7 +9,7 @@ from rest_framework import generics, permissions
 from .forms import CustomUserCreationForm, TeamForm, InvitationForm
 from .models import Institution, TeamMember, Invitation, UserProfile, Region
 from .serializers import TeamMemberSerializer, InvitationSerializer
-from .permissions import IsTeamMembershipAdmin
+from .permissions import IsTeamMembershipAdmin, TeamMembershipDeleteIsNotSelf
 
 
 def register(request):
@@ -175,6 +175,7 @@ class TeamMemberDetailView(generics.RetrieveDestroyAPIView):
     permission_classes = [
         permissions.IsAuthenticated,
         IsTeamMembershipAdmin,
+        TeamMembershipDeleteIsNotSelf,
     ]
     queryset = TeamMember.objects.all()
 
