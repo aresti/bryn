@@ -103,6 +103,7 @@ export default {
         await this.axios.delete(
           `/user/api/teams/${this.teamId}/members/${this.memberToDelete.id}`
         );
+        this.memberToDelete = null;
         this.getMembers();
       } catch (error) {
         if (error.response) {

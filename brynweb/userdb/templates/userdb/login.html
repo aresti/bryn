@@ -1,15 +1,63 @@
 {% extends "home/base.html" %}
-{% load bootstrap4 %}
-
-{% block full_jumbo %}
-  <div class="jumbotron jumbotron-fluid">
-    <div class="container">
-      <h1>Sign-in</h1>
-    </div>
-  </div>
-{% endblock %}
+{% load static %}
 
 {% block content %}
+
+<section class="hero is-primary is-fullheight-with-navbar">
+  <div class="hero-body">
+    <div class="container">
+
+      <div class="columns">
+        <div class="column is-one-third is-offset-one-third">
+
+          <h1 class="title logo-header">Bryn</h1>
+          <h2 class="subtitle">The CLIMB management web interface</h1>
+
+          <div class="card">
+            <div class="card-content">
+              <div class="field">
+                <p class="control has-icons-left has-icons-right">
+                  <input class="input is-medium" type="text" placeholder="Username">
+                  <span class="icon is-small is-left">
+                    <i class="fas fa-user"></i>
+                  </span>
+                </p>
+              </div>
+              <div class="field">
+                <p class="control has-icons-left">
+                  <input class="input is-medium" type="password" placeholder="Password">
+                  <span class="icon is-small is-left">
+                    <i class="fas fa-lock"></i>
+                  </span>
+                </p>
+              </div>
+              <div class="field">
+                <p class="control">
+                  <button class="button is-success is-medium is-fullwidth">
+                    Login
+                  </button>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="columns">
+          <div class="column is-2 is-offset-5">
+            <img src="{% static 'images/climb_logo_charcoal.png' %}" alt="CLIMB logo">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block footer_extra_classes %}is-hidden{% endblock %}
+
+{% comment %}
 <div class="container">
   <div class="row">
     <div class="col-md-6">
@@ -31,4 +79,5 @@
     </div>
   </div>
 </div>
-{% endblock %}
+{% endcomment %}
+

@@ -17,33 +17,26 @@
     <title>{% block title %}CLIMB | Cloud Infrastructure for Microbial Informatics{% endblock %}{% block title_suffix %}{% endblock %}</title>
 
     {# Global stylesheets #}
-    {% bootstrap_css %}
-    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700,300" rel="stylesheet">
-    <link href="{% static 'css/brynweb.css' %}" rel="stylesheet">
+    <link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
 
     {% block extra_css %}
       {# Override this in templates to add extra stylesheets #}
     {% endblock %}
   </head>
 
-  <body class="site-body d-flex flex-column justify-content-between {% block body_class %}{% endblock %}">
-    <div>
-      {% include "includes/top_menu.html" %}
+  <body class="has-navbar-fixed-top">
 
-      <header class="site-header">
-      <img src="/static/images/climb_logo.png" alt="CLIMB logo" class="header-logo d-none d-md-block">
-      {% block full_jumbo %}{% endblock %}
-      </header>
+      {% include "includes/top_menu.html" %}
     
-      <main class="site-content">{% block content %}{% endblock %}</main>
-    </div>
-    
-    <footer class="site-footer">{% include "includes/footer.html" %}</footer>
+  
+    {% block content %}{% endblock %}
+
+    <footer class="footer {% block footer_extra_classes %}{% endblock %}">
+      {% include "includes/footer.html" %}
+    </footer>
 
     {# Global javascript #}
-    {% bootstrap_javascript jquery='full' %}
-
-    <script src="https://use.fontawesome.com/ab6fe5d3cc.js"></script>
+    <script src="https://kit.fontawesome.com/1ba6dd17cf.js" crossorigin="anonymous"></script>
 
     {% block extra_js %}
       {# Override this in templates to add extra javascript #}

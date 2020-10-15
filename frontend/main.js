@@ -1,3 +1,5 @@
+require("./assets/sass/main.scss");
+
 import { createApp } from "vue";
 import TeamMemberApp from "./components/TeamMemberApp.vue";
 
