@@ -24,10 +24,9 @@
     {% endblock %}
   </head>
 
-  <body class="has-navbar-fixed-top">
+  <body class="has-navbar-fixed-top {% block body_extra_classes %}{% endblock %}">
 
-      {% include "includes/top_menu.html" %}
-    
+    {% include "includes/top_menu.html" %}
   
     {% block content %}{% endblock %}
 
@@ -37,6 +36,7 @@
 
     {# Global javascript #}
     <script src="https://kit.fontawesome.com/1ba6dd17cf.js" crossorigin="anonymous"></script>
+    <script src="{% static 'js/dashboard.js' %}"></script>
 
     {% block extra_js %}
       {# Override this in templates to add extra javascript #}

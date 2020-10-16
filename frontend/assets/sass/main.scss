@@ -1,7 +1,9 @@
 @charset "utf-8";
+
+// Fonts
 @import url("https://fonts.googleapis.com/css2?family=Bungee&family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap");
-// Base colors
-$white: #fff;
+
+@import "~bulma/sass/utilities/initial-variables";
 
 // Brand colors
 $charcoal: #264653ff;
@@ -19,6 +21,9 @@ $danger: $burnt-sienna;
 
 // Update component variables
 $navbar-item-color: $white;
+$navbar-background-color: $grey-darker;
+$navbar-item-hover-color: $white;
+$navbar-item-hover-background-color: $black-ter;
 
 $footer-background-color: $charcoal;
 $footer-padding: 3rem 1.5rem;
@@ -41,4 +46,13 @@ body {
   font-family: "Bungee", sans-serif;
   font-size: 2.5rem;
   line-height: 2.5rem;
+}
+
+.hero.is-primary {
+  background-color: #264653;
+  background-image: linear-gradient(0deg, #264653 0%, #363636 100%);
+}
+
+.hide-navbar-logo .navbar .logo-header {
+  display: none;
 }

@@ -7,8 +7,8 @@
   <div class="hero-body">
     <div class="container">
 
-      <div class="columns">
-        <div class="column is-one-third is-offset-one-third">
+      <div class="columns is-centered">
+        <div class="column is-two-thirds-tablet is-half-desktop is-one-third-widescreen">
 
           <h1 class="title logo-header">Bryn</h1>
           <h2 class="subtitle">The CLIMB management web interface</h1>
@@ -36,18 +36,15 @@
                   <button class="button is-success is-medium is-fullwidth">
                     Login
                   </button>
+                  
                 </p>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-      
-      <div class="section">
-        <div class="columns">
-          <div class="column is-2 is-offset-5">
-            <img src="{% static 'images/climb_logo_charcoal.png' %}" alt="CLIMB logo">
-          </div>
+
+          <p class="mt-4 has-text-centered">
+            <a class="has-text-link-light" href="{% url 'user:password_reset' %}">Forgot your password?</a>
+          </p>
         </div>
       </div>
     </div>
@@ -56,6 +53,7 @@
 {% endblock %}
 
 {% block footer_extra_classes %}is-hidden{% endblock %}
+{% block body_extra_classes %}hide-navbar-logo{% endblock %}
 
 {% comment %}
 <div class="container">
