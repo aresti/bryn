@@ -4,6 +4,8 @@ Django settings for brynweb project.
 
 import os
 
+from django.contrib.messages import constants as messages
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEBUG = True
@@ -65,6 +67,9 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "brynweb.wsgi.application"
+
+# Custom message tags
+MESSAGE_TAGS = {messages.INFO: "primary", messages.ERROR: "danger"}
 
 
 # Database

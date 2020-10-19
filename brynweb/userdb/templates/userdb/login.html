@@ -1,81 +1,65 @@
-{% extends "home/base.html" %}
-{% load static %}
+{% extends "userdb/base_primary_card.html" %}
 
-{% block content %}
-
-<section class="hero is-primary is-fullheight-with-navbar">
-  <div class="hero-body">
-    <div class="container">
-
-      <div class="columns is-centered">
-        <div class="column is-two-thirds-tablet is-half-desktop is-one-third-widescreen">
-
-          <h1 class="title logo-header">Bryn</h1>
-          <h2 class="subtitle">The CLIMB management web interface</h1>
-
-          <div class="card">
-            <div class="card-content">
-              <div class="field">
-                <p class="control has-icons-left has-icons-right">
-                  <input class="input is-medium" type="text" placeholder="Username">
-                  <span class="icon is-small is-left">
-                    <i class="fas fa-user"></i>
-                  </span>
-                </p>
-              </div>
-              <div class="field">
-                <p class="control has-icons-left">
-                  <input class="input is-medium" type="password" placeholder="Password">
-                  <span class="icon is-small is-left">
-                    <i class="fas fa-lock"></i>
-                  </span>
-                </p>
-              </div>
-              <div class="field">
-                <p class="control">
-                  <button class="button is-success is-medium is-fullwidth">
-                    Login
-                  </button>
-                  
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <p class="mt-4 has-text-centered">
-            <a class="has-text-link-light" href="{% url 'user:password_reset' %}">Forgot your password?</a>
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+{% block above_card %}
+  <h1 class="title logo-header">Bryn</h1>
+  <h2 class="subtitle">The CLIMB management web interface</h2>
 {% endblock %}
 
-{% block footer_extra_classes %}is-hidden{% endblock %}
-{% block body_extra_classes %}hide-navbar-logo{% endblock %}
+{% block card_content %}
+  <form method="post">
+    {% csrf_token %}
 
-{% comment %}
-<div class="container">
-  <div class="row">
-    <div class="col-md-6">
-      {% bootstrap_messages %}
+    {% include 'includes/form_non_field_errors.html' with errors=form.non_field_errors %}
 
-      <form action="?" method="post" class="form">
-        {% csrf_token %}
-        {% bootstrap_form form %}
-        {% buttons %}
-          <button type="submit" class="btn btn-success">
-            <i class="fa fa-lock"></i> Login
-          </button>
-        {% endbuttons %}
-      </form>
-      <p><a href="{% url 'user:password_reset' %}">Forgot your username or password?</a></p>
-
-      <h3>Register</h3>
-      <a href="{% url 'user:register' %}">Register for a new CLIMB account</a>
+    <div class="field">
+      <label for="username" class="is-sr-only">Username</label>
+      <div class="control has-icons-left">
+        <input
+          name="{{ form.username.html_name }}"
+          id="username"
+          class="input is-medium"
+          type="text"
+          placeholder="Username"
+          required
+        >
+        <span class="icon is-small is-left">
+          <i class="fas fa-user"></i>
+        </span>
+      </div>
     </div>
-  </div>
-</div>
-{% endcomment %}
 
+    <div class="field">
+      <label for="password" class="is-sr-only">Password</label>
+      <div class="control has-icons-left">
+        <input
+          name="{{ form.password.html_name }}"
+          id="password"
+          class="input is-medium"
+          type="password"
+          placeholder="Password"
+          required
+        >
+        <span class="icon is-small is-left">
+          <i class="fas fa-lock"></i>
+        </span>
+      </div>
+    </div>
+    
+    <div class="field">
+      <div class="control">
+        <button type="submit" class="button is-success is-medium is-fullwidth">
+          Login
+        </button>
+      </div>
+    </div>
+
+  </form>
+{% endblock %}
+
+{% block below_card %}
+  <p class="mt-4 has-text-centered">
+    <a class="has-text-link-light" href="{% url 'user:password_reset' %}">Forgot your password?</a>
+  </p>
+{% endblock %}
+            
+{% block body_extra_classes %}hide-navbar-logo{% endblock %}
