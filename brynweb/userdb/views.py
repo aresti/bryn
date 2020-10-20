@@ -9,7 +9,10 @@ from rest_framework import generics, permissions
 from .forms import CustomUserCreationForm, TeamForm, InvitationForm
 from .models import Institution, TeamMember, Invitation, UserProfile, Region
 from .serializers import TeamMemberSerializer, InvitationSerializer
-from .permissions import IsTeamMembershipAdmin, TeamMembershipDeleteIsNotSelf
+from .permissions import (
+    IsTeamMembershipAdminPermission,
+    IsNotSelfTeamMembershipDeletePermission,
+)
 
 
 def register(request):
@@ -155,13 +158,11 @@ class TeamMemberListView(generics.ListAPIView):
     serializer_class = TeamMemberSerializer
     permission_classes = [
         permissions.IsAuthenticated,
-        IsTeamMembershipAdmin,
+        IsTeamMembershipAdminPermission,
     ]
 
     def get_queryset(self):
-        return TeamMember.objects.filter(
-            team=self.request.resolver_match.kwargs["team_id"]
-        )
+        return TeamMember.objects.filter(team=self.kwargs["team_id"])
 
 
 class TeamMemberDetailView(generics.RetrieveDestroyAPIView):
@@ -174,8 +175,8 @@ class TeamMemberDetailView(generics.RetrieveDestroyAPIView):
     serializer_class = TeamMemberSerializer
     permission_classes = [
         permissions.IsAuthenticated,
-        IsTeamMembershipAdmin,
-        TeamMembershipDeleteIsNotSelf,
+        IsTeamMembershipAdminPermission,
+        IsNotSelfTeamMembershipDeletePermission,
     ]
     queryset = TeamMember.objects.all()
 
@@ -184,7 +185,6 @@ class InvitationListView(generics.ListCreateAPIView):
     """
     API list endpoint for Invitation.
     Supports 'get' and 'create' actions.
-    Get displays pending invitations for the team.
     Authenticated user & team admin permissions required.
     Invitation email handled by post_save signal.
     """
@@ -192,14 +192,12 @@ class InvitationListView(generics.ListCreateAPIView):
     serializer_class = InvitationSerializer
     permission_classes = [
         permissions.IsAuthenticated,
-        IsTeamMembershipAdmin,
+        IsTeamMembershipAdminPermission,
     ]
 
     def get_queryset(self):
         """Filter by team"""
-        return Invitation.objects.filter(
-            to_team=self.request.resolver_match.kwargs["team_id"], accepted=False
-        )
+        return Invitation.objects.filter(to_team=self.kwargs["team_id"], accepted=False)
 
 
 class InvitationDetailView(generics.RetrieveDestroyAPIView):
@@ -212,6 +210,6 @@ class InvitationDetailView(generics.RetrieveDestroyAPIView):
     serializer_class = InvitationSerializer
     permission_classes = [
         permissions.IsAuthenticated,
-        IsTeamMembershipAdmin,
+        IsTeamMembershipAdminPermission,
     ]
     queryset = Invitation.objects.all()

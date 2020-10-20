@@ -34,12 +34,13 @@ def list_instances(tenant):
 
         servers.append(
             {
-                "id": s.id,
+                "uuid": s.id,
                 "name": s.name,
                 "created": hcreated,
                 "flavor": flavor,
                 "status": s.status,
                 "ip": ip,
+                "region": tenant.region.name,
             }
         )
 

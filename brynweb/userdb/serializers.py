@@ -1,5 +1,6 @@
 from rest_framework import serializers, exceptions, validators
-from .models import User, TeamMember, Invitation, Team
+
+from .models import User, TeamMember, Invitation, Team, Region
 
 
 class TeamFromUrlDefault:
@@ -63,3 +64,9 @@ class TeamSerializer(serializers.ModelSerializer):
             "default_region",
             "tenants_available",
         ]
+
+
+class RegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Region
+        fields = ["id", "name", "description", "disabled", "disable_new_instances"]

@@ -8,7 +8,7 @@ from userdb.models import Team, Region
 
 
 class Tenant(models.Model):
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="tenants")
     region = models.ForeignKey(Region, on_delete=models.CASCADE)
     created_tenant_id = models.CharField(max_length=50)
     auth_password = models.CharField(max_length=50)
@@ -130,6 +130,7 @@ class RegionSettings(models.Model):
     public_network_id = models.CharField(max_length=50)
     requires_network_setup = models.BooleanField(default=False)
     floating_ip_pool = models.CharField(max_length=50, blank=True)
+    horizon_endpoint = models.URLField(blank=True)  # TODO: remove blank after migration
 
     def __str__(self):
         return str(self.region)

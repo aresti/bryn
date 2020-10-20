@@ -36,9 +36,11 @@
     </div>
   </section>
 
-  <keep-alive>
-    <component v-bind:is="currentTabComponent" />
-  </keep-alive>
+  <main class="container mt-5">
+    <keep-alive>
+      <component v-bind:is="currentTabComponent" />
+    </keep-alive>
+  </main>
 </template>
 
 <script>
