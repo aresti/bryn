@@ -14,5 +14,5 @@ urlpatterns = [
     path("terminate/<int:teamid>/<uuid:uuid>", views.terminate, name="terminate",),
     path("unshelve/<int:teamid>/<uuid:uuid>", views.unshelve, name="unshelve"),
     path("get_instances_table", views.get_instances_table, name="get_instances_table"),
-    path("", views.home, name="home"),
+    path("", views.TeamDashboard.as_view(), name="home"),
 ]

@@ -2,18 +2,36 @@ from django.shortcuts import render
 from userdb.forms import InvitationForm
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, JsonResponse
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django_slack import slack_message
+from django.views.generic import TemplateView
 
 from userdb.models import Team, Region, TeamMember
 from openstack.models import get_tenant_for_team, ActionLog
 from scripts.list_instances import list_instances
 from scripts.image_launch import launch_image
 
+from userdb.serializers import TeamSerializer, UserSerializer
 from .utils import messages_to_json
 from .forms import LaunchImageServerForm, RegionSelectForm
+
+
+class TeamDashboard(LoginRequiredMixin, TemplateView):
+    """
+    Team dashboard (home)
+    """
+
+    template_name = "home/team_dashboard.html"
+
+    def get_context_data(self, **kwargs):
+        user = self.request.user
+        user_data = UserSerializer(user).data
+        user_teams = user.teams.all()
+        team_data = TeamSerializer(user_teams, many=True).data
+        return {"teams": team_data, "user": user_data}
 
 
 @login_required

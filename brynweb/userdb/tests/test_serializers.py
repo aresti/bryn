@@ -5,9 +5,15 @@ from rest_framework.test import APIRequestFactory
 
 from userdb.serializers import (
     InvitationSerializer,
+    TeamSerializer,
     TeamMemberSerializer,
     UserSerializer,
 )
+
+
+@pytest.fixture
+def team_serializer_instance(team_a):
+    return TeamSerializer(instance=team_a)
 
 
 @pytest.fixture
@@ -39,6 +45,19 @@ def invitation_serializer_instance(team_a):
         (
             pytest.lazy_fixture("user_serializer_instance"),
             ["id", "username", "first_name", "last_name"],
+        ),
+        (
+            pytest.lazy_fixture("team_serializer_instance"),
+            [
+                "id",
+                "name",
+                "institution",
+                "department",
+                "phone_number",
+                "verified",
+                "default_region",
+                "tenants_available",
+            ],
         ),
     ],
 )

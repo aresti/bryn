@@ -48,3 +48,18 @@ class InvitationSerializer(serializers.ModelSerializer):
                 queryset=Invitation.objects.all(), fields=["email", "to_team"]
             )
         ]
+
+
+class TeamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Team
+        fields = [
+            "id",
+            "name",
+            "institution",
+            "department",
+            "phone_number",
+            "verified",
+            "default_region",
+            "tenants_available",
+        ]

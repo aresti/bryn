@@ -4,7 +4,8 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
   entry: {
-    dashboard: "./frontend/main.js",
+    main: "./frontend/main.js",
+    dashboard: "./frontend/dashboard.js",
   },
   output: {
     filename: "js/[name].js",
