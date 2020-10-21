@@ -1,10 +1,13 @@
 <template>
-  <instance-table-row-loading
-    v-if="loading"
-    size="large"
-    color="success"
-    value="null"
-  />
+  <instance-table-row-span v-if="loading">
+    <base-progress color="primary" size="large" value="null" class="mt-3" />
+  </instance-table-row-span>
+  <instance-table-row-span v-else-if="erroredOnGet">
+    <base-message color="danger" dismissable>
+      Your {{ tenant.region.description }} tenant seems to be unavailable right
+      now.
+    </base-message>
+  </instance-table-row-span>
   <instance-table-row
     v-else
     v-for="instance in instances"
@@ -14,15 +17,17 @@
 </template>
 
 <script>
+import BaseMessage from "./BaseMessage.vue";
 import BaseProgress from "./BaseProgress.vue";
 import InstanceTableRow from "./InstanceTableRow.vue";
-import InstanceTableRowLoading from "./InstanceTableRowLoading.vue";
+import InstanceTableRowSpan from "./InstanceTableRowSpan.vue";
 
 export default {
   components: {
+    BaseMessage,
     BaseProgress,
     InstanceTableRow,
-    InstanceTableRowLoading,
+    InstanceTableRowSpan,
   },
   props: {
     team: {
