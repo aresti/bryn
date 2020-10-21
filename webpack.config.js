@@ -48,6 +48,8 @@ module.exports = {
   resolve: {
     alias: {
       vue: "vue/dist/vue.esm-bundler.js",
+      Mixins: path.resolve(__dirname, "./frontend/mixins/"),
+      Components: path.resolve(__dirname, "./frontend/components/"),
     },
   },
   plugins: [

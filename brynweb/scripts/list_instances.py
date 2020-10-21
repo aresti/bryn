@@ -19,9 +19,7 @@ def list_instances(tenant):
         ip = "unknown"
         try:
             netname = tenant.region.regionsettings.public_network_name
-            for network in s.addresses:
-                if netname in network:
-                    ip = s.addresses[network][0]["addr"]
+            ip = s.addresses[netname][0]["addr"]
         except Exception:
             ip = "unknown"
 
@@ -41,6 +39,7 @@ def list_instances(tenant):
                 "status": s.status,
                 "ip": ip,
                 "region": tenant.region.name,
+                "addresses": s.addresses,
             }
         )
 

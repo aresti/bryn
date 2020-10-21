@@ -48,7 +48,6 @@ import DeleteButton from "./DeleteButton.vue";
 import FetchErrorAlert from "./FetchErrorAlert.vue";
 
 export default {
-  inject: ["axios"],
   components: {
     TeamMemberListItem,
     BaseAlert,
@@ -81,7 +80,7 @@ export default {
   },
   methods: {
     getMembers() {
-      this.axios
+      this.$http
         .get(`/user/api/teams/${this.teamId}/members/?format=json`)
         .then((response) => (this.teamMembers = response.data))
         .catch((error) => {
@@ -100,7 +99,7 @@ export default {
       this.erroredOnDelete = false;
 
       try {
-        await this.axios.delete(
+        await this.$http.delete(
           `/user/api/teams/${this.teamId}/members/${this.memberToDelete.id}`
         );
         this.memberToDelete = null;

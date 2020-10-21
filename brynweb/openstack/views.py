@@ -53,10 +53,8 @@ class InstanceListView(APIView):
         if tenant.region.disabled:
             raise ServiceUnavailableException
 
-        instances = []
-
         try:
-            instances.append(list_instances(tenant))
+            instances = list_instances(tenant)
         except Exception:
             raise ServiceUnavailableException
 

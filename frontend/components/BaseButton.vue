@@ -15,41 +15,15 @@
 </template>
 
 <script>
+import bulmaColorMixin from "Mixins/bulmaColorMixin.js";
+import bulmaSizeMixin from "Mixins/bulmaSizeMixin.js";
+
 export default {
+  mixins: [bulmaColorMixin, bulmaSizeMixin],
   emits: {
     click: null,
   },
   props: {
-    size: {
-      type: String,
-      default: "normal",
-      validator: function (value) {
-        return ["small", "normal", "medium", "large"].indexOf(value) !== -1;
-      },
-    },
-    color: {
-      type: String,
-      required: false,
-      default: "",
-      validator: function (value) {
-        return (
-          [
-            "",
-            "white",
-            "light",
-            "dark",
-            "black",
-            "text",
-            "primary",
-            "link",
-            "success",
-            "warning",
-            "danger",
-            "info",
-          ].indexOf(value) !== -1
-        );
-      },
-    },
     light: {
       type: Boolean,
       default: false,
@@ -84,16 +58,6 @@ export default {
     },
   },
   computed: {
-    colorClass() {
-      if (this.color) {
-        return "is-" + this.color;
-      }
-    },
-    sizeClass() {
-      if (this.size) {
-        return "is-" + this.size;
-      }
-    },
     classList() {
       return [
         "button",

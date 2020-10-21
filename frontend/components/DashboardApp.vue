@@ -38,7 +38,7 @@
 
   <main class="container mt-5">
     <keep-alive>
-      <component v-bind:is="currentTabComponent" />
+      <component v-bind:is="currentTabComponent" :team="currentTeam" />
     </keep-alive>
   </main>
 </template>

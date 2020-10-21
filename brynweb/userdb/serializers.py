@@ -1,6 +1,7 @@
 from rest_framework import serializers, exceptions, validators
 
-from .models import User, TeamMember, Invitation, Team, Region
+from openstack.serializers import TenantSerializer
+from .models import User, TeamMember, Invitation, Team
 
 
 class TeamFromUrlDefault:
@@ -52,6 +53,8 @@ class InvitationSerializer(serializers.ModelSerializer):
 
 
 class TeamSerializer(serializers.ModelSerializer):
+    tenants = TenantSerializer(many=True)
+
     class Meta:
         model = Team
         fields = [
@@ -63,10 +66,5 @@ class TeamSerializer(serializers.ModelSerializer):
             "verified",
             "default_region",
             "tenants_available",
+            "tenants",
         ]
-
-
-class RegionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Region
-        fields = ["id", "name", "description", "disabled", "disable_new_instances"]
