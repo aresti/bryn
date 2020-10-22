@@ -15,4 +15,14 @@ urlpatterns = [
         views.InstanceListView.as_view(),
         name="api-instance-list",
     ),
+    path(
+        "teams/<int:team_id>/tenants/<int:tenant_id>/instances/<uuid:instance_id>",
+        views.InstanceView.as_view(),
+        name="api-instance-detail",
+    ),
+    path(
+        "teams/<int:team_id>/tenants/<int:tenant_id>/instances/<uuid:instance_id>/status",
+        views.InstanceStatusView.as_view(),
+        name="api-instance-status",
+    ),
 ]

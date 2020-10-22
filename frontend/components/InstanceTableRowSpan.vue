@@ -1,6 +1,6 @@
 <template>
   <tr>
-    <td :colspan="7">
+    <td :colspan="6">
       <slot></slot>
     </td>
   </tr>

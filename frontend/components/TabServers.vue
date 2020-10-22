@@ -1,5 +1,5 @@
 <template>
-  <instance-table :team="team" />
+  <instance-table v-if="tenant" :team="team" :tenant="tenant" />
 </template>
 
 <script>
@@ -13,6 +13,10 @@ export default {
     team: {
       type: Object,
       required: true,
+    },
+    tenant: {
+      type: Object,
+      required: false,
     },
   },
 };

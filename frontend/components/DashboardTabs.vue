@@ -5,7 +5,7 @@
         <li
           v-for="(name, key) in tabs"
           :key="key"
-          :class="{ 'is-active': currentTab === key }"
+          :class="{ 'is-active': activeTab === key }"
         >
           <a href="#" @click="selectTab(key)">
             {{ name }}
@@ -23,7 +23,7 @@ export default {
       type: Object,
       required: true,
     },
-    currentTab: {
+    activeTab: {
       type: String,
       required: true,
     },

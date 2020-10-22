@@ -2,14 +2,17 @@
   <button @click="click" :class="classList" :disabled="disabled">
     <slot name="icon-before"></slot>
 
-    <span>
+    <span v-if="hasText">
       <slot></slot>
     </span>
 
     <slot name="icon-after">
-      <span v-if="dropdown" class="icon is-small">
-        <i class="fas fa-angle-down" aria-hidden="true"></i>
-      </span>
+      <base-icon
+        v-if="dropdown"
+        size="small"
+        faClasses="fas fa-angle-down"
+        aria-hidden="true"
+      />
     </slot>
   </button>
 </template>
@@ -17,9 +20,13 @@
 <script>
 import bulmaColorMixin from "Mixins/bulmaColorMixin.js";
 import bulmaSizeMixin from "Mixins/bulmaSizeMixin.js";
+import BaseIcon from "./BaseIcon.vue";
 
 export default {
   mixins: [bulmaColorMixin, bulmaSizeMixin],
+  components: {
+    BaseIcon,
+  },
   emits: {
     click: null,
   },
@@ -72,6 +79,9 @@ export default {
           "is-loading": this.loading,
         },
       ];
+    },
+    hasText() {
+      return this.$slots.default !== undefined;
     },
   },
   methods: {

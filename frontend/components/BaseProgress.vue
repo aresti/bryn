@@ -1,5 +1,6 @@
 <template>
-  <progress :class="classList" :value="value" :max="max">{{ value }}%</progress>
+  <progress v-if="indeterminate" :class="classList"></progress>
+  <progress v-else :value="valueAttr" :max="max">{{ value }}%</progress>
 </template>
 
 <script>
@@ -16,6 +17,10 @@ export default {
     max: {
       type: Number,
       default: 100,
+    },
+    indeterminate: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {

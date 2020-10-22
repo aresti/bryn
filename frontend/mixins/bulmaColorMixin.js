@@ -30,5 +30,10 @@ export default {
         return "is-" + this.color;
       }
     },
+    textColorClass() {
+      if (this.color) {
+        return "has-text-" + this.color;
+      }
+    },
   },
 };

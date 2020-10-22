@@ -8,7 +8,6 @@ from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.urls import reverse
 from django.template.loader import render_to_string
-
 from phonenumber_field.modelfields import PhoneNumberField
 
 
@@ -55,7 +54,9 @@ class Team(models.Model):
         "detail it here to assist with reporting use of CLIMB",
     )
     verified = models.BooleanField(default=False)
-    default_region = models.ForeignKey(Region, null=True, on_delete=models.SET_NULL)
+    default_region = models.ForeignKey(
+        Region, null=True, blank=True, on_delete=models.SET_NULL
+    )
     tenants_available = models.BooleanField(default=False)
     users = models.ManyToManyField(User, through="TeamMember", related_name="teams")
 

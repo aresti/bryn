@@ -18,7 +18,6 @@ export default {
   computed: {
     rowValues() {
       return [
-        this.instance.region,
         this.instance.name,
         this.instance.flavor,
         this.instance.status,

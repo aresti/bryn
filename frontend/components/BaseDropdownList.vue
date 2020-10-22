@@ -1,5 +1,5 @@
 <template>
-  <base-dropdown right :hoverable="hoverable">
+  <base-dropdown :hoverable="hoverable" :right="right" :up="up">
     <template v-slot:trigger="{ toggle: toggleDropdown }">
       <base-button
         @click="toggleDropdown"
@@ -8,24 +8,24 @@
         outlined
         color="white"
       >
-        Switch team
+        <slot name="title"></slot>
       </base-button>
     </template>
     <template v-slot="{ toggle: toggleDropdown }">
       <a
-        v-for="team in teams"
-        :key="team.id"
+        v-for="item in items"
+        :key="item"
         @click="
           toggleDropdown();
-          selectTeam(team);
+          selectItem(item);
         "
         class="dropdown-item"
         :class="{
-          'is-active': team == currentTeam,
-          'has-text-weight-bold': team == currentTeam,
+          'is-active': item == activeItem,
+          'has-text-weight-bold': item == activeItem,
         }"
       >
-        {{ team.name }}
+        <slot name="item" :item="item"></slot>
       </a>
     </template>
   </base-dropdown>
@@ -35,32 +35,31 @@
 import BaseButton from "./BaseButton.vue";
 import BaseDropdown from "./BaseDropdown.vue";
 
+import bulmaDropdownMixin from "Mixins/bulmaDropdownMixin.js";
+
 export default {
+  mixins: [bulmaDropdownMixin],
   components: {
     BaseButton,
     BaseDropdown,
   },
   props: {
-    teams: {
+    items: {
       type: Array,
       required: true,
     },
-    currentTeam: {
+    activeItem: {
       type: Object,
       required: true,
     },
-    hoverable: {
-      type: Boolean,
-      default: false,
-    },
   },
   methods: {
-    selectTeam(team) {
-      this.$emit("teamSelected", team);
+    selectItem(item) {
+      this.$emit("itemSelected", item);
     },
   },
   emits: {
-    teamSelected: null,
+    itemSelected: null,
   },
 };
 </script>

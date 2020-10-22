@@ -12,19 +12,14 @@
 </template>
 
 <script>
+import bulmaDropdownMixin from "Mixins/bulmaDropdownMixin.js";
+
 export default {
+  mixins: [bulmaDropdownMixin],
   data() {
     return {
       isActive: false,
     };
-  },
-  props: {
-    hoverable: {
-      type: Boolean,
-    },
-    right: {
-      type: Boolean,
-    },
   },
   computed: {
     classList() {
@@ -33,6 +28,7 @@ export default {
         {
           "is-hoverable": this.hoverable,
           "is-right": this.right,
+          "is-up": this.up,
           "is-active": this.isActive,
         },
       ];
