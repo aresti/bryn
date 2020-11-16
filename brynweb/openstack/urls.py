@@ -30,4 +30,14 @@ urlpatterns = [
         views.FlavorListView.as_view(),
         name="api-flavor-list",
     ),
+    path(
+        "teams/<int:team_id>/tenants/<int:tenant_id>/images/",
+        views.ImageListView.as_view(),
+        name="api-image-list",
+    ),
+    path(
+        "teams/<int:team_id>/tenants/<int:tenant_id>/sshkeys/",
+        views.SshKeyListView.as_view(),
+        name="api-sshkey-list",
+    ),
 ]

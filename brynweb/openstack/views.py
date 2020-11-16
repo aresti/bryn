@@ -191,3 +191,58 @@ class FlavorListView(APIView):
             raise OpenstackException(detail=str(e))
 
         return Response(flavors)
+
+
+class ImageListView(APIView):
+    """
+    API list endpoint for images.
+    Supports 'get' action.
+    Authenticated user permissions required.
+    """
+
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
+
+    def get(self, request, team_id, tenant_id):
+        tenant = get_object_or_404(Tenant, pk=tenant_id, team=team_id)
+
+        if tenant.region.disabled:
+            raise ServiceUnavailable
+
+        try:
+            images = tenant.get_images()
+        except Exception as e:
+            raise OpenstackException(detail=str(e))
+
+        return Response(images)
+
+
+class SshKeyListView(APIView):
+    """
+    API list endpoint for ssh keys.
+    Supports 'get' action.
+    Authenticated user & team member permissions required.
+    """
+
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsTeamMemberPermission,
+    ]
+
+    def get(self, request, team_id, tenant_id):
+        tenant = get_object_or_404(Tenant, pk=tenant_id, team=team_id)
+
+        if tenant.region.disabled:
+            raise ServiceUnavailable
+
+        try:
+            keys = tenant.get_keys()
+        except Exception as e:
+            raise OpenstackException(detail=str(e))
+
+        return Response(keys)
+
+    def post(self, request, team_id, tenant_id):
+        # TODO
+        pass
