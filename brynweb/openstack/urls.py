@@ -25,4 +25,9 @@ urlpatterns = [
         views.InstanceStatusView.as_view(),
         name="api-instance-status",
     ),
+    path(
+        "teams/<int:team_id>/tenants/<int:tenant_id>/flavors/",
+        views.FlavorListView.as_view(),
+        name="api-flavor-list",
+    ),
 ]

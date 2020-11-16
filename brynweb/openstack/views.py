@@ -166,3 +166,28 @@ class InstanceStatusView(APIView):
             )
         except Exception as e:
             raise OpenstackException(detail=str(e))
+
+
+class FlavorListView(APIView):
+    """
+    API list endpoint for flavors.
+    Supports 'get' action.
+    Authenticated user permissions required.
+    """
+
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
+
+    def get(self, request, team_id, tenant_id):
+        tenant = get_object_or_404(Tenant, pk=tenant_id, team=team_id)
+
+        if tenant.region.disabled:
+            raise ServiceUnavailable
+
+        try:
+            flavors = tenant.get_flavors()
+        except Exception as e:
+            raise OpenstackException(detail=str(e))
+
+        return Response(flavors)
