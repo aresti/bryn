@@ -62,7 +62,7 @@
     <base-message v-if="!activeTenant" color="danger">
       This team has no active tenants. Please contact the CLIMB administrator.
     </base-message>
-    <keep-alive>
+    <keep-alive v-else>
       <component
         v-bind:is="activeTabComponent"
         :team="activeTeam"
@@ -73,6 +73,8 @@
 </template>
 
 <script>
+import { mapActions, mapGetters, mapState } from "vuex";
+
 import DashboardTabs from "./DashboardTabs.vue";
 import TabServers from "./TabServers.vue";
 import TabVolumes from "./TabVolumes.vue";
@@ -97,13 +99,6 @@ export default {
   },
   data() {
     return {
-      teams: [],
-      teamsDataId: "teamsData",
-      activeTeam: null,
-      activeTenant: null,
-      user: null,
-      userDataId: "userData",
-      flavors: [],
       tabs: {
         servers: "Servers",
         volumes: "Volumes",
@@ -116,57 +111,20 @@ export default {
     };
   },
   computed: {
-    userFullName() {
-      return `${this.user.first_name} ${this.user.last_name}`;
-    },
+    ...mapState(["user", "teams", "activeTeam", "activeTenant"]),
+    ...mapGetters(["userFullName", "tenants", "activeTenantName"]),
     activeTabComponent() {
       return "tab-" + this.activeTab;
     },
-    tenants() {
-      if (this.activeTeam) {
-        return this.activeTeam.tenants;
-      } else {
-        return [];
-      }
-    },
-    activeTenantName() {
-      return this.activeTenant.region.description;
-    },
   },
   methods: {
-    getTeams() {
-      this.teams = JSON.parse(
-        document.getElementById(this.teamsDataId).textContent
-      );
-      this.setActiveTeam(this.teams[0]);
-    },
-    getDefaultTenant(team) {
-      if (!team.tenants.length) return null;
-      if (!team.default_region) return self.tenants[0];
-      for (let tenant of team.tenants) {
-        if (tenant.region.id === team.default_region) return tenant;
-      }
-    },
-    getUser() {
-      this.user = JSON.parse(
-        document.getElementById(this.userDataId).textContent
-      );
-    },
-    setActiveTeam(team) {
-      this.activeTeam = team;
-      this.setActiveTenant(this.getDefaultTenant(team));
-    },
-    setActiveTenant(tenant) {
-      this.activeTenant = tenant;
-      // TODO: api call to update default region for team, if changed
-    },
+    ...mapActions(["setActiveTeam"]),
     setActiveTab(key) {
       this.activeTab = key;
     },
   },
   beforeMount() {
-    this.getTeams();
-    this.getUser();
+    this.$store.dispatch("getUser");
   },
 };
 </script>
