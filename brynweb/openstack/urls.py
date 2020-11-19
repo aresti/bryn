@@ -5,39 +5,19 @@ from . import views
 app_name = "openstack"
 
 urlpatterns = [
+    path("tenants/", views.TenantListView.as_view(), name="api-tenant-list",),
+    path("instances/", views.InstanceListView.as_view(), name="api-instance-list",),
     path(
-        "teams/<int:team_id>/tenants/",
-        views.TenantListView.as_view(),
-        name="api-tenant-list",
-    ),
-    path(
-        "teams/<int:team_id>/tenants/<int:tenant_id>/instances/",
-        views.InstanceListView.as_view(),
-        name="api-instance-list",
-    ),
-    path(
-        "teams/<int:team_id>/tenants/<int:tenant_id>/instances/<uuid:instance_id>",
+        "instances/<uuid:instance_id>",
         views.InstanceView.as_view(),
         name="api-instance-detail",
     ),
     path(
-        "teams/<int:team_id>/tenants/<int:tenant_id>/instances/<uuid:instance_id>/status",
+        "instances/<uuid:instance_id>/status",
         views.InstanceStatusView.as_view(),
         name="api-instance-status",
     ),
-    path(
-        "teams/<int:team_id>/tenants/<int:tenant_id>/flavors/",
-        views.FlavorListView.as_view(),
-        name="api-flavor-list",
-    ),
-    path(
-        "teams/<int:team_id>/tenants/<int:tenant_id>/images/",
-        views.ImageListView.as_view(),
-        name="api-image-list",
-    ),
-    path(
-        "teams/<int:team_id>/tenants/<int:tenant_id>/sshkeys/",
-        views.SshKeyListView.as_view(),
-        name="api-sshkey-list",
-    ),
+    path("flavors/", views.FlavorListView.as_view(), name="api-flavor-list",),
+    path("images/", views.ImageListView.as_view(), name="api-image-list",),
+    path("sshkeys/", views.SshKeyListView.as_view(), name="api-sshkey-list",),
 ]

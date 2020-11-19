@@ -8,10 +8,26 @@ from novaclient import exceptions as nova_exceptions
 
 from scripts.list_instances import list_instances
 from userdb.permissions import IsTeamMemberPermission
-from userdb.models import Team
 
 from .models import Tenant
-from .serializers import TenantSerializer
+from .serializers import (
+    FlavorSerializer,
+    ImageSerializer,
+    InstanceSerializer,
+    SshKeySerializer,
+    TenantSerializer,
+)
+
+
+def get_tenants_for_user(user, tenant=None):
+    """
+    Return queryset for all tenant(s) owned by teams that the authenticated user is a member of.
+    If tenant is specified, returns a single member queryset only if the user belongs to its team.
+    """
+    teams = user.teams.all()
+    all_tenants = Tenant.objects.filter(team__in=teams).all()
+
+    return all_tenants.filter(pk=tenant) if tenant else all_tenants
 
 
 class ServiceUnavailable(drf_exceptions.APIException):
@@ -63,8 +79,7 @@ class InstanceListView(APIView):
     ]
 
     def get(self, request, team_id, tenant_id):
-        team = get_object_or_404(Team, pk=team_id)
-        tenant = get_object_or_404(Tenant, pk=tenant_id, team=team)
+        tenant = get_object_or_404(Tenant, pk=tenant_id, team=team_id)
 
         if tenant.region.disabled:
             raise ServiceUnavailable
@@ -75,6 +90,25 @@ class InstanceListView(APIView):
             raise OpenstackException(detail=str(e))
 
         return Response(instances)
+
+    def post(self, request, team_id, tenant_id):
+        # Get tenant collections for choice fields
+        tenant = get_object_or_404(Tenant, pk=tenant_id, team=team_id)
+        try:
+            key_names = tenant.get_keys()
+            images = tenant.get_images()
+            flavors = tenant.get_flavors()
+        except Exception as e:
+            raise OpenstackException(detail=str(e))
+        serializer = InstanceSerializer()
+        serializer.flavor.choices = flavors
+        serializer.image.choices = images
+        serializer.key_name.choices = key_names
+        serializer.data = request.data
+        serializer.is_valid()
+        print(serializer.data)
+
+        return Response(status=status.HTTP_201_CREATED)
 
 
 def get_instance(team_id, tenant_id, instance_id):
@@ -168,80 +202,70 @@ class InstanceStatusView(APIView):
             raise OpenstackException(detail=str(e))
 
 
-class FlavorListView(APIView):
+class OpenstackSimpleListView(APIView):
     """
-    API list endpoint for flavors.
-    Supports 'get' action.
-    Authenticated user permissions required.
+    Base class for simple openstack tenant collection views.
     """
 
     permission_classes = [
         permissions.IsAuthenticated,
     ]
 
-    def get(self, request, team_id, tenant_id):
-        tenant = get_object_or_404(Tenant, pk=tenant_id, team=team_id)
+    # You'll need to set these attributes on subclass
+    serializer = None
+    tenant_method = None
 
-        if tenant.region.disabled:
-            raise ServiceUnavailable
+    def get(self, request):
+        tenants = get_tenants_for_user(request.user, request.query_params.get("tenant"))
+        if not tenants:
+            # no tenants for user, or no team membership for specified tenant
+            return Response([])
 
-        try:
-            flavors = tenant.get_flavors()
-        except Exception as e:
-            raise OpenstackException(detail=str(e))
+        # query openstack api for each tenant, map response to dict
+        collection = []
+        for tenant in tenants:
+            if tenant.region.disabled:
+                continue
+            try:
+                response = getattr(Tenant, type(self).tenant_method.__name__)(tenant)
+                data = map(
+                    lambda r: {"id": r[0], "name": r[1], "tenant": tenant}, response
+                )
+                collection.extend(data)
+            except Exception as e:
+                raise OpenstackException(detail=str(e))
 
-        return Response(flavors)
+        # validate against serializer
+        if collection:
+            try:
+                serialized = type(self).serializer(data=collection, many=True)
+                serialized.is_valid()
+                return Response(serialized.data)
+            except Exception as e:
+                raise OpenstackException(detail=str(e))
 
-
-class ImageListView(APIView):
-    """
-    API list endpoint for images.
-    Supports 'get' action.
-    Authenticated user permissions required.
-    """
-
-    permission_classes = [
-        permissions.IsAuthenticated,
-    ]
-
-    def get(self, request, team_id, tenant_id):
-        tenant = get_object_or_404(Tenant, pk=tenant_id, team=team_id)
-
-        if tenant.region.disabled:
-            raise ServiceUnavailable
-
-        try:
-            images = tenant.get_images()
-        except Exception as e:
-            raise OpenstackException(detail=str(e))
-
-        return Response(images)
+        return Response([])
 
 
-class SshKeyListView(APIView):
-    """
-    API list endpoint for ssh keys.
-    Supports 'get' action.
-    Authenticated user & team member permissions required.
-    """
+class FlavorListView(OpenstackSimpleListView):
+    """Flavors for tenants owned by teams that the authenticated user is a member of."""
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        IsTeamMemberPermission,
-    ]
+    serializer = FlavorSerializer
+    tenant_method = Tenant.get_flavors
 
-    def get(self, request, team_id, tenant_id):
-        tenant = get_object_or_404(Tenant, pk=tenant_id, team=team_id)
 
-        if tenant.region.disabled:
-            raise ServiceUnavailable
+class ImageListView(OpenstackSimpleListView):
+    """Images for tenants owned by teams that the authenticated user is a member of."""
 
-        try:
-            keys = tenant.get_keys()
-        except Exception as e:
-            raise OpenstackException(detail=str(e))
+    serializer = ImageSerializer
+    tenant_method = Tenant.get_images
 
-        return Response(keys)
+
+class SshKeyListView(OpenstackSimpleListView):
+    """SSH keys for tenants owned by teams that the authenticated user is a member of."""
+
+    serializer = SshKeySerializer
+    tenant_method = Tenant.get_keys
 
     def post(self, request, team_id, tenant_id):
         # TODO
