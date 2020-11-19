@@ -3,32 +3,34 @@ import { createStore } from "vuex";
 export default createStore({
   state() {
     return {
-      user: null,
+      activeTeam: undefined,
+      activeTenant: undefined,
+      user: undefined,
       teams: [],
-      activeTeam: null,
-      activeTenant: null,
     };
   },
   getters: {
     userFullName(state) {
       return `${state.user.first_name} ${state.user.last_name}`;
     },
-    tenants(state) {
-      if (state.activeTeam) {
-        return state.activeTeam.tenants;
-      } else {
-        return [];
-      }
+    team(state) {
+      return state.teams.find((team) => team.id === state.activeTeam);
+    },
+    tenant(state, getters) {
+      return getters.team.tenants.find(
+        (tenant) => tenant.id === state.activeTenant
+      );
+    },
+    tenants(state, getters) {
+      return state.activeTeam ? getters.team.tenants : [];
+    },
+    tenantName(state, getters) {
+      return getters.tenant.region.description;
     },
     defaultTenant(state, getters) {
-      if (!getters.tenants.length) return null;
-      if (!state.activeTeam.default_region) return self.tenants[0];
-      for (let tenant of getters.tenants) {
-        if (tenant.region.id === state.activeTeam.default_region) return tenant;
-      }
-    },
-    activeTenantName(state) {
-      return state.activeTenant.region.description;
+      return getters.tenants.find(
+        (tenant) => tenant.region.id === getters.team.default_region
+      );
     },
   },
   mutations: {
@@ -38,25 +40,24 @@ export default createStore({
     setTeams(state, teams) {
       state.teams = teams;
     },
-    setActiveTeam(state, team) {
-      state.activeTeam = team;
+    setActiveTeam(state, { id }) {
+      state.activeTeam = id;
     },
-    setActiveTenant(state, tenant) {
-      state.activeTenant = tenant;
+    setActiveTenant(state, { id }) {
+      state.activeTenant = id;
     },
   },
   actions: {
-    getUser({ dispatch, commit }) {
+    initStore({ dispatch, commit }) {
       const user = JSON.parse(document.getElementById("userData").textContent);
-      commit("setUser", user);
-      dispatch("getTeams");
-    },
-    getTeams({ dispatch, commit }) {
       const teams = JSON.parse(
         document.getElementById("teamsData").textContent
       );
-      commit("setTeams", teams);
-      dispatch("setActiveTeam", teams[0]);
+      commit("setUser", user);
+      if (teams.length) {
+        commit("setTeams", teams);
+        dispatch("setActiveTeam", teams[0]);
+      }
     },
     setActiveTeam({ getters, commit }, team) {
       commit("setActiveTeam", team);

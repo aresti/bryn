@@ -6,7 +6,7 @@
           <div class="level-left">
             <div class="level-item">
               <h1 class="title">
-                {{ activeTeam.name }}
+                {{ team.name }}
               </h1>
             </div>
           </div>
@@ -15,7 +15,7 @@
               <base-dropdown-list
                 title="Select team"
                 :items="teams"
-                :activeItem="activeTeam"
+                :activeItem="team"
                 @itemSelected="setActiveTeam"
                 hoverable
                 right
@@ -30,18 +30,18 @@
         </div>
 
         <h3 v-if="tenants.length === 1" class="subtitle">
-          Tenant: {{ activeTenantName }}
+          Tenant: {{ tenantName }}
         </h3>
 
         <base-dropdown-list
           v-if="tenants.length > 1"
-          :title="activeTenantName"
+          :title="tenantName"
           :items="tenants"
-          :activeItem="activeTenant"
+          :activeItem="tenant"
           @itemSelected="setActiveTenant"
           hoverable
         >
-          <template v-slot:title>Tenant: {{ activeTenantName }}</template>
+          <template v-slot:title>Tenant: {{ tenantName }}</template>
           <template v-slot:item="{ item: tenant }">
             {{ tenant.region.description }}
           </template>
@@ -59,15 +59,11 @@
   </section>
 
   <main class="container mt-5">
-    <base-message v-if="!activeTenant" color="danger">
+    <base-message v-if="!tenant" color="danger">
       This team has no active tenants. Please contact the CLIMB administrator.
     </base-message>
     <keep-alive v-else>
-      <component
-        v-bind:is="activeTabComponent"
-        :team="activeTeam"
-        :tenant="activeTenant"
-      />
+      <component v-bind:is="activeTabComponent" :team="team" :tenant="tenant" />
     </keep-alive>
   </main>
 </template>
@@ -111,8 +107,8 @@ export default {
     };
   },
   computed: {
-    ...mapState(["user", "teams", "activeTeam", "activeTenant"]),
-    ...mapGetters(["userFullName", "tenants", "activeTenantName"]),
+    ...mapState(["user", "teams"]),
+    ...mapGetters(["userFullName", "team", "tenant", "tenants", "tenantName"]),
     activeTabComponent() {
       return "tab-" + this.activeTab;
     },
@@ -124,7 +120,7 @@ export default {
     },
   },
   beforeMount() {
-    this.$store.dispatch("getUser");
+    this.$store.dispatch("initStore");
   },
 };
 </script>
