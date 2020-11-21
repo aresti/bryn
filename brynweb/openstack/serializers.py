@@ -3,6 +3,8 @@ import sshpubkeys
 from rest_framework import serializers
 
 from userdb.models import Region
+
+from . import INSTANCE_STATUS_VALUES
 from .models import Tenant
 
 
@@ -13,14 +15,23 @@ class RegionSerializer(serializers.ModelSerializer):
 
 
 class TenantSerializer(serializers.ModelSerializer):
-    region = RegionSerializer()
-
     class Meta:
         model = Tenant
-        fields = ["id", "region"]
+        fields = ["id", "region", "region_name", "team"]
 
 
 class InstanceSerializer(serializers.Serializer):
+    tenant = serializers.PrimaryKeyRelatedField(queryset=Tenant.objects.all())
+    id = serializers.UUIDField()
+    name = serializers.CharField()
+    flavor = serializers.UUIDField()
+    status = serializers.ChoiceField(choices=INSTANCE_STATUS_VALUES)
+    ip = serializers.IPAddressField(required=False)
+    created = serializers.DateTimeField(required=False)
+
+
+class NewInstanceSerializer(serializers.Serializer):
+    # TODO remove class after extracting key validation logic
     name = serializers.RegexField(regex=r"^([a-zA-Z0-9\-]+)$", max_length=50,)
     flavor = serializers.ChoiceField(choices=[])
     image = serializers.ChoiceField(choices=[])

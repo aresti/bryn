@@ -7,7 +7,6 @@ from rest_framework import exceptions as drf_exceptions
 from rest_framework.response import Response
 from novaclient import exceptions as nova_exceptions
 
-from scripts.list_instances import list_instances
 from userdb.permissions import IsTeamMemberPermission
 from .models import Tenant
 from .serializers import (
@@ -19,15 +18,31 @@ from .serializers import (
 )
 
 
-def get_tenants_for_user(user, tenant=None):
+def get_tenants_for_user(user, team=None, tenant=None):
     """
     Return queryset for all tenant(s) owned by teams that the authenticated user is a member of.
     If tenant is specified, returns a single member queryset only if the user belongs to its team.
+    If team is specified, returns tenants owned by this team, if the user is a member.
     """
-    teams = user.teams.all()
+    teams = user.teams.filter(pk=team) if team else user.teams.all()
     all_tenants = Tenant.objects.filter(team__in=teams).all()
 
     return all_tenants.filter(pk=tenant) if tenant else all_tenants
+
+
+def get_instance(team_id, tenant_id, instance_id):
+    """
+    Helper function to retrieve an instance
+    or raise an appropriate API exception.
+    """
+    tenant = get_object_or_404(Tenant, pk=tenant_id, team=team_id)
+
+    try:
+        return tenant.get_server(instance_id)
+    except nova_exceptions.NotFound:
+        raise drf_exceptions.NotFound
+    except Exception as e:
+        raise OpenstackException(detail=str(e))
 
 
 class ServiceUnavailable(drf_exceptions.APIException):
@@ -48,82 +63,71 @@ class UnsupportedStateTransition(drf_exceptions.APIException):
     default_code = "unsupported_state_transition"
 
 
+class OpenstackListView(APIView):
+    """
+    Base class for simple openstack tenant collection views.
+    """
+
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
+
+    # You'll need to set these attributes on subclass
+    tenant_get_method = None  # tenant will be passed as the first argument
+    serializer_class = None  # serializer class, for response validation
+
+    def get_transform_func(self, tenant):
+        """
+        Returns a func to map openstack response to desired data structure
+        Override as required
+        """
+        return lambda r: {"id": r.id, "name": r.name, "tenant": tenant}
+
+    def get(self, request):
+        tenants = get_tenants_for_user(request.user, request.query_params.get("tenant"))
+        if not tenants:
+            # no tenants for user, or no team membership for specified tenant
+            return Response([])
+
+        # query openstack api for each tenant, map response to dict
+        collection = []
+        for tenant in tenants:
+            if tenant.region.disabled:
+                continue
+            try:
+                response = methodcaller(self.tenant_get_method.__name__)(tenant)
+                transform_func = self.get_transform_func(tenant)
+                data = map(transform_func, response)
+                collection.extend(data)
+            except Exception as e:
+                raise OpenstackException(detail=str(e))
+
+        # validate against serializer
+        if collection:
+            try:
+                serialized = self.serializer_class(data=collection, many=True)
+                serialized.is_valid()
+                return Response(serialized.data)
+            except Exception as e:
+                raise OpenstackException(detail=str(e))
+
+        return Response([])
+
+
 class TenantListView(generics.ListAPIView):
     """
-    API list endpoint for Tenant.
-    Supports 'get' action.
-    Authenticated user & team admin permissions required.
+    Tenants belonging to teams that user is a member of. Accepts 'team' query parameter.
     """
 
     serializer_class = TenantSerializer
     permission_classes = [
         permissions.IsAuthenticated,
-        IsTeamMemberPermission,
     ]
 
     def get_queryset(self):
-        """Filter by team"""
-        return Tenant.objects.filter(team=self.kwargs["team_id"])
-
-
-class InstanceListView(APIView):
-    """
-    API list endpoint for tenant instances.
-    Supports 'get' action.
-    Authenticated user & team member permissions required.
-    """
-
-    permission_classes = [
-        permissions.IsAuthenticated,
-        IsTeamMemberPermission,
-    ]
-
-    def get(self, request, team_id, tenant_id):
-        tenant = get_object_or_404(Tenant, pk=tenant_id, team=team_id)
-
-        if tenant.region.disabled:
-            raise ServiceUnavailable
-
-        try:
-            instances = list_instances(tenant)
-        except Exception as e:
-            raise OpenstackException(detail=str(e))
-
-        return Response(instances)
-
-    def post(self, request, team_id, tenant_id):
-        # Get tenant collections for choice fields
-        tenant = get_object_or_404(Tenant, pk=tenant_id, team=team_id)
-        try:
-            key_names = tenant.get_keys()
-            images = tenant.get_images()
-            flavors = tenant.get_flavors()
-        except Exception as e:
-            raise OpenstackException(detail=str(e))
-        serializer = InstanceSerializer()
-        serializer.flavor.choices = flavors
-        serializer.image.choices = images
-        serializer.key_name.choices = key_names
-        serializer.data = request.data
-        serializer.is_valid()
-        print(serializer.data)
-
-        return Response(status=status.HTTP_201_CREATED)
-
-
-def get_instance(team_id, tenant_id, instance_id):
-    """
-    Helper function to retrieve an instance
-    or raise an appropriate API exception.
-    """
-    tenant = get_object_or_404(Tenant, pk=tenant_id, team=team_id)
-
-    try:
-        return tenant.get_server(instance_id)
-    except nova_exceptions.NotFound:
-        raise drf_exceptions.NotFound
-    except Exception as e:
-        raise OpenstackException(detail=str(e))
+        return get_tenants_for_user(
+            self.request.user, team=self.request.query_params.get("team")
+        )
 
 
 class InstanceView(APIView):
@@ -202,25 +206,56 @@ class InstanceStatusView(APIView):
             raise OpenstackException(detail=str(e))
 
 
-class OpenstackSimpleListView(APIView):
+class FlavorListView(OpenstackListView):
     """
-    Base class for simple openstack tenant collection views.
+    Flavors for tenants owned by teams that the authenticated user is a member of.
     """
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-    ]
+    serializer_class = FlavorSerializer
+    tenant_get_method = Tenant.get_flavors
 
-    # You'll need to set these attributes on subclass
-    tenant_method = None  # tenant will be passed as the first argument
-    serializer_class = None  # serializer class, for response validation
 
-    def transform_func_factory(self, tenant):
-        """
-        Function factory, returns a func to map openstack response to desired data structure
-        Override if response differs from default [[entity1Id, entity1Name], [entity2Id, entity2Name]]
-        """
-        return lambda r: {"id": r[0], "name": r[1], "tenant": tenant}
+class ImageListView(OpenstackListView):
+    """
+    Images for tenants owned by teams that the authenticated user is a member of.
+    """
+
+    serializer_class = ImageSerializer
+    tenant_get_method = Tenant.get_images
+
+
+class SshKeyListView(OpenstackListView):
+    """
+    SSH keys for tenants owned by teams that the authenticated user is a member of.
+    """
+
+    serializer_class = SshKeySerializer
+    tenant_get_method = Tenant.get_keys
+
+    def post(self, request, team_id, tenant_id):
+        # TODO
+        pass
+
+
+class InstanceListView(OpenstackListView):
+    """
+    Instances for tenants owned by teams that the authenticated user is a member of.
+    """
+
+    serializer_class = InstanceSerializer
+    tenant_get_method = Tenant.get_instances
+
+    def get_transform_func(self, tenant):
+        public_netname = tenant.region.regionsettings.public_network_name
+        return lambda r: {
+            "id": r.id,
+            "name": r.name,
+            "flavor": r.flavor["id"],
+            "status": r.status,
+            "ip": r.addresses[public_netname][0]["addr"] if public_netname else None,
+            "created": r.created,
+            "tenant": tenant,
+        }
 
     def get(self, request):
         tenants = get_tenants_for_user(request.user, request.query_params.get("tenant"))
@@ -234,8 +269,8 @@ class OpenstackSimpleListView(APIView):
             if tenant.region.disabled:
                 continue
             try:
-                response = methodcaller(self.tenant_method.__name__)(tenant)
-                transform_func = self.transform_func_factory(tenant)
+                response = methodcaller(self.tenant_get_method.__name__)(tenant)
+                transform_func = self.get_transform_func(tenant)
                 data = map(transform_func, response)
                 collection.extend(data)
             except Exception as e:
@@ -251,28 +286,3 @@ class OpenstackSimpleListView(APIView):
                 raise OpenstackException(detail=str(e))
 
         return Response([])
-
-
-class FlavorListView(OpenstackSimpleListView):
-    """Flavors for tenants owned by teams that the authenticated user is a member of."""
-
-    serializer_class = FlavorSerializer
-    tenant_method = Tenant.get_flavors
-
-
-class ImageListView(OpenstackSimpleListView):
-    """Images for tenants owned by teams that the authenticated user is a member of."""
-
-    serializer_class = ImageSerializer
-    tenant_method = Tenant.get_images
-
-
-class SshKeyListView(OpenstackSimpleListView):
-    """SSH keys for tenants owned by teams that the authenticated user is a member of."""
-
-    serializer_class = SshKeySerializer
-    tenant_method = Tenant.get_keys
-
-    def post(self, request, team_id, tenant_id):
-        # TODO
-        pass

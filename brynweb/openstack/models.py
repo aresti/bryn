@@ -14,6 +14,10 @@ class Tenant(models.Model):
     auth_password = models.CharField(max_length=50)
     created_network_id = models.CharField(max_length=50, blank=True)
 
+    @property
+    def region_name(self):
+        return self.region.description
+
     def get_tenant_name(self):
         return "bryn:%d_%s" % (self.team.pk, self.team.name)
 
@@ -37,18 +41,22 @@ class Tenant(models.Model):
     def get_images(self):
         client = self.get_client()
         glance = client.get_glance()
+        return glance.images.list()
 
-        return [(i.id, i.name) for i in glance.images.list()]
+    def get_instances(self):
+        client = self.get_client()
+        nova = client.get_nova()
+        return nova.servers.list(detailed=True)
 
     def get_keys(self):
         client = self.get_client()
         nova = client.get_nova()
-        return [(k.name, k.name) for k in nova.keypairs.list()]
+        return nova.keypairs.list()
 
     def get_flavors(self):
         client = self.get_client()
         nova = client.get_nova()
-        return [(fl.name, fl.name) for fl in nova.flavors.list()]
+        return nova.flavors.list()
 
     def get_auth_username(self):
         return self.get_tenant_name()
