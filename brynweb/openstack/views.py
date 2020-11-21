@@ -1,14 +1,14 @@
+from operator import methodcaller
+
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework import permissions, generics, status
 from rest_framework import exceptions as drf_exceptions
 from rest_framework.response import Response
-
 from novaclient import exceptions as nova_exceptions
 
 from scripts.list_instances import list_instances
 from userdb.permissions import IsTeamMemberPermission
-
 from .models import Tenant
 from .serializers import (
     FlavorSerializer,
@@ -212,8 +212,15 @@ class OpenstackSimpleListView(APIView):
     ]
 
     # You'll need to set these attributes on subclass
-    serializer = None
-    tenant_method = None
+    tenant_method = None  # tenant will be passed as the first argument
+    serializer_class = None  # serializer class, for response validation
+
+    def transform_func_factory(self, tenant):
+        """
+        Function factory, returns a func to map openstack response to desired data structure
+        Override if response differs from default [[entity1Id, entity1Name], [entity2Id, entity2Name]]
+        """
+        return lambda r: {"id": r[0], "name": r[1], "tenant": tenant}
 
     def get(self, request):
         tenants = get_tenants_for_user(request.user, request.query_params.get("tenant"))
@@ -227,10 +234,9 @@ class OpenstackSimpleListView(APIView):
             if tenant.region.disabled:
                 continue
             try:
-                response = getattr(Tenant, type(self).tenant_method.__name__)(tenant)
-                data = map(
-                    lambda r: {"id": r[0], "name": r[1], "tenant": tenant}, response
-                )
+                response = methodcaller(self.tenant_method.__name__)(tenant)
+                transform_func = self.transform_func_factory(tenant)
+                data = map(transform_func, response)
                 collection.extend(data)
             except Exception as e:
                 raise OpenstackException(detail=str(e))
@@ -238,7 +244,7 @@ class OpenstackSimpleListView(APIView):
         # validate against serializer
         if collection:
             try:
-                serialized = type(self).serializer(data=collection, many=True)
+                serialized = self.serializer_class(data=collection, many=True)
                 serialized.is_valid()
                 return Response(serialized.data)
             except Exception as e:
@@ -250,21 +256,21 @@ class OpenstackSimpleListView(APIView):
 class FlavorListView(OpenstackSimpleListView):
     """Flavors for tenants owned by teams that the authenticated user is a member of."""
 
-    serializer = FlavorSerializer
+    serializer_class = FlavorSerializer
     tenant_method = Tenant.get_flavors
 
 
 class ImageListView(OpenstackSimpleListView):
     """Images for tenants owned by teams that the authenticated user is a member of."""
 
-    serializer = ImageSerializer
+    serializer_class = ImageSerializer
     tenant_method = Tenant.get_images
 
 
 class SshKeyListView(OpenstackSimpleListView):
     """SSH keys for tenants owned by teams that the authenticated user is a member of."""
 
-    serializer = SshKeySerializer
+    serializer_class = SshKeySerializer
     tenant_method = Tenant.get_keys
 
     def post(self, request, team_id, tenant_id):
