@@ -9,7 +9,7 @@ class TeamDashboard(LoginRequiredMixin, TemplateView):
     Team dashboard (home)
     """
 
-    template_name = "home/team_dashboard.html"
+    template_name = "home/dashboard.html"
 
     def get_context_data(self, **kwargs):
         user = self.request.user
