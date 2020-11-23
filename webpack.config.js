@@ -48,6 +48,7 @@ module.exports = {
   resolve: {
     alias: {
       vue: "vue/dist/vue.esm-bundler.js",
+      "@": path.resolve(__dirname, "frontend/"),
       Mixins: path.resolve(__dirname, "./frontend/mixins/"),
       Components: path.resolve(__dirname, "./frontend/components/"),
     },

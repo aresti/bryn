@@ -1,17 +1,13 @@
-// Axios config
-import axios from "axios";
-axios.defaults.xsrfCookieName = "csrftoken";
-axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
-
-// Mount DashboardApp
 import { createApp } from "vue";
-import DashboardApp from "./components/DashboardApp.vue";
-import store from "./store";
+import { axios } from "@/api";
+import store from "@/store";
+import router from "@/router";
 
-const dashboardApp = createApp(DashboardApp);
+import App from "@/App.vue";
 
-dashboardApp.config.globalProperties.$http = axios;
-
+const dashboardApp = createApp(App);
 dashboardApp.use(store);
+dashboardApp.use(router);
+dashboardApp.config.globalProperties.$http = axios;
 
 dashboardApp.mount("#dashboardApp");

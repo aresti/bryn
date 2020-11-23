@@ -13,10 +13,10 @@
           <div class="level-right">
             <div class="level-item">
               <base-dropdown-list
+                @itemSelected="onTeamSelect"
                 title="Select team"
                 :items="teams"
                 :activeItem="team"
-                @itemSelected="setActiveTeam"
                 hoverable
                 right
               >
@@ -115,12 +115,30 @@ export default {
   },
   methods: {
     ...mapActions(["setActiveTeam"]),
+    onTeamSelect(team) {
+      this.$router.push({
+        name: "Dashboard",
+        params: { teamId: team.id },
+      });
+    },
     setActiveTab(key) {
       this.activeTab = key;
     },
   },
-  beforeMount() {
-    this.$store.dispatch("initStore");
+  beforeRouteUpdate(to, from) {
+    // Update store activeTeam on route change
+    if (to.params.teamId !== from.params.teamId) {
+      const toTeam = this.teams.find(
+        (team) => team.id === parseInt(to.params.teamId)
+      );
+      if (toTeam === undefined) {
+        this.$router.push({
+          name: "NotFound",
+          params: { pathMatch: to.path.split("/") },
+        });
+      }
+      this.setActiveTeam(toTeam);
+    }
   },
 };
 </script>

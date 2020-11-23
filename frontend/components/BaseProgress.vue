@@ -1,6 +1,8 @@
 <template>
   <progress v-if="indeterminate" :class="classList"></progress>
-  <progress v-else :value="valueAttr" :max="max">{{ value }}%</progress>
+  <progress v-else :value="value" :max="max" :class="classList">
+    {{ value }}%
+  </progress>
 </template>
 
 <script>

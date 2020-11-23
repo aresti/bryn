@@ -1,11 +1,14 @@
 import { createStore } from "vuex";
+import { axios } from "@/api";
 
 export default createStore({
   state() {
     return {
-      activeTeam: undefined,
+      adminEmail: "Lisa.Marchioretto@quadram.ac.uk",
+      initialized: false,
       activeTenant: undefined,
       user: undefined,
+      regions: [],
       teams: [],
     };
   },
@@ -25,20 +28,31 @@ export default createStore({
       return state.activeTeam ? getters.team.tenants : [];
     },
     tenantName(state, getters) {
-      return getters.tenant.region.description;
+      return "Tenant Name Stub";
+      // return getters.tenant.region.description;
     },
     defaultTenant(state, getters) {
       return getters.tenants.find(
-        (tenant) => tenant.region.id === getters.team.default_region
+        (tenant) => tenant.region === getters.team.default_region
       );
     },
   },
   mutations: {
-    setUser(state, user) {
-      state.user = user;
+    setInitialized(state) {
+      state.initialized = true;
     },
-    setTeams(state, teams) {
-      state.teams = teams;
+    initRegions(state) {
+      state.regions = JSON.parse(
+        document.getElementById("regionsData").textContent
+      );
+    },
+    initUser(state, user) {
+      state.user = JSON.parse(document.getElementById("userData").textContent);
+    },
+    initTeams(state, teams) {
+      state.teams = JSON.parse(
+        document.getElementById("teamsData").textContent
+      );
     },
     setActiveTeam(state, { id }) {
       state.activeTeam = id;
@@ -48,20 +62,18 @@ export default createStore({
     },
   },
   actions: {
-    initStore({ dispatch, commit }) {
-      const user = JSON.parse(document.getElementById("userData").textContent);
-      const teams = JSON.parse(
-        document.getElementById("teamsData").textContent
-      );
-      commit("setUser", user);
-      if (teams.length) {
-        commit("setTeams", teams);
-        dispatch("setActiveTeam", teams[0]);
-      }
+    initStore({ commit }) {
+      commit("initUser");
+      commit("initRegions");
+      commit("initTeams");
+      commit("setInitialized");
     },
     setActiveTeam({ getters, commit }, team) {
       commit("setActiveTeam", team);
-      commit("setActiveTenant", getters.defaultTenant);
+      if (getters.team.tenants.length) {
+        commit("setActiveTenant", getters.defaultTenant);
+      }
     },
+    fetchImages({ getters, commit }) {},
   },
 });

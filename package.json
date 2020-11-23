@@ -31,6 +31,7 @@
     "node-sass": "^4.14.1",
     "sass-loader": "^10.0.3",
     "vue-loader": "^16.0.0-beta.8",
+    "vue-router": "^4.0.0-rc.5",
     "vue-style-loader": "^4.1.2",
     "vuex": "^4.0.0-rc.1",
     "webpack": "^4.44.2",
