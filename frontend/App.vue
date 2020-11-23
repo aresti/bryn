@@ -1,6 +1,6 @@
 <template>
   <template v-if="initialized">
-    <router-view v-if="teams.length"></router-view>
+    <router-view v-if="teams.length" />
     <no-teams v-else />
   </template>
   <template v-else>
@@ -18,12 +18,8 @@ export default {
     Initializing,
     NoTeams,
   },
-  computed: {
-    ...mapState(["initialized", "teams"]),
-  },
-  methods: {
-    ...mapActions(["setActiveTeam"]),
-  },
+  computed: mapState(["initialized", "teams"]),
+  methods: mapActions(["setActiveTeam"]),
   watch: {
     initialized() {
       // Navigate to default team dashboard
@@ -31,7 +27,7 @@ export default {
         const team = this.teams[0];
         this.setActiveTeam(team);
         this.$router.push({
-          name: "Dashboard",
+          name: "dashboard",
           params: { teamId: team.id },
         });
       }

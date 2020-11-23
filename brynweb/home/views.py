@@ -1,6 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 
+from openstack.models import Region
+from openstack.serializers import RegionSerializer
 from userdb.serializers import TeamSerializer, UserSerializer
 
 
@@ -16,4 +18,6 @@ class TeamDashboard(LoginRequiredMixin, TemplateView):
         user_data = UserSerializer(user).data
         user_teams = user.teams.all()
         team_data = TeamSerializer(user_teams, many=True).data
-        return {"teams": team_data, "user": user_data}
+        region_data = RegionSerializer(Region.objects.all(), many=True).data
+
+        return {"regions": region_data, "teams": team_data, "user": user_data}

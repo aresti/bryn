@@ -2,15 +2,17 @@
   <nav class="tabs is-boxed is-fullwidth">
     <div class="container">
       <ul>
-        <li
-          v-for="(name, key) in tabs"
-          :key="key"
-          :class="{ 'is-active': activeTab === key }"
+        <router-link
+          v-for="route in tabRoutes"
+          :key="route.path"
+          :to="route.path"
+          custom
+          v-slot="{ href, navigate, isExactActive }"
         >
-          <a href="#" @click="selectTab(key)">
-            {{ name }}
-          </a>
-        </li>
+          <li :class="{ 'is-active': isExactActive }">
+            <a :href="href" @click="navigate">{{ route.meta.displayName }}</a>
+          </li>
+        </router-link>
       </ul>
     </div>
   </nav>
@@ -18,29 +20,17 @@
 
 <script>
 export default {
-  props: {
-    tabs: {
-      type: Object,
-      required: true,
-    },
-    activeTab: {
-      type: String,
-      required: true,
-    },
+  data() {
+    const dashboardRoute = this.$router.options.routes.find(
+      (route) => route.name === "dashboard"
+    );
+    return {
+      tabRoutes: dashboardRoute.children.filter((route) => route.meta.showTab),
+    };
   },
-  emits: {
-    tabSelected: (key) => {
-      if (key) {
-        return true;
-      } else {
-        console.warn("Invalid tabSelected event payload!");
-        return false;
-      }
-    },
-  },
-  methods: {
-    selectTab(key) {
-      this.$emit("tabSelected", key);
+  computed: {
+    currentRoute() {
+      return this.$route;
     },
   },
 };

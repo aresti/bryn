@@ -19,9 +19,7 @@ export default {
   components: {
     BaseHeroFull,
   },
-  computed: {
-    ...mapState(["adminEmail"]),
-  },
+  computed: mapState(["adminEmail"]),
 };
 </script>
 

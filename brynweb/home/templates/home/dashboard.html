@@ -11,6 +11,7 @@
 
 {% block content %}
   <!-- make team data avaiable in DOM -->
+  {{ regions|json_script:'regionsData' }}
   {{ teams|json_script:'teamsData' }}
   {{ user|json_script:'userData' }}
   

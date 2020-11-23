@@ -50,21 +50,12 @@
     </div>
 
     <div class="hero-foot">
-      <dashboard-tabs
-        :tabs="tabs"
-        :activeTab="activeTab"
-        @tabSelected="setActiveTab"
-      />
+      <dashboard-tabs />
     </div>
   </section>
 
   <main class="container mt-5">
-    <base-message v-if="!tenant" color="danger">
-      This team has no active tenants. Please contact the CLIMB administrator.
-    </base-message>
-    <keep-alive v-else>
-      <component v-bind:is="activeTabComponent" :team="team" :tenant="tenant" />
-    </keep-alive>
+    <router-view />
   </main>
 </template>
 
@@ -72,52 +63,24 @@
 import { mapActions, mapGetters, mapState } from "vuex";
 
 import DashboardTabs from "./DashboardTabs.vue";
-import TabServers from "./TabServers.vue";
-import TabVolumes from "./TabVolumes.vue";
-import TabSshKeys from "./TabSshKeys.vue";
-import TabTeam from "./TabTeam.vue";
-import TabUserProfile from "./TabUserProfile.vue";
-import TabLicense from "./TabLicense.vue";
 import BaseDropdownList from "./BaseDropdownList.vue";
 import BaseMessage from "./BaseMessage.vue";
 
 export default {
   components: {
     DashboardTabs,
-    TabServers,
-    TabVolumes,
-    TabSshKeys,
-    TabTeam,
-    TabUserProfile,
-    TabLicense,
     BaseDropdownList,
     BaseMessage,
-  },
-  data() {
-    return {
-      tabs: {
-        servers: "Servers",
-        volumes: "Volumes",
-        "ssh-keys": "SSH Keys",
-        team: "Team Info",
-        "user-profile": "User Profile",
-        license: "License",
-      },
-      activeTab: "servers",
-    };
   },
   computed: {
     ...mapState(["user", "teams"]),
     ...mapGetters(["userFullName", "team", "tenant", "tenants", "tenantName"]),
-    activeTabComponent() {
-      return "tab-" + this.activeTab;
-    },
   },
   methods: {
     ...mapActions(["setActiveTeam"]),
     onTeamSelect(team) {
       this.$router.push({
-        name: "Dashboard",
+        name: "dashboard",
         params: { teamId: team.id },
       });
     },
@@ -133,7 +96,7 @@ export default {
       );
       if (toTeam === undefined) {
         this.$router.push({
-          name: "NotFound",
+          name: "notfound",
           params: { pathMatch: to.path.split("/") },
         });
       }
