@@ -1,13 +1,13 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 
-import Dashboard from "@/components/Dashboard.vue";
-import NotFound from "@/components/NotFound.vue";
-import Servers from "@/components/Servers.vue";
-import Volumes from "@/components/Volumes.vue";
-import SSHKeys from "@/components/SSHKeys.vue";
-import Team from "@/components/Team.vue";
-import UserProfile from "@/components/UserProfile.vue";
-import Licence from "@/components/Licence.vue";
+import Dashboard from "@/views/Dashboard";
+import NotFound from "@/views/NotFound";
+import Servers from "@/views/Servers";
+import Volumes from "@/views/Volumes";
+import SSHKeys from "@/views/SSHKeys";
+import Team from "@/views/Team";
+import UserProfile from "@/views/UserProfile";
+import Licence from "@/views/Licence";
 
 const routes = [
   {

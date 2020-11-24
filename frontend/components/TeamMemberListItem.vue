@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import DeleteButton from "./DeleteButton.vue";
+import DeleteButton from "@/components/DeleteButton";
 
 export default {
   emits: {

@@ -10,17 +10,17 @@
       <base-icon
         v-if="dropdown"
         size="small"
-        faClasses="fas fa-angle-down"
-        aria-hidden="true"
+        fa-classes="fas fa-angle-down"
+        :decorative="true"
       />
     </slot>
   </button>
 </template>
 
 <script>
-import bulmaColorMixin from "Mixins/bulmaColorMixin.js";
-import bulmaSizeMixin from "Mixins/bulmaSizeMixin.js";
-import BaseIcon from "./BaseIcon.vue";
+import bulmaColorMixin from "@/mixins/bulmaColorMixin";
+import bulmaSizeMixin from "@/mixins/bulmaSizeMixin";
+import BaseIcon from "@/components/BaseIcon";
 
 export default {
   mixins: [bulmaColorMixin, bulmaSizeMixin],

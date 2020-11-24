@@ -54,17 +54,25 @@
     </div>
   </section>
 
-  <main class="container mt-5">
-    <router-view />
-  </main>
+  <router-view v-slot="{ Component, route }">
+    <transition name="fade" mode="out-in">
+      <keep-alive>
+        <component
+          :is="Component"
+          class="container mt-5"
+          :class="'tab-' + route.name"
+        />
+      </keep-alive>
+    </transition>
+  </router-view>
 </template>
 
 <script>
 import { mapActions, mapGetters, mapState } from "vuex";
 
-import DashboardTabs from "./DashboardTabs.vue";
-import BaseDropdownList from "./BaseDropdownList.vue";
-import BaseMessage from "./BaseMessage.vue";
+import DashboardTabs from "@/components/DashboardTabs";
+import BaseDropdownList from "@/components/BaseDropdownList";
+import BaseMessage from "@/components/BaseMessage";
 
 export default {
   components: {
@@ -84,9 +92,6 @@ export default {
         params: { teamId: team.id },
       });
     },
-    setActiveTab(key) {
-      this.activeTab = key;
-    },
   },
   beforeRouteUpdate(to, from) {
     // Update store activeTeam on route change
@@ -105,3 +110,15 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

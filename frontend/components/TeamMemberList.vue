@@ -40,12 +40,12 @@
 </template>
 
 <script>
-import TeamMemberListItem from "./TeamMemberListItem.vue";
-import BaseAlert from "./BaseAlert.vue";
-import BaseModal from "./BaseModal.vue";
-import CancelButton from "./CancelButton.vue";
-import DeleteButton from "./DeleteButton.vue";
-import FetchErrorAlert from "./FetchErrorAlert.vue";
+import TeamMemberListItem from "@/components/TeamMemberListItem";
+import BaseAlert from "@/components/BaseAlert";
+import BaseModal from "@/components/BaseModal";
+import CancelButton from "@/components/CancelButton";
+import DeleteButton from "@/components/DeleteButton";
+import FetchErrorAlert from "@/components/FetchErrorAlert";
 
 export default {
   components: {

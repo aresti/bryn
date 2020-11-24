@@ -3,7 +3,7 @@ import { axios } from "@/api";
 import store from "@/store";
 import router from "@/router";
 
-import App from "@/App.vue";
+import App from "@/App";
 
 const dashboardApp = createApp(App);
 dashboardApp.use(store);

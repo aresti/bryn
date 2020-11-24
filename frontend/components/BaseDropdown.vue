@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import bulmaDropdownMixin from "Mixins/bulmaDropdownMixin.js";
+import bulmaDropdownMixin from "@/mixins/bulmaDropdownMixin";
 
 export default {
   mixins: [bulmaDropdownMixin],

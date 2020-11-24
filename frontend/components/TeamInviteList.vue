@@ -15,9 +15,9 @@
 </template>
 
 <script>
-import TeamInviteListItem from "./TeamInviteListItem.vue";
-import BaseAlert from "./BaseAlert.vue";
-import FetchErrorAlert from "./FetchErrorAlert.vue";
+import TeamInviteListItem from "@/components/TeamInviteListItem";
+import BaseAlert from "@/components/BaseAlert";
+import FetchErrorAlert from "@/components/FetchErrorAlert";
 
 export default {
   inject: ["axios"],

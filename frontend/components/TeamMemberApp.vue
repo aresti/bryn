@@ -11,8 +11,8 @@
 </template>
 
 <script>
-import TeamMemberList from "./TeamMemberList.vue";
-import TeamInviteList from "./TeamInviteList.vue";
+import TeamMemberList from "@/components/TeamMemberList";
+import TeamInviteList from "@/components/TeamInviteList";
 
 export default {
   components: {

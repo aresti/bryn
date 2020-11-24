@@ -5,8 +5,8 @@
 </template>
 
 <script>
-import bulmaColorMixin from "Mixins/bulmaColorMixin.js";
-import bulmaSizeMixin from "Mixins/bulmaSizeMixin.js";
+import bulmaColorMixin from "@/mixins/bulmaColorMixin";
+import bulmaSizeMixin from "@/mixins/bulmaSizeMixin";
 
 export default {
   mixins: [bulmaColorMixin, bulmaSizeMixin],

@@ -6,8 +6,8 @@
 </template>
 
 <script>
-import BaseHeroFull from "@/components/BaseHeroFull.vue";
-import BaseProgress from "@/components/BaseProgress.vue";
+import BaseHeroFull from "@/components/BaseHeroFull";
+import BaseProgress from "@/components/BaseProgress";
 
 export default {
   components: {

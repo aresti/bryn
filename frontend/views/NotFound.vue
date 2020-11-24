@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import BaseHeroFull from "@/components/BaseHeroFull.vue";
+import BaseHeroFull from "@/components/BaseHeroFull";
 import { mapState } from "vuex";
 
 export default {

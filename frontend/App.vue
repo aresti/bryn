@@ -10,8 +10,8 @@
 
 <script>
 import { mapActions, mapState } from "vuex";
-import Initializing from "@/components/Initializing.vue";
-import NoTeams from "@/components/NoTeams.vue";
+import Initializing from "@/components/Initializing";
+import NoTeams from "@/components/NoTeams";
 
 export default {
   components: {

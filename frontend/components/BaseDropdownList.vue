@@ -32,10 +32,10 @@
 </template>
 
 <script>
-import BaseButton from "./BaseButton.vue";
-import BaseDropdown from "./BaseDropdown.vue";
+import BaseButton from "@/components/BaseButton";
+import BaseDropdown from "@/components/BaseDropdown";
 
-import bulmaDropdownMixin from "Mixins/bulmaDropdownMixin.js";
+import bulmaDropdownMixin from "@/mixins/bulmaDropdownMixin";
 
 export default {
   mixins: [bulmaDropdownMixin],
