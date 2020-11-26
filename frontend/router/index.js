@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 
+import Home from "@/views/Home";
 import Dashboard from "@/views/Dashboard";
 import NotFound from "@/views/NotFound";
 import Servers from "@/views/Servers";
@@ -11,9 +12,17 @@ import Licence from "@/views/Licence";
 
 const routes = [
   {
+    path: "/",
+    name: "home",
+    component: Home,
+  },
+  {
     path: "/dashboard/:teamId",
     name: "dashboard",
     component: Dashboard,
+    redirect: (to) => {
+      return to.path + "/servers";
+    },
     children: [
       {
         path: "servers",

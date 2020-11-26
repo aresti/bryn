@@ -83,6 +83,18 @@ export default {
   },
   methods: {
     ...mapActions(["setActiveTeam"]),
+    setTeamForRoute(route) {
+      const toTeam = this.teams.find(
+        (team) => team.id === parseInt(route.params.teamId)
+      );
+      if (toTeam === undefined) {
+        this.$router.push({
+          name: "notfound",
+          params: { pathMatch: route.path.split("/") },
+        });
+      }
+      this.setActiveTeam(toTeam);
+    },
     onTeamSelect(team) {
       this.$router.push({
         name: this.$route.name,
@@ -110,24 +122,15 @@ export default {
       this.getAllTeamData();
     },
   },
-  beforeRouteUpdate(to, from) {
-    // Update activeTeam on route change
-    if (to.params.teamId !== from.params.teamId) {
-      const toTeam = this.teams.find(
-        (team) => team.id === parseInt(to.params.teamId)
-      );
-      if (toTeam === undefined) {
-        this.$router.push({
-          name: "notfound",
-          params: { pathMatch: to.path.split("/") },
-        });
-      }
-      this.setActiveTeam(toTeam);
-      console.log(this.tenants);
-    }
+  created() {
+    // Set activeTeam for initial route
+    this.setTeamForRoute(this.$route);
   },
-  mounted() {
-    this.getAllTeamData();
+  beforeRouteUpdate(to, from) {
+    // Update activeTeam on route change (same component instance is reused)
+    if (to.params.teamId !== from.params.teamId) {
+      this.setTeamForRoute(to);
+    }
   },
 };
 </script>
