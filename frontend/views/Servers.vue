@@ -2,7 +2,8 @@
   <main>
     <template v-if="erroredOnGet">
       <base-message color="danger" dismissable>
-        Your {{ tenant.region_name }} tenant seems to be unavailable right now.
+        An error occurred while trying to get your servers. Your tenant(s) may
+        be temporarily unavailable.
       </base-message>
     </template>
     <template v-else>
@@ -22,7 +23,8 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { useToast } from "vue-toastification";
+import { mapGetters, mapState } from "vuex";
 
 import BaseButtonCreate from "@/components/BaseButtonCreate";
 import BaseMessage from "@/components/BaseMessage";
@@ -30,6 +32,10 @@ import LaunchInstanceModal from "@/components/LaunchInstanceModal";
 import InstanceTable from "@/components/InstanceTable";
 
 export default {
+  setup() {
+    const toast = useToast();
+    return { toast };
+  },
   components: {
     BaseButtonCreate,
     BaseMessage,
@@ -38,28 +44,17 @@ export default {
   },
   data() {
     return {
-      instances: [],
-      loading: true,
-      erroredOnGet: false,
       showLaunchInstanceModal: false,
     };
   },
-  computed: mapGetters(["team", "tenant"]),
-  methods: {
-    async getInstances() {
-      try {
-        const response = await this.$http.get(
-          `/api/teams/${this.team.id}/tenants/${this.tenant.id}/instances/?format=json`
-        );
-        this.instances = response.data;
-      } catch (error) {
-        this.erroredOnGet = true;
-      }
-      this.loading = false;
-    },
-  },
-  mounted() {
-    this.getInstances();
+  computed: {
+    ...mapState("instances", {
+      loading: (state) => state.loading,
+      erroredOnGet: (state) => state.erroredOnGet,
+    }),
+    ...mapGetters("instances", {
+      instances: "allFormatted",
+    }),
   },
 };
 </script>

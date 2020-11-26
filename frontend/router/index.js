@@ -52,7 +52,6 @@ const routes = [
         meta: { displayName: "Licence", showTab: true },
       },
     ],
-    redirect: { name: "servers" },
   },
   { path: "/:pathMatch(.*)*", name: "notfound", component: NotFound },
 ];

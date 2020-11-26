@@ -1,16 +1,22 @@
 import { createStore } from "vuex";
-import { axios } from "@/api";
+import { axios, apiRoutes } from "@/api";
+import instances from "./modules/instances";
+import flavors from "./modules/flavors";
 
 export default createStore({
   state() {
     return {
       adminEmail: "Lisa.Marchioretto@quadram.ac.uk",
       initialized: false,
-      activeTenant: undefined,
-      user: undefined,
+      activeTeam: null,
+      user: null,
       regions: [],
       teams: [],
     };
+  },
+  modules: {
+    instances,
+    flavors,
   },
   getters: {
     userFullName(state) {
@@ -19,22 +25,23 @@ export default createStore({
     team(state) {
       return state.teams.find((team) => team.id === state.activeTeam);
     },
-    tenant(state, getters) {
-      return getters.team.tenants.find(
-        (tenant) => tenant.id === state.activeTenant
-      );
-    },
     tenants(state, getters) {
       return state.activeTeam ? getters.team.tenants : [];
-    },
-    tenantName(state, getters) {
-      return "Tenant Name Stub";
-      // return getters.tenant.region.description;
     },
     defaultTenant(state, getters) {
       return getters.tenants.find(
         (tenant) => tenant.region === getters.team.default_region
       );
+    },
+    getTenantById(state, getters) {
+      return (id) => {
+        return getters.tenants.find((tenant) => tenant.id === id);
+      };
+    },
+    getRegionById(state) {
+      return (id) => {
+        return state.regions.find((region) => region.id === id);
+      };
     },
   },
   mutations: {
@@ -46,19 +53,22 @@ export default createStore({
         document.getElementById("regionsData").textContent
       );
     },
-    initUser(state, user) {
-      state.user = JSON.parse(document.getElementById("userData").textContent);
-    },
     initTeams(state, teams) {
       state.teams = JSON.parse(
         document.getElementById("teamsData").textContent
       );
     },
+    initUser(state, user) {
+      state.user = JSON.parse(document.getElementById("userData").textContent);
+    },
     setActiveTeam(state, { id }) {
       state.activeTeam = id;
     },
-    setActiveTenant(state, { id }) {
-      state.activeTenant = id;
+    setFlavors(state, flavors) {
+      state.flavors = flavors;
+    },
+    setImages(state, images) {
+      state.images = images;
     },
   },
   actions: {
@@ -68,12 +78,19 @@ export default createStore({
       commit("initTeams");
       commit("setInitialized");
     },
-    setActiveTeam({ getters, commit }, team) {
+    setActiveTeam({ commit }, team) {
       commit("setActiveTeam", team);
-      if (getters.team.tenants.length) {
-        commit("setActiveTenant", getters.defaultTenant);
-      }
+      commit("instances/resetState");
     },
-    fetchImages({ getters, commit }) {},
+    async getImages({ commit }) {
+      const response = await axios.get(apiRoutes.getImages);
+      const images = response.data;
+      commit("setImages", images);
+    },
+    async getFlavors({ commit }) {
+      const response = await axios.get(apiRoutes.getFlavors);
+      const flavors = response.data;
+      commit("setFlavors", flavors);
+    },
   },
 });

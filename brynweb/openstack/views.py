@@ -84,7 +84,11 @@ class OpenstackListView(APIView):
         return lambda r: {"id": r.id, "name": r.name, "tenant": tenant}
 
     def get(self, request):
-        tenants = get_tenants_for_user(request.user, request.query_params.get("tenant"))
+        query_tenant = request.query_params.get("tenant")
+        query_team = request.query_params.get("team")
+        tenants = get_tenants_for_user(
+            request.user, tenant=query_tenant, team=query_team
+        )
         if not tenants:
             # no tenants for user, or no team membership for specified tenant
             return Response([])
@@ -128,6 +132,27 @@ class TenantListView(generics.ListAPIView):
         return get_tenants_for_user(
             self.request.user, team=self.request.query_params.get("team")
         )
+
+
+class InstanceListView(OpenstackListView):
+    """
+    Instances for tenants owned by teams that the authenticated user is a member of.
+    """
+
+    serializer_class = InstanceSerializer
+    tenant_get_method = Tenant.get_instances
+
+    def get_transform_func(self, tenant):
+        public_netname = tenant.region.regionsettings.public_network_name
+        return lambda r: {
+            "id": r.id,
+            "name": r.name,
+            "flavor": r.flavor["id"],
+            "status": r.status,
+            "ip": r.addresses[public_netname][0]["addr"] if public_netname else None,
+            "created": r.created,
+            "tenant": tenant,
+        }
 
 
 class InstanceView(APIView):
@@ -235,54 +260,3 @@ class SshKeyListView(OpenstackListView):
     def post(self, request, team_id, tenant_id):
         # TODO
         pass
-
-
-class InstanceListView(OpenstackListView):
-    """
-    Instances for tenants owned by teams that the authenticated user is a member of.
-    """
-
-    serializer_class = InstanceSerializer
-    tenant_get_method = Tenant.get_instances
-
-    def get_transform_func(self, tenant):
-        public_netname = tenant.region.regionsettings.public_network_name
-        return lambda r: {
-            "id": r.id,
-            "name": r.name,
-            "flavor": r.flavor["id"],
-            "status": r.status,
-            "ip": r.addresses[public_netname][0]["addr"] if public_netname else None,
-            "created": r.created,
-            "tenant": tenant,
-        }
-
-    def get(self, request):
-        tenants = get_tenants_for_user(request.user, request.query_params.get("tenant"))
-        if not tenants:
-            # no tenants for user, or no team membership for specified tenant
-            return Response([])
-
-        # query openstack api for each tenant, map response to dict
-        collection = []
-        for tenant in tenants:
-            if tenant.region.disabled:
-                continue
-            try:
-                response = methodcaller(self.tenant_get_method.__name__)(tenant)
-                transform_func = self.get_transform_func(tenant)
-                data = map(transform_func, response)
-                collection.extend(data)
-            except Exception as e:
-                raise OpenstackException(detail=str(e))
-
-        # validate against serializer
-        if collection:
-            try:
-                serialized = self.serializer_class(data=collection, many=True)
-                serialized.is_valid()
-                return Response(serialized.data)
-            except Exception as e:
-                raise OpenstackException(detail=str(e))
-
-        return Response([])

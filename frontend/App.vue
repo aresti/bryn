@@ -27,7 +27,7 @@ export default {
         const team = this.teams[0];
         this.setActiveTeam(team);
         this.$router.push({
-          name: "dashboard",
+          name: "servers",
           params: { teamId: team.id },
         });
       }

@@ -28,24 +28,6 @@
             </div>
           </div>
         </div>
-
-        <h3 v-if="tenants.length === 1" class="subtitle">
-          Tenant: {{ tenantName }}
-        </h3>
-
-        <base-dropdown-list
-          v-if="tenants.length > 1"
-          :title="tenantName"
-          :items="tenants"
-          :activeItem="tenant"
-          @itemSelected="setActiveTenant"
-          hoverable
-        >
-          <template v-slot:title>Tenant: {{ tenantName }}</template>
-          <template v-slot:item="{ item: tenant }">
-            {{ tenant.region.description }}
-          </template>
-        </base-dropdown-list>
       </header>
     </div>
 
@@ -69,32 +51,59 @@
 
 <script>
 import { mapActions, mapGetters, mapState } from "vuex";
+import { useToast } from "vue-toastification";
 
 import DashboardTabs from "@/components/DashboardTabs";
 import BaseDropdownList from "@/components/BaseDropdownList";
 import BaseMessage from "@/components/BaseMessage";
+import Servers from "@/views/Servers";
 
 export default {
+  setup() {
+    const toast = useToast();
+    return { toast };
+  },
   components: {
     DashboardTabs,
     BaseDropdownList,
     BaseMessage,
+    Servers,
   },
   computed: {
     ...mapState(["user", "teams"]),
-    ...mapGetters(["userFullName", "team", "tenant", "tenants", "tenantName"]),
+    ...mapGetters(["userFullName", "team"]),
   },
   methods: {
     ...mapActions(["setActiveTeam"]),
     onTeamSelect(team) {
       this.$router.push({
-        name: "dashboard",
+        name: this.$route.name,
         params: { teamId: team.id },
       });
     },
+    async getTeamInstances() {
+      try {
+        await this.$store.dispatch("instances/getTeamInstances");
+      } catch (err) {
+        this.toast.error(`Error fetching team instances: ${err.toString()}`);
+      }
+    },
+    async getAllTeamData() {
+      try {
+        await this.$store.dispatch("flavors/getTeamFlavors");
+      } catch (err) {
+        this.toast.error(`Error fetching team data: ${err.toString()}`);
+      }
+      this.getTeamInstances();
+    },
+  },
+  watch: {
+    async team(_newTeam, _oldTeam) {
+      this.getAllTeamData();
+    },
   },
   beforeRouteUpdate(to, from) {
-    // Update store activeTeam on route change
+    // Update activeTeam on route change
     if (to.params.teamId !== from.params.teamId) {
       const toTeam = this.teams.find(
         (team) => team.id === parseInt(to.params.teamId)
@@ -107,6 +116,9 @@ export default {
       }
       this.setActiveTeam(toTeam);
     }
+  },
+  mounted() {
+    this.getAllTeamData();
   },
 };
 </script>

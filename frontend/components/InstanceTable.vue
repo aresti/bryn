@@ -16,12 +16,6 @@
           class="mt-3"
         />
       </instance-table-row-span>
-      <instance-table-row-span v-else-if="erroredOnGet">
-        <base-message color="danger" dismissable>
-          Your {{ tenant.region.description }} tenant seems to be unavailable
-          right now.
-        </base-message>
-      </instance-table-row-span>
       <instance-table-row
         v-else
         v-for="instance in instances"
@@ -33,36 +27,32 @@
 </template>
 
 <script>
-import BaseTable from "./BaseTable.vue";
-import BaseMessage from "./BaseMessage.vue";
-import BaseProgress from "./BaseProgress.vue";
-import InstanceTableRow from "./InstanceTableRow.vue";
-import InstanceTableRowSpan from "./InstanceTableRowSpan.vue";
+import BaseTable from "@/components/BaseTable";
+import BaseProgress from "@/components/BaseProgress";
+import InstanceTableRow from "@/components/InstanceTableRow";
+import InstanceTableRowSpan from "@/components/InstanceTableRowSpan";
 
 export default {
   components: {
-    BaseMessage,
     BaseProgress,
     BaseTable,
     InstanceTableRow,
     InstanceTableRowSpan,
   },
   props: {
-    team: {
-      type: Object,
+    instances: {
+      type: Array,
       required: true,
     },
-    tenant: {
-      type: Object,
-      required: true,
+    loading: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {
     return {
-      instances: [],
-      loading: true,
-      erroredOnGet: false,
       headings: [
+        "Region",
         "Name",
         "Flavor",
         "Status",
@@ -71,22 +61,6 @@ export default {
         "Actions",
       ],
     };
-  },
-  methods: {
-    async getInstances() {
-      try {
-        const response = await this.$http.get(
-          `/api/teams/${this.team.id}/tenants/${this.tenant.id}/instances/?format=json`
-        );
-        this.instances = response.data;
-      } catch (error) {
-        this.erroredOnGet = true;
-      }
-      this.loading = false;
-    },
-  },
-  mounted() {
-    this.getInstances();
   },
 };
 </script>
