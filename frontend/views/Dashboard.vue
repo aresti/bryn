@@ -1,62 +1,68 @@
 <template>
-  <section class="hero is-primary">
-    <div class="hero-body">
-      <header class="container">
-        <div class="level">
-          <div class="level-left">
-            <div class="level-item">
-              <h1 class="title">
-                {{ team.name }}
-              </h1>
-            </div>
-          </div>
-          <div class="level-right">
-            <div class="level-item">
-              <base-dropdown-list
-                @itemSelected="onTeamSelect"
-                title="Select team"
-                :items="teams"
-                :activeItem="team"
-                hoverable
-                right
-              >
-                <template v-slot:title>Switch team</template>
-                <template v-slot:item="{ item: team }">
+  <div class="page-content">
+    <section class="hero is-primary">
+      <div class="hero-body">
+        <header class="container">
+          <base-level>
+            <template v-slot:left>
+              <base-level-item>
+                <h1 class="title">
                   {{ team.name }}
-                </template>
-              </base-dropdown-list>
-            </div>
-          </div>
-        </div>
-      </header>
-    </div>
+                </h1>
+              </base-level-item>
+            </template>
+            <template v-slot:right>
+              <base-level-item>
+                <base-dropdown-list
+                  @itemSelected="onTeamSelect"
+                  title="Select team"
+                  :items="teams"
+                  :activeItem="team"
+                  hoverable
+                  right
+                >
+                  <template v-slot:title>Switch team</template>
+                  <template v-slot:item="{ item: team }">
+                    {{ team.name }}
+                  </template>
+                </base-dropdown-list>
+              </base-level-item>
+            </template>
+          </base-level>
+        </header>
+      </div>
 
-    <div class="hero-foot">
-      <dashboard-tabs />
-    </div>
-  </section>
+      <div class="hero-foot">
+        <dashboard-tabs />
+      </div>
+    </section>
 
-  <router-view v-slot="{ Component, route }">
-    <transition name="fade" mode="out-in">
-      <keep-alive>
-        <component
-          :is="Component"
-          class="container mt-5"
-          :class="'tab-' + route.name"
-        />
-      </keep-alive>
-    </transition>
-  </router-view>
+    <router-view v-slot="{ Component, route }">
+      <transition name="fade" mode="out-in">
+        <keep-alive>
+          <component
+            :is="Component"
+            class="container mt-5"
+            :class="'tab-' + route.name"
+          />
+        </keep-alive>
+      </transition>
+    </router-view>
+  </div>
+
+  <Footer class="mt-5" />
 </template>
 
 <script>
 import { mapActions, mapGetters, mapState } from "vuex";
 import { useToast } from "vue-toastification";
 
-import DashboardTabs from "@/components/DashboardTabs";
 import BaseDropdownList from "@/components/BaseDropdownList";
+import BaseLevel from "@/components/BaseLevel";
+import BaseLevelItem from "@/components/BaseLevelItem";
 import BaseMessage from "@/components/BaseMessage";
-import Servers from "@/views/Servers";
+import DashboardTabs from "@/components/DashboardTabs";
+import Footer from "@/components/Footer";
 
 export default {
   setup() {
@@ -64,14 +70,16 @@ export default {
     return { toast };
   },
   components: {
-    DashboardTabs,
     BaseDropdownList,
+    BaseLevel,
+    BaseLevelItem,
     BaseMessage,
-    Servers,
+    DashboardTabs,
+    Footer,
   },
   computed: {
     ...mapState(["user", "teams"]),
-    ...mapGetters(["userFullName", "team"]),
+    ...mapGetters(["userFullName", "team", "tenants"]),
   },
   methods: {
     ...mapActions(["setActiveTeam"]),
@@ -115,6 +123,7 @@ export default {
         });
       }
       this.setActiveTeam(toTeam);
+      console.log(this.tenants);
     }
   },
   mounted() {

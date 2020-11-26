@@ -149,7 +149,9 @@ class InstanceListView(OpenstackListView):
             "name": r.name,
             "flavor": r.flavor["id"],
             "status": r.status,
-            "ip": r.addresses[public_netname][0]["addr"] if public_netname else None,
+            "ip": r.addresses[public_netname][0]["addr"]
+            if public_netname in r.addresses.keys()
+            else None,
             "created": r.created,
             "tenant": tenant,
         }

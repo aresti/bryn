@@ -1,11 +1,11 @@
 <template>
   <tr>
-    <td v-for="(value, index) in rowValues" :key="value">
-      <base-icon
-        v-if="index === 0"
-        :faClasses="['fa fa-server']"
-        class="mr-2"
-      />
+    <td
+      v-for="(value, index) in rowValues"
+      :key="value"
+      :class="{ 'has-text-success': value === 'ACTIVE' }"
+    >
+      <base-icon v-if="index === 0" faClasses="fa fa-server" class="mr-2" />
       {{ value }}
     </td>
     <td>Menu</td>

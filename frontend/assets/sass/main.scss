@@ -26,22 +26,28 @@ $navbar-background-color: $grey-darker;
 $navbar-item-hover-color: $white;
 $navbar-item-hover-background-color: $black-ter;
 
-$footer-background-color: $charcoal;
+$footer-background-color: $white-ter;
 $footer-padding: 3rem 1.5rem;
 
 $dropdown-item-active-background-color: $persian-green;
 
 @import "~bulma/bulma";
 
-// Page layout
+// Page layout, sticky footer
 body {
   display: flex;
   min-height: 100vh;
   flex-direction: column;
 }
 
-.page-content {
+#dashboardApp {
+  display: flex;
+  flex-direction: column;
   flex: 1 0 auto;
+}
+
+.page-content {
+  flex: 1 0 100%;
 }
 
 // Header

@@ -14,15 +14,15 @@ export default {
   props: {
     fullwidth: {
       type: Boolean,
-      required: false,
+      default: false,
     },
     hoverable: {
       type: Boolean,
-      required: false,
+      default: false,
     },
     striped: {
       type: Boolean,
-      required: false,
+      default: false,
     },
   },
   computed: {

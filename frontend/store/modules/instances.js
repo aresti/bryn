@@ -27,18 +27,17 @@ const mutations = {
 };
 
 const getInstanceFormatter = (rootGetters) => {
-  // Display formatter for instances
   return (instance) => {
     const tenant = rootGetters.getTenantById(instance.tenant);
-    const region = rootGetters.getRegionById(tenant.id);
+    const region = rootGetters.getRegionById(tenant.region);
     const flavor = rootGetters["flavors/getFlavorById"](instance.flavor);
     const timestamp = new Date(instance.created);
-    const created = timestamp.toUTCString();
+    const created = timestamp.toLocaleTimeString();
 
     return {
-      region: region.description,
+      region: region.name,
       name: instance.name,
-      flavor: flavor.name,
+      flavor: flavor === undefined ? "[legacy flavor]" : flavor.name,
       status: instance.status,
       ip: instance.ip,
       created: created,
@@ -49,6 +48,12 @@ const getInstanceFormatter = (rootGetters) => {
 const getters = {
   allFormatted(state, _getters, _rootState, rootGetters) {
     return state.all.map(getInstanceFormatter(rootGetters));
+  },
+  notShelvedFormatted(_state, getters) {
+    const shelvedStatus = ["SHELVED", "SHELVED_OFFLOADED"];
+    return getters.allFormatted.filter(
+      (instance) => shelvedStatus.indexOf(instance.status) == -1
+    );
   },
 };
 
