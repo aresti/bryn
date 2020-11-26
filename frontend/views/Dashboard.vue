@@ -133,6 +133,12 @@ export default {
 </script>
 
 <style scoped>
+.hero.is-primary {
+  position: sticky;
+  top: 56px;
+  z-index: 999;
+}
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;
