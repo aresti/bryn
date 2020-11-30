@@ -13,26 +13,26 @@ const mutations = {
   resetState(state) {
     Object.assign(state, getDefaultState());
   },
-  setFlavors(state, flavors) {
-    state.all = flavors;
+  setImages(state, images) {
+    state.all = images;
   },
 };
 
 const getters = {
-  getFlavorById(state) {
+  getImageById(state) {
     return (id) => {
-      return state.all.find((flavor) => flavor.id === id);
+      return state.all.find((image) => image.id === id);
     };
   },
 };
 
 const actions = {
-  async getTeamFlavors({ commit, rootState }) {
-    const response = await axios.get(apiRoutes.getFlavors, {
+  async getTeamImages({ commit, rootState }) {
+    const response = await axios.get(apiRoutes.getImages, {
       params: { team: rootState.activeTeam },
     });
-    const flavors = response.data;
-    commit("setFlavors", flavors);
+    const images = response.data;
+    commit("setImages", images);
   },
 };
 

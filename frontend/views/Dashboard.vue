@@ -82,7 +82,7 @@ export default {
     ...mapGetters(["userFullName", "team", "tenants"]),
   },
   methods: {
-    ...mapActions(["setActiveTeam"]),
+    ...mapActions(["setActiveTeam", "getAllTeamData"]),
     setTeamForRoute(route) {
       const toTeam = this.teams.find(
         (team) => team.id === parseInt(route.params.teamId)
@@ -105,21 +105,18 @@ export default {
       try {
         await this.$store.dispatch("instances/getTeamInstances");
       } catch (err) {
-        this.toast.error(`Error fetching team instances: ${err.toString()}`);
+        this.toast.error(`Error fetching team instances: ${err.message}`);
       }
-    },
-    async getAllTeamData() {
-      try {
-        await this.$store.dispatch("flavors/getTeamFlavors");
-      } catch (err) {
-        this.toast.error(`Error fetching team data: ${err.toString()}`);
-      }
-      this.getTeamInstances();
     },
   },
   watch: {
     async team(_newTeam, _oldTeam) {
-      this.getAllTeamData();
+      // Team has been set, fetch essential data
+      try {
+        await this.getAllTeamData();
+      } catch (err) {
+        this.toast.error(err.message);
+      }
     },
   },
   created() {
@@ -127,7 +124,7 @@ export default {
     this.setTeamForRoute(this.$route);
   },
   beforeRouteUpdate(to, from) {
-    // Update activeTeam on route change (same component instance is reused)
+    // Update activeTeam on route change (since Vue component instance is reused)
     if (to.params.teamId !== from.params.teamId) {
       this.setTeamForRoute(to);
     }
@@ -139,7 +136,7 @@ export default {
 .hero.is-primary {
   position: sticky;
   top: 56px;
-  z-index: 999;
+  z-index: 3;
 }
 
 .fade-enter-active,

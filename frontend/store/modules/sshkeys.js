@@ -13,26 +13,26 @@ const mutations = {
   resetState(state) {
     Object.assign(state, getDefaultState());
   },
-  setFlavors(state, flavors) {
-    state.all = flavors;
+  setSSHKeys(state, sshkeys) {
+    state.all = sshkeys;
   },
 };
 
 const getters = {
-  getFlavorById(state) {
+  getSSHKeyById(state) {
     return (id) => {
-      return state.all.find((flavor) => flavor.id === id);
+      return state.all.find((sshkey) => sshkey.id === id);
     };
   },
 };
 
 const actions = {
-  async getTeamFlavors({ commit, rootState }) {
-    const response = await axios.get(apiRoutes.getFlavors, {
+  async getTeamSSHKeys({ commit, rootState }) {
+    const response = await axios.get(apiRoutes.getSSHKeys, {
       params: { team: rootState.activeTeam },
     });
-    const flavors = response.data;
-    commit("setFlavors", flavors);
+    const sshkeys = response.data;
+    commit("setSSHKeys", sshkeys);
   },
 };
 

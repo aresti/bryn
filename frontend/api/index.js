@@ -9,7 +9,7 @@ const apiRoutes = {
   getInstances: baseUrl + "/instances",
   getFlavors: baseUrl + "/flavors",
   getImages: baseUrl + "/images",
-  getSshKeys: baseUrl + "/sshkeys",
+  getSSHKeys: baseUrl + "/sshkeys",
 };
 
 export { axios, apiRoutes };

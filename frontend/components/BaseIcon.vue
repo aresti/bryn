@@ -1,5 +1,5 @@
 <template>
-  <span :class="containerClasses">
+  <span :aria-hidden="decorative" :class="containerClasses">
     <i :class="faClasses"></i>
   </span>
 </template>
@@ -11,8 +11,12 @@ import bulmaSizeMixin from "@/mixins/bulmaSizeMixin";
 export default {
   mixins: [bulmaColorMixin, bulmaSizeMixin],
   props: {
+    decorative: {
+      type: Boolean,
+      default: false,
+    },
     faClasses: {
-      type: String,
+      type: Array,
       required: true,
     },
   },

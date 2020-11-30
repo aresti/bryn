@@ -18,16 +18,12 @@
           </template>
           <template v-slot:right>
             <base-level-item v-if="hasShelved">
-              <base-button
-                rounded
-                :size="size"
-                @click="showShelved = !showShelved"
+              <base-button rounded @click="showShelved = !showShelved"
                 ><template v-slot:icon-before>
                   <base-icon
-                    :size="size"
                     :fa-classes="[
                       'fas',
-                      showShelved ? 'fa-eye-slash' : 'fa-eye',
+                      showShelved ? 'fas fa-eye-slash' : 'fas fa-eye',
                     ]"
                     :decorative="true"
                   />
@@ -85,11 +81,15 @@ export default {
     };
   },
   computed: {
-    ...mapState("instances", {
-      loading: (state) => state.loading,
-      erroredOnGet: (state) => state.erroredOnGet,
+    ...mapState({
+      teamLoading: (state) => state.loading,
+      instanceLoading: (state) => state.instances.loading,
+      erroredOnGet: (state) => state.instances.eroredOnGet,
     }),
     ...mapGetters("instances", ["allFormatted", "notShelvedFormatted"]),
+    loading() {
+      return this.loading || this.teamLoading;
+    },
     instances() {
       if (this.showShelved) {
         return this.allFormatted;
