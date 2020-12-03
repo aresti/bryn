@@ -17,7 +17,7 @@ class RegionSerializer(serializers.ModelSerializer):
 class TenantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tenant
-        fields = ["id", "region", "region_name", "team"]
+        fields = ["id", "region", "team"]
 
 
 class InstanceSerializer(serializers.Serializer):

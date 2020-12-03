@@ -138,37 +138,16 @@ STATICFILES_DIRS = [
 
 PHONENUMBER_DEFAULT_REGION = "GB"
 
-
-# django-bootstrap settings
-
-bootstrap4 = {
-    # The URL to the jQuery JavaScript file
-    "jquery_url": "//code.jquery.com/jquery.min.js",
-    # The Bootstrap base URL
-    "base_url": "//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/",
-    # Label class to use in horizontal forms
-    "horizontal_label_class": "col-md-3",
-    # Field class to use in horizontal forms
-    "horizontal_field_class": "col-md-9",
-    # Set HTML required attribute on required fields
-    "set_required": True,
-    # Set HTML disabled attribute on disabled fields
-    "set_disabled": False,
-    # Set placeholder attributes to label if no placeholder is provided
-    "set_placeholder": False,
-    # Class to indicate required (better to set this in your Django form)
-    "required_css_class": "",
-    # Class to indicate error (better to set this in your Django form)
-    "error_css_class": "has-error",
-    # Class to indicate success, meaning the field has valid input (better to set this in your Django form)
-    "success_css_class": "has-success",
-    # Renderers (only set these if you have studied the source and understand the inner workings)
-    "formset_renderers": {"default": "bootstrap4.renderers.FormsetRenderer"},
-    "form_renderers": {"default": "bootstrap4.renderers.FormRenderer"},
-    "field_renderers": {
-        "default": "bootstrap4.renderers.FieldRenderer",
-        "inline": "bootstrap4.renderers.InlineFieldRenderer",
-    },
+REST_FRAMEWORK = {
+    "DEFAULT_RENDERER_CLASSES": (
+        "djangorestframework_camel_case.render.CamelCaseJSONRenderer",
+        "djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer",
+    ),
+    "DEFAULT_PARSER_CLASSES": (
+        "djangorestframework_camel_case.parser.CamelCaseFormParser",
+        "djangorestframework_camel_case.parser.CamelCaseMultiPartParser",
+        "djangorestframework_camel_case.parser.CamelCaseJSONParser",
+    ),
 }
 
 LOGGING = {

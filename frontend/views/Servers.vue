@@ -41,7 +41,7 @@
 
     <launch-instance-modal
       v-if="showLaunchInstanceModal"
-      @close-modal="showLaunchInstanceModal = false"
+      @closeModal="showLaunchInstanceModal = false"
     />
   </main>
 </template>

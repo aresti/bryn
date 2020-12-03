@@ -14,10 +14,6 @@ class Tenant(models.Model):
     auth_password = models.CharField(max_length=50)
     created_network_id = models.CharField(max_length=50, blank=True)
 
-    @property
-    def region_name(self):
-        return self.region.description
-
     def get_tenant_name(self):
         return "bryn:%d_%s" % (self.team.pk, self.team.name)
 

@@ -24,6 +24,11 @@ const getters = {
       return state.all.find((image) => image.id === id);
     };
   },
+  getImagesForTenant(state) {
+    return ({ id }) => {
+      return state.all.filter((image) => image.tenant === id);
+    };
+  },
 };
 
 const actions = {

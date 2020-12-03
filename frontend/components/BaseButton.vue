@@ -10,7 +10,7 @@
       <base-icon
         v-if="dropdown"
         size="small"
-        fa-classes="fas fa-angle-down"
+        :fa-classes="['fas', 'fa-angle-down']"
         :decorative="true"
       />
     </slot>

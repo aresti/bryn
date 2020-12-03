@@ -24,6 +24,11 @@ const getters = {
       return state.all.find((flavor) => flavor.id === id);
     };
   },
+  getFlavorsForTenant(state) {
+    return ({ id }) => {
+      return state.all.filter((flavor) => flavor.tenant === id);
+    };
+  },
 };
 
 const actions = {

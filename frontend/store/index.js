@@ -1,5 +1,4 @@
 import { createStore } from "vuex";
-import { axios, apiRoutes } from "@/api";
 import instances from "./modules/instances";
 import flavors from "./modules/flavors";
 import images from "./modules/images";
@@ -31,9 +30,9 @@ const getters = {
   tenants(state, getters) {
     return state.activeTeam ? getters.team.tenants : [];
   },
-  defaultTenant(state, getters) {
+  defaultTenant(_state, getters) {
     return getters.tenants.find(
-      (tenant) => tenant.region === getters.team.default_region
+      (tenant) => tenant.region === getters.team.defaultRegion
     );
   },
   getTenantById(_state, getters) {
