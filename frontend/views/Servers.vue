@@ -82,14 +82,10 @@ export default {
   },
   computed: {
     ...mapState({
-      teamLoading: (state) => state.loading,
-      instanceLoading: (state) => state.instances.loading,
+      loading: (state) => state.instances.loading,
       erroredOnGet: (state) => state.instances.eroredOnGet,
     }),
     ...mapGetters("instances", ["allFormatted", "notShelvedFormatted"]),
-    loading() {
-      return this.loading || this.teamLoading;
-    },
     instances() {
       if (this.showShelved) {
         return this.allFormatted;

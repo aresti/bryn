@@ -1,5 +1,7 @@
 <template>
-  <div class="page-content">
+  <div
+    class="page-content is-flex is-flex-direction-column is-align-items-stretch is-flex-grow-1"
+  >
     <section class="hero is-primary">
       <div class="hero-body">
         <header class="container">
@@ -37,20 +39,29 @@
       </div>
     </section>
 
-    <router-view v-slot="{ Component, route }">
-      <transition name="fade" mode="out-in">
-        <keep-alive>
-          <component
-            :is="Component"
-            class="container mt-5"
-            :class="'tab-' + route.name"
-          />
-        </keep-alive>
-      </transition>
-    </router-view>
+    <section class="section is-flex is-flex-grow-1">
+      <div
+        v-if="loading"
+        class="loader-wrapper is-flex is-flex-direction-column is-flex-grow-1 is-align-items-center is-justify-content-center"
+      >
+        <div class="loader is-loading"></div>
+      </div>
+
+      <router-view v-else v-slot="{ Component, route }">
+        <transition name="fade" mode="out-in">
+          <keep-alive>
+            <component
+              :is="Component"
+              class="container"
+              :class="'tab-' + route.name"
+            />
+          </keep-alive>
+        </transition>
+      </router-view>
+    </section>
   </div>
 
-  <Footer class="mt-5" />
+  <the-footer class="mt-5" />
 </template>
 
 <script>
@@ -62,7 +73,7 @@ import BaseLevel from "@/components/BaseLevel";
 import BaseLevelItem from "@/components/BaseLevelItem";
 import BaseMessage from "@/components/BaseMessage";
 import DashboardTabs from "@/components/DashboardTabs";
-import Footer from "@/components/Footer";
+import TheFooter from "@/components/TheFooter";
 
 export default {
   setup() {
@@ -75,10 +86,10 @@ export default {
     BaseLevelItem,
     BaseMessage,
     DashboardTabs,
-    Footer,
+    TheFooter,
   },
   computed: {
-    ...mapState(["user", "teams"]),
+    ...mapState(["loading", "teams", "user"]),
     ...mapGetters(["userFullName", "team", "tenants"]),
   },
   methods: {
@@ -132,7 +143,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .hero.is-primary {
   position: sticky;
   top: 56px;
@@ -147,5 +158,10 @@ export default {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.loader {
+  height: 200px;
+  width: 200px;
 }
 </style>
