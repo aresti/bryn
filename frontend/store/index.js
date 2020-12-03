@@ -22,7 +22,7 @@ const modules = {
 
 const getters = {
   userFullName(state) {
-    return `${state.user.first_name} ${state.user.last_name}`;
+    return `${state.user.firstName} ${state.user.lastName}`;
   },
   team(state) {
     return state.teams.find((team) => team.id === state.activeTeam);

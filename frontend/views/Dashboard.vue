@@ -31,11 +31,14 @@
               </base-level-item>
             </template>
           </base-level>
+          <h2 class="subtitle">
+            {{ userFullName }}
+          </h2>
         </header>
       </div>
 
       <div class="hero-foot">
-        <dashboard-tabs />
+        <dashboard-tabs v-if="!loading" />
       </div>
     </section>
 
@@ -143,13 +146,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-.hero.is-primary {
-  position: sticky;
-  top: 56px;
-  z-index: 3;
-}
-
+<style scoped>
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;
