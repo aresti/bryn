@@ -7,18 +7,21 @@
 
 // Brand colors
 $charcoal: #264653ff;
-$persian-green: #2a9d8fff;
-$orange-yellow-crayola: #e9c46aff;
+$imperial-red: #e63946ff;
 $sandy-brown: #f4a261ff;
-$burnt-sienna: #e76f51ff;
-$crumsonUA: #9d2a37;
+$honeydew: #f1faeeff;
+$powder-blue: #a8dadcff;
+$celadon-blue: #457b9dff;
+$prussian-blue: #1d3557ff;
+$illuminating-emerald: #1e9577ff;
 
 // Update Bulma's global variables
 $family-sans-serif: "Open Sans", sans-serif;
-$primary: $charcoal;
+$primary: $prussian-blue;
 $warning: $sandy-brown;
-$success: $persian-green;
-$danger: $crumsonUA;
+$danger: $imperial-red;
+$link: $celadon-blue;
+$success: $illuminating-emerald;
 
 // Update component variables
 $navbar-item-color: $white;
@@ -28,8 +31,6 @@ $navbar-item-hover-background-color: $black-ter;
 
 $footer-background-color: $white-ter;
 $footer-padding: 3rem 1.5rem;
-
-$dropdown-item-active-background-color: $persian-green;
 
 @import "~bulma/bulma";
 

@@ -36,10 +36,6 @@
           </h2>
         </header>
       </div>
-
-      <div class="hero-foot">
-        <dashboard-tabs v-if="!loading && !erroredOnGet" />
-      </div>
     </section>
 
     <section class="section is-flex is-flex-grow-1">
@@ -54,17 +50,26 @@
         <div class="loader is-loading"></div>
       </base-flex-centered>
 
-      <router-view v-else v-slot="{ Component, route }">
-        <transition name="fade" mode="out-in">
-          <keep-alive>
-            <component
-              :is="Component"
-              class="container"
-              :class="'tab-' + route.name"
-            />
-          </keep-alive>
-        </transition>
-      </router-view>
+      <div v-else class="container">
+        <div class="columns is-variable is-8">
+          <div class="column is-one-fifth">
+            <the-dashboard-menu />
+          </div>
+          <div class="column is-four-fiths">
+            <router-view v-slot="{ Component, route }">
+              <transition name="fade" mode="out-in">
+                <keep-alive>
+                  <component
+                    :is="Component"
+                    class="container"
+                    :class="'tab-' + route.name"
+                  />
+                </keep-alive>
+              </transition>
+            </router-view>
+          </div>
+        </div>
+      </div>
     </section>
   </div>
 
@@ -80,7 +85,7 @@ import BaseFlexCentered from "@/components/BaseFlexCentered";
 import BaseLevel from "@/components/BaseLevel";
 import BaseLevelItem from "@/components/BaseLevelItem";
 import BaseNotification from "@/components/BaseNotification";
-import DashboardTabs from "@/components/DashboardTabs";
+import TheDashboardMenu from "@/components/TheDashboardMenu";
 import TheFooter from "@/components/TheFooter";
 
 export default {
@@ -94,7 +99,7 @@ export default {
     BaseLevel,
     BaseLevelItem,
     BaseNotification,
-    DashboardTabs,
+    TheDashboardMenu,
     TheFooter,
   },
   data() {

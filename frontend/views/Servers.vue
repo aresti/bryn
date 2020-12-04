@@ -1,5 +1,5 @@
 <template>
-  <main>
+  <div>
     <div class="container mb-3">
       <base-level>
         <template v-slot:left>
@@ -29,13 +29,13 @@
         </template>
       </base-level>
     </div>
-    <instance-table :instances="instances" :loading="loading" />
+    <instance-table :instances="instances" />
 
     <launch-instance-modal
       v-if="showLaunchInstanceModal"
       @closeModal="showLaunchInstanceModal = false"
     />
-  </main>
+  </div>
 </template>
 
 <script>

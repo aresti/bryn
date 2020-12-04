@@ -2,7 +2,7 @@
 import axios from "axios";
 axios.defaults.xsrfCookieName = "csrftoken";
 axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
-axios.defaults.timeout = 5000;
+axios.defaults.timeout = 7000;
 
 const baseUrl = "/api";
 
