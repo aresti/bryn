@@ -31,9 +31,6 @@
               </base-level-item>
             </template>
           </base-level>
-          <h2 class="subtitle">
-            {{ userFullName }}
-          </h2>
         </header>
       </div>
     </section>
@@ -110,13 +107,7 @@ export default {
   },
   computed: {
     ...mapState(["teams", "user"]),
-    ...mapGetters([
-      "userFullName",
-      "team",
-      "tenants",
-      "getTenantById",
-      "getRegionById",
-    ]),
+    ...mapGetters(["team", "tenants", "getTenantById", "getRegionById"]),
   },
   methods: {
     ...mapActions(["setActiveTeam", "getAllTeamData"]),
