@@ -90,7 +90,7 @@ import BaseButton from "@/components/BaseButton";
 import BaseButtonCancel from "@/components/BaseButtonCancel";
 import BaseFormControl from "@/components/BaseFormControl";
 import BaseModalCard from "@/components/BaseModalCard";
-import TenantSelectOption from "@/components/TenantSelectOption.vue";
+import TenantSelectOption from "@/components/TenantSelectOption";
 
 import { Field, Form } from "vee-validate";
 import { mapState, mapGetters } from "vuex";

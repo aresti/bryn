@@ -4,8 +4,6 @@ import { updateTenantCollection } from "@/helpers";
 const getDefaultState = () => {
   return {
     all: [],
-    loading: false, // TODO: remove once refactored to component
-    erroredOnGet: false,
   };
 };
 

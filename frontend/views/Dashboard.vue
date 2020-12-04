@@ -38,17 +38,21 @@
       </div>
 
       <div class="hero-foot">
-        <dashboard-tabs v-if="!loading" />
+        <dashboard-tabs v-if="!loading && !erroredOnGet" />
       </div>
     </section>
 
     <section class="section is-flex is-flex-grow-1">
-      <div
-        v-if="loading"
-        class="loader-wrapper is-flex is-flex-direction-column is-flex-grow-1 is-align-items-center is-justify-content-center"
-      >
+      <base-flex-centered v-if="erroredOnGet">
+        <base-notification color="danger" light>
+          All of your tenants were unreachable. Please check your network
+          connection.
+        </base-notification>
+      </base-flex-centered>
+
+      <base-flex-centered v-else-if="loading">
         <div class="loader is-loading"></div>
-      </div>
+      </base-flex-centered>
 
       <router-view v-else v-slot="{ Component, route }">
         <transition name="fade" mode="out-in">
@@ -72,9 +76,10 @@ import { mapActions, mapGetters, mapState } from "vuex";
 import { useToast } from "vue-toastification";
 
 import BaseDropdownList from "@/components/BaseDropdownList";
+import BaseFlexCentered from "@/components/BaseFlexCentered";
 import BaseLevel from "@/components/BaseLevel";
 import BaseLevelItem from "@/components/BaseLevelItem";
-import BaseMessage from "@/components/BaseMessage";
+import BaseNotification from "@/components/BaseNotification";
 import DashboardTabs from "@/components/DashboardTabs";
 import TheFooter from "@/components/TheFooter";
 
@@ -85,15 +90,17 @@ export default {
   },
   components: {
     BaseDropdownList,
+    BaseFlexCentered,
     BaseLevel,
     BaseLevelItem,
-    BaseMessage,
+    BaseNotification,
     DashboardTabs,
     TheFooter,
   },
   data() {
     return {
       loading: false,
+      erroredOnGet: false,
     };
   },
   computed: {
@@ -137,21 +144,17 @@ export default {
   watch: {
     async team(_newTeam, _oldTeam) {
       // Team has been set, fetch data for all tenants
+      this.erroredOnGet = false;
       this.loading = true;
-      try {
-        const results = await this.getAllTeamData();
-        results
-          .filter((result) => result.status == "rejected")
-          .map((result) => {
-            const tenant = this.getTenantById(result.tenant);
-            const region = this.getRegionById(tenant.region);
-            this.toast.error(
-              `Error fetching data from your ${region.description} tenant`
-            );
-          });
-      } catch (err) {
-        this.toast.error(err.message);
-      }
+      const results = await this.getAllTeamData();
+      results
+        .filter((result) => result.status == "rejected")
+        .map((result) => {
+          this.toast.error(result.reason.message);
+        });
+      this.erroredOnGet = results.every(
+        (result) => result.status == "rejected"
+      );
       this.loading = false;
     },
   },
