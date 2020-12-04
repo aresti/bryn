@@ -5,7 +5,7 @@ import Dashboard from "@/views/Dashboard";
 import NotFound from "@/views/NotFound";
 import Servers from "@/views/Servers";
 import Volumes from "@/views/Volumes";
-import SSHKeys from "@/views/SSHKeys";
+import SshKeys from "@/views/SshKeys";
 import Team from "@/views/Team";
 import UserProfile from "@/views/UserProfile";
 import Licence from "@/views/Licence";
@@ -39,7 +39,7 @@ const routes = [
       {
         path: "sshkeys",
         name: "sshkeys",
-        component: SSHKeys,
+        component: SshKeys,
         meta: { displayName: "SSH Keys", showTab: true },
       },
       {

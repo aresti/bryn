@@ -63,7 +63,7 @@ const mutations = {
     state.activeTeam = id;
   },
   setLoading(state, loading) {
-    state.loading = !state.loading;
+    state.loading = loading;
   },
 };
 
@@ -82,27 +82,34 @@ const actions = {
     commit("flavors/resetState");
     commit("sshkeys/resetState");
   },
-  async getAllTeamData({ dispatch, commit }) {
-    /* Fetch all team data */
-    commit("setLoading", true);
+  async getAllTenantData({ dispatch, getters }, { tenant }) {
+    /* Fetch all team data for a specific tenant */
     try {
       await Promise.all([
-        dispatch("flavors/getTeamFlavors"),
-        dispatch("images/getTeamImages"),
-        dispatch("instances/getTeamInstances"),
-        dispatch("sshkeys/getTeamSSHKeys"),
+        dispatch("flavors/getTeamFlavors", { tenant }),
+        dispatch("images/getTeamImages", { tenant }),
+        dispatch("instances/getTeamInstances", { tenant }),
+        dispatch("sshkeys/getTeamSshKeys", { tenant }),
       ]);
     } catch (err) {
+      const msg = `Error fetching data from ${
+        getters.getRegionById(tenant.region).description
+      } tenant`;
       if (err.response && err.response.data.hasOwnProperty("detail")) {
-        throw new Error(
-          `Error fetching team data: ${err.response.data.detail}`
-        );
+        throw new Error(`${msg}: ${err.response.data.detail}`);
       } else {
-        throw new Error(`Error fetching team data: ${err.message}`);
+        throw new Error(`${msg}: ${err.message}`);
       }
-    } finally {
-      commit("setLoading", false);
     }
+  },
+  async getAllTeamData({ dispatch, getters }) {
+    /* Fetch team data for all tenants */
+    const results = await Promise.allSettled(
+      getters.tenants.map((tenant) => dispatch("getAllTenantData", { tenant }))
+    );
+    return results.map(({ status, value, reason }, index) => {
+      return { status, value, reason, tenant: getters.tenants[index].id };
+    });
   },
 };
 

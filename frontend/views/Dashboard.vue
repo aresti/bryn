@@ -91,9 +91,20 @@ export default {
     DashboardTabs,
     TheFooter,
   },
+  data() {
+    return {
+      loading: false,
+    };
+  },
   computed: {
-    ...mapState(["loading", "teams", "user"]),
-    ...mapGetters(["userFullName", "team", "tenants"]),
+    ...mapState(["teams", "user"]),
+    ...mapGetters([
+      "userFullName",
+      "team",
+      "tenants",
+      "getTenantById",
+      "getRegionById",
+    ]),
   },
   methods: {
     ...mapActions(["setActiveTeam", "getAllTeamData"]),
@@ -125,12 +136,23 @@ export default {
   },
   watch: {
     async team(_newTeam, _oldTeam) {
-      // Team has been set, fetch essential data
+      // Team has been set, fetch data for all tenants
+      this.loading = true;
       try {
-        await this.getAllTeamData();
+        const results = await this.getAllTeamData();
+        results
+          .filter((result) => result.status == "rejected")
+          .map((result) => {
+            const tenant = this.getTenantById(result.tenant);
+            const region = this.getRegionById(tenant.region);
+            this.toast.error(
+              `Error fetching data from your ${region.description} tenant`
+            );
+          });
       } catch (err) {
         this.toast.error(err.message);
       }
+      this.loading = false;
     },
   },
   created() {
@@ -160,5 +182,14 @@ export default {
 .loader {
   height: 200px;
   width: 200px;
+}
+
+.hero {
+  background: rgb(32, 60, 71);
+  background: linear-gradient(
+    0deg,
+    rgba(32, 60, 71, 1) 0%,
+    rgba(38, 70, 83, 1) 100%
+  );
 }
 </style>

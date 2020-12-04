@@ -1,9 +1,10 @@
 import { axios, apiRoutes } from "@/api";
+import { updateTenantCollection } from "@/helpers";
 
 const getDefaultState = () => {
   return {
     all: [],
-    loading: false,
+    loading: false, // TODO: remove once refactored to component
     erroredOnGet: false,
   };
 };
@@ -15,8 +16,8 @@ const mutations = {
   resetState(state) {
     Object.assign(state, getDefaultState());
   },
-  setInstances(state, instances) {
-    state.all = instances;
+  setInstances(state, { instances, tenant = {} }) {
+    updateTenantCollection(state.all, instances, { tenant });
   },
   setLoading(state, loading) {
     state.loading = loading;
@@ -37,7 +38,7 @@ const getInstanceFormatter = (rootGetters) => {
     return {
       region: region.name,
       name: instance.name,
-      flavor: flavor === undefined ? "[legacy flavor]" : flavor.name,
+      flavor: flavor?.name ?? "[legacy flavor]",
       status: instance.status,
       ip: instance.ip,
       created: created,
@@ -58,21 +59,15 @@ const getters = {
 };
 
 const actions = {
-  async getTeamInstances({ rootState, commit }) {
-    commit("setErroredOnGet", false);
-    commit("setLoading", true);
-    try {
-      const response = await axios.get(apiRoutes.getInstances, {
-        params: { team: rootState.activeTeam },
-      });
-      const instances = response.data;
-      commit("setInstances", instances);
-    } catch (err) {
-      commit("setErroredOnGet", true);
-      throw err;
-    } finally {
-      commit("setLoading", false);
-    }
+  async getTeamInstances({ rootState, commit }, { tenant } = {}) {
+    // If no tenant specified, fetch all for active team
+    const params =
+      tenant == null ? { team: rootState.activeTeam } : { tenant: tenant.id };
+    const response = await axios.get(apiRoutes.getInstances, {
+      params: params,
+    });
+    const instances = response.data;
+    commit("setInstances", { instances, tenant });
   },
 };
 

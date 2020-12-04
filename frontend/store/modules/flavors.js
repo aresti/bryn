@@ -1,4 +1,5 @@
 import { axios, apiRoutes } from "@/api";
+import { updateTenantCollection } from "@/helpers";
 
 const getDefaultState = () => {
   return {
@@ -13,8 +14,8 @@ const mutations = {
   resetState(state) {
     Object.assign(state, getDefaultState());
   },
-  setFlavors(state, flavors) {
-    state.all = flavors;
+  setFlavors(state, { flavors, tenant = {} }) {
+    updateTenantCollection(state.all, flavors, { tenant });
   },
 };
 
@@ -32,12 +33,12 @@ const getters = {
 };
 
 const actions = {
-  async getTeamFlavors({ commit, rootState }) {
+  async getTeamFlavors({ commit, rootState }, { tenant } = {}) {
     const response = await axios.get(apiRoutes.getFlavors, {
       params: { team: rootState.activeTeam },
     });
     const flavors = response.data;
-    commit("setFlavors", flavors);
+    commit("setFlavors", { flavors, tenant });
   },
 };
 

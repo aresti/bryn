@@ -1,4 +1,5 @@
 import { axios, apiRoutes } from "@/api";
+import { updateTenantCollection } from "@/helpers";
 
 const getDefaultState = () => {
   return {
@@ -13,13 +14,13 @@ const mutations = {
   resetState(state) {
     Object.assign(state, getDefaultState());
   },
-  setSSHKeys(state, sshkeys) {
-    state.all = sshkeys;
+  setSshKeys(state, { sshkeys, tenant = {} }) {
+    updateTenantCollection(state.all, sshkeys, { tenant });
   },
 };
 
 const getters = {
-  getSSHKeyById(state) {
+  getSshKeyById(state) {
     return (id) => {
       return state.all.find((sshkey) => sshkey.id === id);
     };
@@ -27,12 +28,12 @@ const getters = {
 };
 
 const actions = {
-  async getTeamSSHKeys({ commit, rootState }) {
-    const response = await axios.get(apiRoutes.getSSHKeys, {
+  async getTeamSshKeys({ commit, rootState }, { tenant } = {}) {
+    const response = await axios.get(apiRoutes.getSshKeys, {
       params: { team: rootState.activeTeam },
     });
     const sshkeys = response.data;
-    commit("setSSHKeys", sshkeys);
+    commit("setSshKeys", { sshkeys, tenant });
   },
 };
 

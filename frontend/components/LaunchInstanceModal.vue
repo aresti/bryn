@@ -135,6 +135,7 @@ export default {
     ...mapGetters(["tenants", "getTenantById"]),
     ...mapGetters("flavors", ["getFlavorsForTenant"]),
     ...mapGetters("images", ["getImagesForTenant"]),
+    ...mapGetters("sshkeys", ["getSshKeysForTenant"]),
     selectedTenant() {
       return this.getTenantById(this.selectedTenantId);
     },
@@ -147,6 +148,11 @@ export default {
       return this.selectedTenantId == null
         ? []
         : this.getFlavorsForTenant(this.selectedTenant);
+    },
+    sshkeys() {
+      return this.selectedTenantId == null
+        ? []
+        : this.getSshKeysForTenant(this.selectedTenant);
     },
   },
 

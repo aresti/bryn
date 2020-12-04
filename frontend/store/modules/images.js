@@ -1,4 +1,5 @@
 import { axios, apiRoutes } from "@/api";
+import { updateTenantCollection } from "@/helpers";
 
 const getDefaultState = () => {
   return {
@@ -13,8 +14,8 @@ const mutations = {
   resetState(state) {
     Object.assign(state, getDefaultState());
   },
-  setImages(state, images) {
-    state.all = images;
+  setImages(state, { images, tenant = {} }) {
+    updateTenantCollection(state.all, images, { tenant });
   },
 };
 
@@ -32,12 +33,12 @@ const getters = {
 };
 
 const actions = {
-  async getTeamImages({ commit, rootState }) {
+  async getTeamImages({ commit, rootState }, { tenant } = {}) {
     const response = await axios.get(apiRoutes.getImages, {
       params: { team: rootState.activeTeam },
     });
     const images = response.data;
-    commit("setImages", images);
+    commit("setImages", { images, tenant });
   },
 };
 
