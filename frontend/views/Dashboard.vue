@@ -138,17 +138,7 @@ export default {
         params: { teamId: team.id },
       });
     },
-    async getTeamInstances() {
-      try {
-        await this.$store.dispatch("instances/getTeamInstances");
-      } catch (err) {
-        this.toast.error(`Error fetching team instances: ${err.message}`);
-      }
-    },
-  },
-  watch: {
-    async team(_newTeam, _oldTeam) {
-      // Team has been set, fetch data for all tenants
+    async getTeamData() {
       this.erroredOnGet = false;
       this.loading = true;
       const results = await this.getAllTeamData();
@@ -161,6 +151,12 @@ export default {
         (result) => result.status == "rejected"
       );
       this.loading = false;
+    },
+  },
+  watch: {
+    async team(_newTeam, _oldTeam) {
+      // Team has been set, fetch data for all tenants
+      this.getTeamData();
     },
   },
   created() {

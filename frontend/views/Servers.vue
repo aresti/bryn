@@ -4,9 +4,16 @@
       <base-level>
         <template v-slot:left>
           <base-level-item>
-            <base-button-create @click="showLaunchInstanceModal = true"
-              >New server</base-button-create
-            >
+            <base-tabs class="is-toggle is-toggle-rounded">
+              <li :class="{ 'is-active': filterTenant == null }"><a>All</a></li>
+              <li
+                v-for="tenant in tenants"
+                :key="tenant.id"
+                :class="{ 'is-active': tenant.id === filterTenant }"
+              >
+                <a>{{ getRegionNameForTenant(tenant) }}</a>
+              </li>
+            </base-tabs>
           </base-level-item>
         </template>
         <template v-slot:right>
@@ -25,6 +32,11 @@
                 showShelved ? "Hide shelved" : "Show shelved"
               }}</template>
             </base-button>
+          </base-level-item>
+          <base-level-item>
+            <base-button-create @click="showLaunchInstanceModal = true">
+              New server
+            </base-button-create>
           </base-level-item>
         </template>
       </base-level>
@@ -48,6 +60,7 @@ import BaseIcon from "@/components/BaseIcon";
 import BaseLevel from "@/components/BaseLevel";
 import BaseLevelItem from "@/components/BaseLevelItem";
 import BaseMessage from "@/components/BaseMessage";
+import BaseTabs from "@/components/BaseTabs";
 import LaunchInstanceModal from "@/components/LaunchInstanceModal";
 import InstanceTable from "@/components/InstanceTable";
 
@@ -63,16 +76,19 @@ export default {
     BaseLevel,
     BaseLevelItem,
     BaseMessage,
+    BaseTabs,
     InstanceTable,
     LaunchInstanceModal,
   },
   data() {
     return {
+      filterTenant: null,
       showShelved: false,
       showLaunchInstanceModal: false,
     };
   },
   computed: {
+    ...mapGetters(["tenants", "getRegionNameForTenant"]),
     ...mapGetters("instances", ["allFormatted", "notShelvedFormatted"]),
     instances() {
       if (this.showShelved) {

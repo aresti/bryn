@@ -45,6 +45,12 @@ const getters = {
       return state.regions.find((region) => region.id === id);
     };
   },
+  getRegionNameForTenant(_state, getters) {
+    return (tenant) => {
+      const region = getters.getRegionById(tenant.region);
+      return region?.description?.replace("University of ", "");
+    };
+  },
 };
 
 const mutations = {
@@ -53,10 +59,10 @@ const mutations = {
       document.getElementById("regionsData").textContent
     );
   },
-  initTeams(state, teams) {
+  initTeams(state) {
     state.teams = JSON.parse(document.getElementById("teamsData").textContent);
   },
-  initUser(state, user) {
+  initUser(state) {
     state.user = JSON.parse(document.getElementById("userData").textContent);
   },
   setActiveTeam(state, { id }) {
@@ -92,9 +98,9 @@ const actions = {
         dispatch("sshkeys/getTeamSshKeys", { tenant }),
       ]);
     } catch (err) {
-      const msg = `Error fetching data from ${
-        getters.getRegionById(tenant.region).description
-      } tenant`;
+      const msg = `Error fetching data from ${getters.getRegionNameForTenant(
+        tenant
+      )} tenant`;
       if (err.response && err.response.data.hasOwnProperty("detail")) {
         throw new Error(`${msg}: ${err.response.data.detail}`);
       } else {
