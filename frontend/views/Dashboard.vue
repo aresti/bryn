@@ -2,38 +2,7 @@
   <div
     class="page-content is-flex is-flex-direction-column is-align-items-stretch is-flex-grow-1"
   >
-    <section class="hero is-primary">
-      <div class="hero-body">
-        <header class="container">
-          <base-level>
-            <template v-slot:left>
-              <base-level-item>
-                <h1 class="title">
-                  {{ team.name }}
-                </h1>
-              </base-level-item>
-            </template>
-            <template v-slot:right>
-              <base-level-item>
-                <base-dropdown-list
-                  @itemSelected="onTeamSelect"
-                  title="Select team"
-                  :items="teams"
-                  :activeItem="team"
-                  hoverable
-                  right
-                >
-                  <template v-slot:title>Switch team</template>
-                  <template v-slot:item="{ item: team }">
-                    {{ team.name }}
-                  </template>
-                </base-dropdown-list>
-              </base-level-item>
-            </template>
-          </base-level>
-        </header>
-      </div>
-    </section>
+    <the-dashboard-header />
 
     <section class="section is-flex is-flex-grow-1">
       <base-flex-centered v-if="erroredOnGet">
@@ -77,11 +46,9 @@
 import { mapActions, mapGetters, mapState } from "vuex";
 import { useToast } from "vue-toastification";
 
-import BaseDropdownList from "@/components/BaseDropdownList";
 import BaseFlexCentered from "@/components/BaseFlexCentered";
-import BaseLevel from "@/components/BaseLevel";
-import BaseLevelItem from "@/components/BaseLevelItem";
 import BaseNotification from "@/components/BaseNotification";
+import TheDashboardHeader from "@/components/TheDashboardHeader";
 import TheDashboardMenu from "@/components/TheDashboardMenu";
 import TheFooter from "@/components/TheFooter";
 
@@ -90,28 +57,50 @@ export default {
     const toast = useToast();
     return { toast };
   },
+
   components: {
-    BaseDropdownList,
     BaseFlexCentered,
-    BaseLevel,
-    BaseLevelItem,
     BaseNotification,
+    TheDashboardHeader,
     TheDashboardMenu,
     TheFooter,
   },
+
   data() {
     return {
       loading: false,
       erroredOnGet: false,
     };
   },
+
   computed: {
     ...mapState(["teams", "user"]),
     ...mapGetters(["team", "tenants", "getTenantById", "getRegionById"]),
   },
+
+  watch: {
+    async team(_newTeam, _oldTeam) {
+      /* Team has been set, fetch data for all tenants */
+      this.getTeamData();
+    },
+  },
+
+  created() {
+    /* Set activeTeam for initial route */
+    this.setTeamForRoute(this.$route);
+  },
+
+  beforeRouteUpdate(to, from) {
+    /* Update activeTeam on route change (since Vue component instance is reused) */
+    if (to.params.teamId !== from.params.teamId) {
+      this.setTeamForRoute(to);
+    }
+  },
+
   methods: {
     ...mapActions(["setActiveTeam", "getAllTeamData"]),
     setTeamForRoute(route) {
+      /* Set the activeTeam state from route params */
       const toTeam = this.teams.find(
         (team) => team.id === parseInt(route.params.teamId)
       );
@@ -123,42 +112,27 @@ export default {
       }
       this.setActiveTeam(toTeam);
     },
-    onTeamSelect(team) {
-      this.$router.push({
-        name: this.$route.name,
-        params: { teamId: team.id },
-      });
-    },
     async getTeamData() {
+      /* Fetch data for the active team */
       this.erroredOnGet = false;
       this.loading = true;
+
+      // Result is as per Promise.allSettled
       const results = await this.getAllTeamData();
+
+      // Trigger toasts for errored tenants
       results
         .filter((result) => result.status == "rejected")
         .map((result) => {
           this.toast.error(result.reason.message);
         });
+
+      // Set dashboard state
       this.erroredOnGet = results.every(
         (result) => result.status == "rejected"
       );
       this.loading = false;
     },
-  },
-  watch: {
-    async team(_newTeam, _oldTeam) {
-      // Team has been set, fetch data for all tenants
-      this.getTeamData();
-    },
-  },
-  created() {
-    // Set activeTeam for initial route
-    this.setTeamForRoute(this.$route);
-  },
-  beforeRouteUpdate(to, from) {
-    // Update activeTeam on route change (since Vue component instance is reused)
-    if (to.params.teamId !== from.params.teamId) {
-      this.setTeamForRoute(to);
-    }
   },
 };
 </script>
