@@ -130,27 +130,8 @@ export default {
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
 .loader {
   height: 200px;
   width: 200px;
-}
-
-.hero {
-  background: rgb(32, 60, 71);
-  background: linear-gradient(
-    0deg,
-    rgba(32, 60, 71, 1) 0%,
-    rgba(38, 70, 83, 1) 100%
-  );
 }
 </style>

@@ -60,3 +60,14 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.hero {
+  background: rgb(32, 60, 71);
+  background: linear-gradient(
+    0deg,
+    rgba(32, 60, 71, 1) 0%,
+    rgba(38, 70, 83, 1) 100%
+  );
+}
+</style>
