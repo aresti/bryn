@@ -1,5 +1,5 @@
 <template>
-  <button @click="click" :class="classList" :disabled="disabled">
+  <button @click="click" :class="classes" :disabled="disabled">
     <slot name="icon-before"></slot>
 
     <span v-if="hasText">
@@ -65,7 +65,7 @@ export default {
     },
   },
   computed: {
-    classList() {
+    classes() {
       return [
         "button",
         this.colorClass,

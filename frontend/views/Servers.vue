@@ -4,7 +4,7 @@
       <base-level>
         <template v-slot:left>
           <base-level-item>
-            <base-tabs class="is-toggle is-toggle-rounded">
+            <base-tabs toggle rounded>
               <li :class="{ 'is-active': filterTenant == null }"><a>All</a></li>
               <li
                 v-for="tenant in tenants"
