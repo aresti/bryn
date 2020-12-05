@@ -1,0 +1,2 @@
+worker1: npm run start:dev
+worker2: python brynweb/manage.py runserver
