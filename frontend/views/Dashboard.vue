@@ -22,17 +22,7 @@
             <the-dashboard-menu />
           </div>
           <div class="column is-four-fiths">
-            <router-view v-slot="{ Component, route }">
-              <transition name="fade" mode="out-in">
-                <keep-alive>
-                  <component
-                    :is="Component"
-                    class="container"
-                    :class="'tab-' + route.name"
-                  />
-                </keep-alive>
-              </transition>
-            </router-view>
+            <the-dashboard-content />
           </div>
         </div>
       </div>
@@ -48,6 +38,7 @@ import { useToast } from "vue-toastification";
 
 import BaseFlexCentered from "@/components/BaseFlexCentered";
 import BaseNotification from "@/components/BaseNotification";
+import TheDashboardContent from "@/components/TheDashboardContent";
 import TheDashboardHeader from "@/components/TheDashboardHeader";
 import TheDashboardMenu from "@/components/TheDashboardMenu";
 import TheFooter from "@/components/TheFooter";
@@ -61,6 +52,7 @@ export default {
   components: {
     BaseFlexCentered,
     BaseNotification,
+    TheDashboardContent,
     TheDashboardHeader,
     TheDashboardMenu,
     TheFooter,
