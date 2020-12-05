@@ -5,13 +5,17 @@
         <template v-slot:left>
           <base-level-item>
             <base-tabs toggle rounded>
-              <li :class="{ 'is-active': filterTenant == null }"><a>All</a></li>
+              <li :class="{ 'is-active': filterTenant == null }">
+                <a @click="filterTenant = null">All</a>
+              </li>
               <li
                 v-for="tenant in tenants"
                 :key="tenant.id"
-                :class="{ 'is-active': tenant.id === filterTenant }"
+                :class="{ 'is-active': tenant === filterTenant }"
               >
-                <a>{{ getRegionNameForTenant(tenant) }}</a>
+                <a @click="filterTenant = tenant">{{
+                  getRegionNameForTenant(tenant)
+                }}</a>
               </li>
             </base-tabs>
           </base-level-item>
@@ -41,7 +45,7 @@
         </template>
       </base-level>
     </div>
-    <instance-table :instances="instances" />
+    <instance-table :instances="formattedInstances" />
 
     <launch-instance-modal
       v-if="showLaunchInstanceModal"
@@ -52,7 +56,7 @@
 
 <script>
 import { useToast } from "vue-toastification";
-import { mapGetters } from "vuex";
+import { mapGetters, mapState } from "vuex";
 
 import BaseButton from "@/components/BaseButton";
 import BaseButtonCreate from "@/components/BaseButtonCreate";
@@ -69,6 +73,7 @@ export default {
     const toast = useToast();
     return { toast };
   },
+
   components: {
     BaseButton,
     BaseButtonCreate,
@@ -80,6 +85,7 @@ export default {
     InstanceTable,
     LaunchInstanceModal,
   },
+
   data() {
     return {
       filterTenant: null,
@@ -87,18 +93,52 @@ export default {
       showLaunchInstanceModal: false,
     };
   },
+
   computed: {
-    ...mapGetters(["tenants", "getRegionNameForTenant"]),
-    ...mapGetters("instances", ["allFormatted", "notShelvedFormatted"]),
-    instances() {
-      if (this.showShelved) {
-        return this.allFormatted;
-      } else {
-        return this.notShelvedFormatted;
+    ...mapState("instances", ["all"]),
+    ...mapGetters(["tenants", "getRegionNameForTenant", "getTenantById"]),
+    ...mapGetters("instances", ["getInstancesForTenant", "notShelved"]),
+    ...mapGetters("flavors", ["getFlavorById"]),
+    filteredInstances() {
+      const byStatus = this.showShelved ? this.all : this.notShelved;
+      if (this.filterTenant == null) {
+        return byStatus;
       }
+      return byStatus.filter(
+        (instance) => instance.tenant === this.filterTenant.id
+      );
+    },
+    instanceFormatter() {
+      return this.createInstanceFormatter();
+    },
+    formattedInstances() {
+      return this.filteredInstances.map(this.instanceFormatter);
     },
     hasShelved() {
-      return this.allFormatted.length !== this.notShelvedFormatted.length;
+      return this.all.length !== this.notShelved.length;
+    },
+  },
+
+  methods: {
+    createInstanceFormatter() {
+      return (instance) => {
+        const tenant = this.getTenantById(instance.tenant);
+        const regionName = this.getRegionNameForTenant(tenant);
+        const flavorName =
+          this.getFlavorById(instance.flavor)?.name ?? "[legacy flavor]";
+        const timestamp = new Date(instance.created);
+        const created = timestamp.toDateString();
+
+        return {
+          id: instance.id,
+          region: regionName,
+          name: instance.name,
+          flavor: flavorName,
+          status: instance.status,
+          ip: instance.ip,
+          created: created,
+        };
+      };
     },
   },
 };

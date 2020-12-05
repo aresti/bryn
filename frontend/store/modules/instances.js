@@ -1,6 +1,8 @@
 import { axios, apiRoutes } from "@/api";
 import { updateTenantCollection } from "@/helpers";
 
+const SHELVED_STATUSES = ["SHELVED", "SHELVED_OFFLOADED"];
+
 const getDefaultState = () => {
   return {
     all: [],
@@ -25,33 +27,10 @@ const mutations = {
   },
 };
 
-const getInstanceFormatter = (rootGetters) => {
-  return (instance) => {
-    const tenant = rootGetters.getTenantById(instance.tenant);
-    const region = rootGetters.getRegionById(tenant.region);
-    const flavor = rootGetters["flavors/getFlavorById"](instance.flavor);
-    const timestamp = new Date(instance.created);
-    const created = timestamp.toLocaleTimeString();
-
-    return {
-      region: region.name,
-      name: instance.name,
-      flavor: flavor?.name ?? "[legacy flavor]",
-      status: instance.status,
-      ip: instance.ip,
-      created: created,
-    };
-  };
-};
-
 const getters = {
-  allFormatted(state, _getters, _rootState, rootGetters) {
-    return state.all.map(getInstanceFormatter(rootGetters));
-  },
-  notShelvedFormatted(_state, getters) {
-    const shelvedStatus = ["SHELVED", "SHELVED_OFFLOADED"];
-    return getters.allFormatted.filter(
-      (instance) => shelvedStatus.indexOf(instance.status) == -1
+  notShelved(state) {
+    return state.all.filter(
+      ({ status }) => SHELVED_STATUSES.indexOf(status) === -1
     );
   },
 };
