@@ -1,25 +1,68 @@
 <template>
-  <tr>
-    <td
-      v-for="(value, index) in rowValues"
-      :key="value"
-      :class="{ 'has-text-success': value === 'ACTIVE' }"
-    >
+  <tr class="is-size-6">
+    <td>
       <base-icon
-        v-if="index === 0"
-        :fa-classes="['fa', 'fa-server']"
+        :fa-classes="['fas', 'fa-circle']"
         class="mr-2"
+        :color="statusColor"
       />
-      {{ value }}
     </td>
-    <td>Menu</td>
+    <td>
+      <span class="is-family-monospace has-text-weight-semibold">{{
+        instance.name
+      }}</span
+      ><br />
+      <span class="is-size-7">{{ regionName }}</span>
+    </td>
+    <td>
+      {{ flavorName }}
+    </td>
+    <td>
+      <base-tag :color="statusColor" rounded light>{{
+        instance.status
+      }}</base-tag
+      ><br />
+      <span class="is-family-monospace is-size-7">{{ instance.ip }}</span>
+    </td>
+    <td>{{ createdDistanceToNow }}</td>
+    <td>
+      <base-dropdown right>
+        <template v-slot:trigger="{ toggle: toggleDropdown }">
+          <base-button @click="toggleDropdown" dropdown outlined>
+            Actions
+          </base-button>
+        </template>
+        <template v-slot="{ toggle: toggleDropdown }">
+          <a @click="toggleDropdown" class="dropdown-item"> Test </a>
+        </template>
+      </base-dropdown>
+    </td>
   </tr>
 </template>
 
 <script>
-import BaseIcon from "./BaseIcon";
+import BaseButton from "@/components/BaseButton";
+import BaseDropdown from "@/components/BaseDropdown";
+import BaseIcon from "@/components/BaseIcon";
+import BaseTag from "@/components/BaseTag";
+
+import { formatDistanceToNow } from "date-fns";
+
+import { mapGetters } from "vuex";
+
+const statusColorMap = {
+  ACTIVE: "success",
+  SHUTDOWN: "grey-light",
+  SHELVED: "grey-lighter",
+};
+
 export default {
-  components: { BaseIcon },
+  components: {
+    BaseButton,
+    BaseDropdown,
+    BaseIcon,
+    BaseTag,
+  },
   props: {
     instance: {
       type: Object,
@@ -27,16 +70,32 @@ export default {
     },
   },
   computed: {
-    rowValues() {
-      return [
-        this.instance.region,
-        this.instance.name,
-        this.instance.flavor,
-        this.instance.status,
-        this.instance.ip,
-        this.instance.created,
-      ];
+    ...mapGetters(["getRegionNameForTenant", "getTenantById"]),
+    ...mapGetters("flavors", ["getFlavorById"]),
+    tenant() {
+      return this.getTenantById(this.instance.tenant);
+    },
+    regionName() {
+      return this.getRegionNameForTenant(this.tenant);
+    },
+    flavorName() {
+      return (
+        this.getFlavorById(this.instance.flavor)?.name ?? "[legacy flavor]"
+      );
+    },
+    createdDistanceToNow() {
+      return formatDistanceToNow(new Date(this.instance.created)) + " ago";
+    },
+    statusColor() {
+      const { [this.instance.status]: color } = statusColorMap;
+      return color;
     },
   },
 };
 </script>
+
+<style scoped>
+td {
+  vertical-align: middle;
+}
+</style>

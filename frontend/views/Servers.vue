@@ -45,7 +45,7 @@
         </template>
       </base-level>
     </div>
-    <instance-table :instances="formattedInstances" />
+    <instance-table :instances="filteredInstances" />
 
     <launch-instance-modal
       v-if="showLaunchInstanceModal"
@@ -96,9 +96,8 @@ export default {
 
   computed: {
     ...mapState("instances", ["all"]),
-    ...mapGetters(["tenants", "getRegionNameForTenant", "getTenantById"]),
-    ...mapGetters("instances", ["getInstancesForTenant", "notShelved"]),
-    ...mapGetters("flavors", ["getFlavorById"]),
+    ...mapGetters(["tenants", "getRegionNameForTenant"]),
+    ...mapGetters("instances", ["notShelved"]),
     filteredInstances() {
       const byStatus = this.showShelved ? this.all : this.notShelved;
       if (this.filterTenant == null) {
@@ -108,37 +107,8 @@ export default {
         (instance) => instance.tenant === this.filterTenant.id
       );
     },
-    instanceFormatter() {
-      return this.createInstanceFormatter();
-    },
-    formattedInstances() {
-      return this.filteredInstances.map(this.instanceFormatter);
-    },
     hasShelved() {
       return this.all.length !== this.notShelved.length;
-    },
-  },
-
-  methods: {
-    createInstanceFormatter() {
-      return (instance) => {
-        const tenant = this.getTenantById(instance.tenant);
-        const regionName = this.getRegionNameForTenant(tenant);
-        const flavorName =
-          this.getFlavorById(instance.flavor)?.name ?? "[legacy flavor]";
-        const timestamp = new Date(instance.created);
-        const created = timestamp.toDateString();
-
-        return {
-          id: instance.id,
-          region: regionName,
-          name: instance.name,
-          flavor: flavorName,
-          status: instance.status,
-          ip: instance.ip,
-          created: created,
-        };
-      };
     },
   },
 };

@@ -1,5 +1,5 @@
 <template>
-  <div :class="classList">
+  <div :class="classList" v-click-away="close">
     <div class="dropdown-trigger">
       <slot name="trigger" :toggle="toggle"></slot>
     </div>
@@ -39,6 +39,9 @@ export default {
       if (!this.hoverable) {
         this.isActive = !this.isActive;
       }
+    },
+    close() {
+      this.isActive = false;
     },
   },
 };
