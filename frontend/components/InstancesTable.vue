@@ -8,7 +8,7 @@
       </tr>
     </template>
     <template v-slot:body>
-      <instance-table-row
+      <instances-table-row
         v-for="instance in instances"
         :key="instance.uuid"
         :instance="instance"
@@ -19,12 +19,12 @@
 
 <script>
 import BaseTable from "@/components/BaseTable";
-import InstanceTableRow from "@/components/InstanceTableRow";
+import InstancesTableRow from "@/components/InstancesTableRow";
 
 export default {
   components: {
     BaseTable,
-    InstanceTableRow,
+    InstancesTableRow,
   },
   props: {
     instances: {

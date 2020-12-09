@@ -7,8 +7,8 @@
     <section class="section is-flex is-flex-grow-1">
       <base-flex-centered v-if="erroredOnGet">
         <base-notification color="danger" light>
-          All of your tenants were unreachable. Please check your network
-          connection.
+          All of your tenants were unreachable, there may be a temporary issue
+          on our end. Please try again shortly.
         </base-notification>
       </base-flex-centered>
 

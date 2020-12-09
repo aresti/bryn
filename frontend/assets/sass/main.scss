@@ -1,7 +1,9 @@
 @charset "utf-8";
 
 // Fonts
-@import url("https://fonts.googleapis.com/css2?family=Bungee&family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bungee&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
+
+// Bulma
 
 @import "~bulma/sass/utilities/initial-variables";
 
@@ -14,10 +16,11 @@ $powder-blue: #a8dadcff;
 $celadon-blue: #457b9dff;
 $prussian-blue: #1d3557ff;
 $illuminating-emerald: #1e9577ff;
+$climb-blue: #2d3e48;
 
 // Update Bulma's global variables
-$family-sans-serif: "Open Sans", sans-serif;
-$primary: $prussian-blue;
+$family-sans-serif: "Lato", sans-serif;
+$primary: $climb-blue;
 $warning: $sandy-brown;
 $danger: $imperial-red;
 $link: $celadon-blue;
@@ -32,7 +35,13 @@ $navbar-item-hover-background-color: $black-ter;
 $footer-background-color: $white-ter;
 $footer-padding: 3rem 1.5rem;
 
+$modal-content-width: 800px;
+
 @import "~bulma/bulma";
+
+// Bulma tooltip
+$tooltip-radius: 6px;
+@import "@creativebulma/bulma-tooltip";
 
 // Page layout, sticky footer
 body {

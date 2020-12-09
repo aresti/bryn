@@ -19,17 +19,19 @@ const mutations = {
   setInstances(state, { instances, tenant = {} }) {
     updateTenantCollection(state.all, instances, { tenant });
   },
-  setLoading(state, loading) {
-    state.loading = loading;
-  },
-  setErroredOnGet(state, erroredOnGet) {
-    state.erroredOnGet = erroredOnGet;
-  },
 };
 
 const getters = {
-  notShelved(state) {
+  instancesForFilterTenant(state, _getters, rootState) {
+    if (rootState.filterTenant == null) {
+      return state.all;
+    }
     return state.all.filter(
+      (instance) => instance.tenant === rootState.filterTenant
+    );
+  },
+  notShelvedForFilterTenant(_state, getters) {
+    return getters.instancesForFilterTenant.filter(
       ({ status }) => SHELVED_STATUSES.indexOf(status) === -1
     );
   },
@@ -45,6 +47,10 @@ const actions = {
     });
     const instances = response.data;
     commit("setInstances", { instances, tenant });
+  },
+  async createInstance({ commit }, data) {
+    const response = await axios.post(apiRoutes.postInstance, data);
+    console.log(response);
   },
 };
 

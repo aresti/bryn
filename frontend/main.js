@@ -1,6 +1,6 @@
 require("./assets/sass/main.scss");
 
-/* Hamburgers */
+// Hamburgers
 document.addEventListener("DOMContentLoaded", () => {
   const $navbarBurgers = Array.prototype.slice.call(
     document.querySelectorAll(".navbar-burger"),

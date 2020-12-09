@@ -1,23 +1,10 @@
 <template>
   <div>
-    <div class="container mb-3">
+    <div class="block mb-3">
       <base-level>
         <template v-slot:left>
           <base-level-item>
-            <base-tabs toggle rounded>
-              <li :class="{ 'is-active': filterTenant == null }">
-                <a @click="filterTenant = null">All</a>
-              </li>
-              <li
-                v-for="tenant in tenants"
-                :key="tenant.id"
-                :class="{ 'is-active': tenant === filterTenant }"
-              >
-                <a @click="filterTenant = tenant">{{
-                  getRegionNameForTenant(tenant)
-                }}</a>
-              </li>
-            </base-tabs>
+            <tenant-filter-tabs />
           </base-level-item>
         </template>
         <template v-slot:right>
@@ -38,19 +25,19 @@
             </base-button>
           </base-level-item>
           <base-level-item>
-            <base-button-create @click="showLaunchInstanceModal = true">
+            <base-button-create @click="showInstancesNewInstanceModal = true">
               New server
             </base-button-create>
           </base-level-item>
         </template>
       </base-level>
     </div>
-    <instance-table :instances="filteredInstances" />
+    <instances-table :instances="filteredInstances" />
 
-    <launch-instance-modal
-      v-if="showLaunchInstanceModal"
-      @closeModal="showLaunchInstanceModal = false"
-    />
+    <!-- <instances-new-instance-modal
+      v-if="showInstancesNewInstanceModal"
+      @closeModal="showInstancesNewInstanceModal = false"
+    /> -->
   </div>
 </template>
 
@@ -63,10 +50,9 @@ import BaseButtonCreate from "@/components/BaseButtonCreate";
 import BaseIcon from "@/components/BaseIcon";
 import BaseLevel from "@/components/BaseLevel";
 import BaseLevelItem from "@/components/BaseLevelItem";
-import BaseMessage from "@/components/BaseMessage";
-import BaseTabs from "@/components/BaseTabs";
-import LaunchInstanceModal from "@/components/LaunchInstanceModal";
-import InstanceTable from "@/components/InstanceTable";
+import InstancesNewInstanceModal from "@/components/InstancesNewInstanceModal";
+import InstancesTable from "@/components/InstancesTable";
+import TenantFilterTabs from "@/components/TenantFilterTabs";
 
 export default {
   setup() {
@@ -80,35 +66,33 @@ export default {
     BaseIcon,
     BaseLevel,
     BaseLevelItem,
-    BaseMessage,
-    BaseTabs,
-    InstanceTable,
-    LaunchInstanceModal,
+    TenantFilterTabs,
+    InstancesTable,
+    InstancesNewInstanceModal,
   },
 
   data() {
     return {
-      filterTenant: null,
       showShelved: false,
-      showLaunchInstanceModal: false,
+      showInstancesNewInstanceModal: false,
     };
   },
 
   computed: {
-    ...mapState("instances", ["all"]),
-    ...mapGetters(["tenants", "getRegionNameForTenant"]),
-    ...mapGetters("instances", ["notShelved"]),
+    ...mapGetters("instances", [
+      "instancesForFilterTenant",
+      "notShelvedForFilterTenant",
+    ]),
     filteredInstances() {
-      const byStatus = this.showShelved ? this.all : this.notShelved;
-      if (this.filterTenant == null) {
-        return byStatus;
-      }
-      return byStatus.filter(
-        (instance) => instance.tenant === this.filterTenant.id
-      );
+      return this.showShelved
+        ? this.instancesForFilterTenant
+        : this.notShelvedForFilterTenant;
     },
     hasShelved() {
-      return this.all.length !== this.notShelved.length;
+      return (
+        this.instancesForFilterTenant.length !==
+        this.notShelvedForFilterTenant.length
+      );
     },
   },
 };

@@ -14,9 +14,11 @@ class Tenant(models.Model):
     auth_password = models.CharField(max_length=50)
     created_network_id = models.CharField(max_length=50, blank=True)
 
+    # TODO property decorator
     def get_tenant_name(self):
         return "bryn:%d_%s" % (self.team.pk, self.team.name)
 
+    # TODO property decorator
     def get_tenant_description(self):
         return "%s (%s)" % (self.team.name, self.team.creator.last_name)
 
@@ -43,6 +45,56 @@ class Tenant(models.Model):
         client = self.get_client()
         nova = client.get_nova()
         return nova.servers.list(detailed=True)
+
+    def get_volumes(self):
+        client = self.get_client()
+        cinder = client.get_cinder()
+        return cinder.volumes.list()
+
+    def launch_instance(self, name, flavor, image, auth_key_name, auth_key_value=None):
+        # client = self.get_client()
+
+        # Create boot volume, wait for it to become available
+        # cinder = client.get_cinder()
+        # volume = cinder.volumes.create(
+        #     imageRef=image,
+        #     name=f"{self.get_tenant_name()} {name} boot volume",
+        #     size=120,
+        # )
+        # cinder.volumes.set_bootable(volume, True)
+
+        # for n in range(20):
+        #     # TODO find a better way!
+        #     v = cinder.volumes.get(volume.id)
+        #     if v.status == "available":
+        #         break
+        #     time.sleep(1)
+
+        # bdm = [
+        #     {
+        #         "uuid": volume.id,
+        #         "source_type": "volume",
+        #         "destination_type": "volume",
+        #         "boot_index": "0",
+        #         "delete_on_termination": True,
+        #     }
+        # ]
+
+        net_id = self.get_network_id()
+
+        print(name)
+        print(flavor)
+        print(net_id)
+        print(auth_key_name)
+
+        # return nova.servers.create(
+        #     server_name,
+        #     "",
+        #     flavor=flavor_id,
+        #     nics=[{"net-id": net_id}],
+        #     key_name=auth_key_name,
+        #     block_device_mapping_v2=bdm,
+        # )
 
     def get_keys(self):
         client = self.get_client()

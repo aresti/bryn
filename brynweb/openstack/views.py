@@ -13,8 +13,9 @@ from .serializers import (
     FlavorSerializer,
     ImageSerializer,
     InstanceSerializer,
-    SshKeySerializer,
+    KeyPairSerializer,
     TenantSerializer,
+    VolumeSerializer,
 )
 
 
@@ -81,7 +82,7 @@ class OpenstackListView(APIView):
         Returns a func to map openstack response to desired data structure
         Override as required
         """
-        return lambda r: {"id": r.id, "name": r.name, "tenant": tenant}
+        return lambda r: {"id": r.id, "name": r.name, "tenant": tenant.pk}
 
     def get(self, request):
         query_tenant = request.query_params.get("tenant")
@@ -110,7 +111,7 @@ class OpenstackListView(APIView):
         if collection:
             try:
                 serialized = self.serializer_class(data=collection, many=True)
-                serialized.is_valid()
+                serialized.is_valid(raise_exception=True)
                 return Response(serialized.data)
             except Exception as e:
                 raise OpenstackException(detail=str(e))
@@ -153,8 +154,26 @@ class InstanceListView(OpenstackListView):
             if public_netname in r.addresses.keys()
             else None,
             "created": r.created,
-            "tenant": tenant,
+            "tenant": tenant.pk,
         }
+
+    def post(self, request, format=None):
+        # Get tenant, validate team membership
+        query_tenant = request.query_params.get("tenant")
+        query_team = request.query_params.get("team")
+        tenants = get_tenants_for_user(
+            request.user, tenant=query_tenant, team=query_team
+        )
+
+        if not tenants:
+            # Bad tenant id, or not a team member
+            raise drf_exceptions.PermissionDenied
+
+        tenant = tenants[0]
+        # serialized = NewInstanceSerializer(data=request.data)
+
+        print(tenant.launch_instance())
+        return Response(None, status.HTTP_201_CREATED)
 
 
 class InstanceView(APIView):
@@ -251,14 +270,42 @@ class ImageListView(OpenstackListView):
     tenant_get_method = Tenant.get_images
 
 
-class SshKeyListView(OpenstackListView):
+class KeyPairListView(OpenstackListView):
     """
-    SSH keys for tenants owned by teams that the authenticated user is a member of.
+    SSH key pairs for tenants owned by teams that the authenticated user is a member of.
     """
 
-    serializer_class = SshKeySerializer
+    serializer_class = KeyPairSerializer
     tenant_get_method = Tenant.get_keys
+
+    def get_transform_func(self, tenant):
+        return lambda r: {
+            "id": r.id,
+            "name": r.name,
+            "fingerprint": r.fingerprint,
+            "public_key": r.public_key,
+            "tenant": tenant.pk,
+        }
 
     def post(self, request, team_id, tenant_id):
         # TODO
         pass
+
+
+class VolumeListView(OpenstackListView):
+    """
+    Volumes for tenants owned by teams that the authenticated user is a member of.
+    """
+
+    serializer_class = VolumeSerializer
+    tenant_get_method = Tenant.get_volumes
+
+    def get_transform_func(self, tenant):
+        return lambda r: {
+            "id": r.id,
+            "name": r.name,
+            "size": r.size,
+            "status": r.status,
+            "attachments": r.attachments,
+            "tenant": tenant.pk,
+        }

@@ -19,5 +19,6 @@ urlpatterns = [
     ),
     path("flavors/", views.FlavorListView.as_view(), name="api-flavor-list",),
     path("images/", views.ImageListView.as_view(), name="api-image-list",),
-    path("sshkeys/", views.SshKeyListView.as_view(), name="api-sshkey-list",),
+    path("keypairs/", views.KeyPairListView.as_view(), name="api-keypairs-list",),
+    path("volumes/", views.VolumeListView.as_view(), name="api-volume-list"),
 ]

@@ -26,35 +26,25 @@ class InstanceSerializer(serializers.Serializer):
     name = serializers.CharField()
     flavor = serializers.UUIDField()
     status = serializers.ChoiceField(choices=INSTANCE_STATUS_VALUES)
-    ip = serializers.IPAddressField(required=False)
-    created = serializers.DateTimeField(required=False)
+    ip = serializers.IPAddressField(required=False, allow_null=True)
+    created = serializers.DateTimeField()
 
 
 class NewInstanceSerializer(serializers.Serializer):
-    # TODO remove class after extracting key validation logic
     name = serializers.RegexField(regex=r"^([a-zA-Z0-9\-]+)$", max_length=50,)
-    flavor = serializers.ChoiceField(choices=[])
-    image = serializers.ChoiceField(choices=[])
-    key_name = serializers.ChoiceField(choices=[], required=False)
-    new_key_name = serializers.RegexField(
+    flavor = serializers.UUIDField()
+    image = serializers.UUIDField()
+    auth_key_name = serializers.RegexField(
         regex=r"^([a-zA-Z0-9\-]+)$", max_length=50, required=False
     )
-    new_key = serializers.CharField(required=False)
+    auth_key_value = serializers.CharField(required=False)
 
-    def validate_new_key(self, value):
+    def validate_auth_key_value(self, value):
         try:
             sshpubkeys.SSHKey(value).parse()
         except sshpubkeys.InvalidKeyException:
             raise serializers.ValidationError("Invalid SSH key")
         return value
-
-    def validate(self, data):
-        if not (data["key_name"] or (data["new_key_name"] and data["new_key"])):
-            raise serializers.ValidationError(
-                "A valid key choice, or a new name/key pair is required."
-            )
-        # TODO: new key name not in existing list
-        return data
 
 
 class ImageSerializer(serializers.Serializer):
@@ -69,7 +59,26 @@ class FlavorSerializer(serializers.Serializer):
     name = serializers.CharField()
 
 
-class SshKeySerializer(serializers.Serializer):
+class KeyPairSerializer(serializers.Serializer):
     tenant = serializers.PrimaryKeyRelatedField(queryset=Tenant.objects.all())
+    id = serializers.CharField()
+    name = serializers.CharField()
+    fingerprint = serializers.CharField()
+    public_key = serializers.CharField()
+
+
+class VolumeAttachmentSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    attachment_id = serializers.UUIDField()
+    server_id = serializers.UUIDField()
+    device = serializers.CharField()
+    attached_at = serializers.DateTimeField()
+
+
+class VolumeSerializer(serializers.Serializer):
+    tenant = serializers.PrimaryKeyRelatedField(queryset=Tenant.objects.all())
+    attachments = VolumeAttachmentSerializer(many=True)
     id = serializers.UUIDField()
     name = serializers.CharField()
+    size = serializers.IntegerField()
+    status = serializers.CharField()

@@ -4,8 +4,8 @@
     <div class="control">
       <slot></slot>
     </div>
-    <p v-if="error" class="help is-danger">
-      {{ error }}
+    <p v-if="errors?.length" class="help is-danger">
+      {{ errorMessage }}
     </p>
   </div>
 </template>
@@ -17,9 +17,15 @@ export default {
       type: String,
       required: false,
     },
-    error: {
-      type: String,
+    errors: {
+      type: Array,
       required: false,
+    },
+  },
+  computed: {
+    errorMessage() {
+      /* Derives a single error message from an expected array of ValidationError objects */
+      return this.errors?.map((err) => err.message).join(", ");
     },
   },
 };

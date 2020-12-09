@@ -2,11 +2,12 @@ import { createStore } from "vuex";
 import instances from "./modules/instances";
 import flavors from "./modules/flavors";
 import images from "./modules/images";
-import sshkeys from "./modules/sshkeys";
+import keypairs from "./modules/keypairs";
 
 const state = {
   adminEmail: "Lisa.Marchioretto@quadram.ac.uk",
   activeTeam: null,
+  filterTenant: null,
   loading: false,
   regions: [],
   teams: [],
@@ -17,7 +18,7 @@ const modules = {
   flavors,
   images,
   instances,
-  sshkeys,
+  keypairs,
 };
 
 const getters = {
@@ -68,6 +69,9 @@ const mutations = {
   setActiveTeam(state, { id }) {
     state.activeTeam = id;
   },
+  setFilterTenant(state, { id }) {
+    state.filterTenant = id;
+  },
   setLoading(state, loading) {
     state.loading = loading;
   },
@@ -86,7 +90,7 @@ const actions = {
     commit("instances/resetState");
     commit("images/resetState");
     commit("flavors/resetState");
-    commit("sshkeys/resetState");
+    commit("keypairs/resetState");
   },
   async getAllTenantData({ dispatch, getters }, { tenant }) {
     /* Fetch all team data for a specific tenant */
@@ -95,7 +99,7 @@ const actions = {
         dispatch("flavors/getTeamFlavors", { tenant }),
         dispatch("images/getTeamImages", { tenant }),
         dispatch("instances/getTeamInstances", { tenant }),
-        dispatch("sshkeys/getTeamSshKeys", { tenant }),
+        dispatch("keypairs/getTeamKeyPairs", { tenant }),
       ]);
     } catch (err) {
       const msg = `Error fetching data from ${getters.getRegionNameForTenant(

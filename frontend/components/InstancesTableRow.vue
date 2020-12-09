@@ -25,7 +25,7 @@
       <span class="is-family-monospace is-size-7">{{ instance.ip }}</span>
     </td>
     <td>{{ createdDistanceToNow }}</td>
-    <td>
+    <td class="actions-cell">
       <base-dropdown right>
         <template v-slot:trigger="{ toggle: toggleDropdown }">
           <base-button @click="toggleDropdown" dropdown outlined>
@@ -97,5 +97,9 @@ export default {
 <style scoped>
 td {
   vertical-align: middle;
+}
+
+.actions-cell {
+  text-align: right;
 }
 </style>

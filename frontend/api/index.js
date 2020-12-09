@@ -10,7 +10,8 @@ const apiRoutes = {
   getInstances: baseUrl + "/instances",
   getFlavors: baseUrl + "/flavors",
   getImages: baseUrl + "/images",
-  getSshKeys: baseUrl + "/sshkeys",
+  getKeyPairs: baseUrl + "/keypairs",
+  postInstance: baseUrl + "/instances/",
 };
 
 export { axios, apiRoutes };

@@ -1,6 +1,6 @@
 <template>
   <Form @submit="onSubmit" v-slot="{ errors }" ref="instanceForm">
-    <base-modal-card @closeModal="closeModal">
+    <base-modal-card-classic @closeModal="closeModal">
       <template v-slot:header>Launch new server</template>
 
       <template v-slot:default>
@@ -16,7 +16,7 @@
                 v-bind="field"
                 @change="onTenantSelect($event, handleChange)"
               >
-                <option disable value="">Select a region</option>
+                <option disabled value="">Select a region</option>
                 <tenant-select-option
                   v-for="tenant in tenants"
                   :key="tenant.id"
@@ -51,7 +51,7 @@
               class="select is-fullwidth"
               :class="{ 'is-danger': errors.image }"
             >
-              <Field as="select" name="image">
+              <Field as="select" name="image" :rules="imageValidator">
                 <option disabled value="">Select an image</option>
                 <option
                   v-for="image in images"
@@ -59,6 +59,24 @@
                   :value="image.id"
                 >
                   {{ image.name }}
+                </option>
+              </Field>
+            </div>
+          </base-form-control>
+
+          <base-form-control label="SSH Key" :error="errors.keypair">
+            <div
+              class="select is-fullwidth"
+              :class="{ 'is-danger': errors.keypair }"
+            >
+              <Field as="select" name="keypair" :rules="keypairValidator">
+                <option disabled value="">Select a key</option>
+                <option
+                  v-for="keypair in keypairs"
+                  :key="keypair.id"
+                  :value="keypair.id"
+                >
+                  {{ keypair.name }}
                 </option>
               </Field>
             </div>
@@ -81,7 +99,7 @@
         <base-button type="submit" color="success">Launch</base-button>
         <base-button-cancel @click="closeModal" />
       </template>
-    </base-modal-card>
+    </base-modal-card-classic>
   </Form>
 </template>
 
@@ -89,19 +107,10 @@
 import BaseButton from "@/components/BaseButton";
 import BaseButtonCancel from "@/components/BaseButtonCancel";
 import BaseFormControl from "@/components/BaseFormControl";
-import BaseModalCard from "@/components/BaseModalCard";
+import BaseModalCardClassic from "@/components/BaseModalCardClassic";
 import TenantSelectOption from "@/components/TenantSelectOption";
 
-import { Field, Form } from "vee-validate";
-import { mapState, mapGetters } from "vuex";
-import * as yup from "yup";
-
-// Custom messages for yup-based field validations
-yup.setLocale({
-  mixed: {
-    oneOf: "Please select a value",
-  },
-});
+import { mapActions, mapState, mapGetters } from "vuex";
 
 export default {
   emits: {
@@ -112,7 +121,7 @@ export default {
     BaseButton,
     BaseButtonCancel,
     BaseFormControl,
-    BaseModalCard,
+    BaseModalCardClassic,
     Form,
     Field,
     TenantSelectOption,
@@ -121,13 +130,6 @@ export default {
   data() {
     return {
       selectedTenantId: null,
-      nameValidator: yup
-        .string()
-        .required()
-        .matches(/([a-zA-Z0-9\-]{3,})$/, {
-          message:
-            "Minimum 3 characters; only letters, numbers and hyphens allowed.",
-        }),
     };
   },
 
@@ -135,7 +137,7 @@ export default {
     ...mapGetters(["tenants", "getTenantById"]),
     ...mapGetters("flavors", ["getFlavorsForTenant"]),
     ...mapGetters("images", ["getImagesForTenant"]),
-    ...mapGetters("sshkeys", ["getSshKeysForTenant"]),
+    ...mapGetters("keypairs", ["getKeyPairsForTenant"]),
     selectedTenant() {
       return this.getTenantById(this.selectedTenantId);
     },
@@ -149,32 +151,35 @@ export default {
         ? []
         : this.getFlavorsForTenant(this.selectedTenant);
     },
-    sshkeys() {
+    keypairs() {
       return this.selectedTenantId == null
         ? []
-        : this.getSshKeysForTenant(this.selectedTenant);
+        : this.getKeyPairsForTenant(this.selectedTenant);
     },
   },
 
   methods: {
+    ...mapActions("instances", ["createInstance"]),
     closeModal() {
       this.$emit("close-modal");
     },
-    onSubmit(values) {
-      console.log(JSON.stringify(values));
+    async onSubmit(values) {
+      try {
+        const result = await this.createInstance(values);
+        console.log(result);
+      } catch (err) {
+        console.log(err.response.data.detail);
+      }
     },
     onTenantSelect(event, handleChange) {
-      // Intercept change event and grab selected value
-      const value = event.target.value;
-      this.selectedTenantId =
-        value && value.trim() ? parseInt(event.target.value) : null;
-
-      // Call vee-validate handler to continue validation
-      handleChange(event);
+      return;
     },
     selectValidator(validObjects, value) {
       // Is the selected item a member of the relevant collection?
-      if (validObjects.map((obj) => obj.id.toString()).includes(value)) {
+      if (
+        value != null &&
+        validObjects.map((obj) => obj.id.toString()).includes(value)
+      ) {
         return true;
       }
 
@@ -197,7 +202,10 @@ export default {
       return this.dependentSelectValidator(this.flavors, value);
     },
     imageValidator(value) {
-      return this.dependentSelectValidator(this.iamges, value);
+      return this.dependentSelectValidator(this.images, value);
+    },
+    keypairValidator(value) {
+      return this.dependentSelectValidator(this.keypairs, value);
     },
   },
 
@@ -207,6 +215,7 @@ export default {
       this.$refs.instanceForm.setValues({
         flavor: "",
         image: "",
+        keypair: "",
       });
     },
   },
