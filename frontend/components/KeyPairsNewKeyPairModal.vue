@@ -7,44 +7,12 @@
         like
         <span class="is-family-monospace">'simons-hipster-laptop'</span>
       </p>
-
-      <form @submit.prevent="onSubmit" novalidate>
-        <base-form-control label="Region" :errors="form.tenant.errors">
-          <base-form-field-select
-            v-model="form.tenant.value"
-            name="tenant"
-            :options="tenantOptions"
-            null-option-label="Select a region"
-            @validate="validateField"
-            :invalid="form.tenant.errors?.length"
-          />
-        </base-form-control>
-
-        <base-form-control label="Public key" :errors="form.pubKey.errors">
-          <base-form-field
-            v-model="form.pubKey.value"
-            name="pubKey"
-            element="textarea"
-            @validate="validateField"
-            :invalid="form.pubKey.errors?.length"
-          />
-        </base-form-control>
-
-        <base-form-control label="Key name" :errors="form.name.errors">
-          <base-form-field
-            v-model="form.name.value"
-            name="name"
-            type="text"
-            placeholder="e.g., simons-work-laptop"
-            @validate="validateField"
-            :invalid="form.name.errors?.length"
-          />
-        </base-form-control>
-
-        <base-button-confirm :loading="submitted" :disabled="!formValid"
-          >Add key</base-button-confirm
-        >
-      </form>
+      <base-form-validated
+        :fields="form"
+        submitLabel="Add key"
+        @validate-field="validateField"
+        @submit="onSubmit"
+      />
     </template>
     <template v-slot:right>
       <vue-markdown-it :source="guidance" />
@@ -80,16 +48,26 @@ export default {
     return {
       guidance,
       form: {
-        tenant: { value: "", errors: [], validators: [isRequired] },
+        tenant: {
+          label: "Region",
+          value: "",
+          element: "select",
+          options: [],
+          errors: [],
+          validators: [isRequired],
+        },
+        pubKey: {
+          label: "Public Key",
+          value: "",
+          element: "textarea",
+          errors: [],
+          validators: [isRequired, isPublicKey],
+        },
         name: {
+          label: "Key name",
           value: "",
           errors: [],
           validators: [isRequired, isAlphaNumHyphensOnly, this.isUniqueName],
-        },
-        pubKey: {
-          value: "",
-          errors: [],
-          validators: [isRequired, isPublicKey],
         },
       },
       submitted: false,
@@ -120,6 +98,14 @@ export default {
   },
 
   methods: {
+    getTenantOptions() {
+      return this.tenants.map((tenant) => {
+        return {
+          value: tenant.id,
+          label: this.getRegionNameForTenant(tenant),
+        };
+      });
+    },
     onClose() {
       this.$emit("close-modal");
     },
@@ -131,6 +117,15 @@ export default {
         return true;
       }
       throw new ValidationError("A unique name is required");
+    },
+  },
+
+  watch: {
+    selectedTenant: {
+      handler(_new, _old) {
+        this.form.tenant.options = this.tenantOptions;
+      },
+      immediate: true,
     },
   },
 

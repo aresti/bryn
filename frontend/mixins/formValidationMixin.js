@@ -24,5 +24,8 @@ export default {
       });
       field.valid = !field.errors.length;
     },
+    fieldIsInvalid(field) {
+      return Boolean(field.errors?.length);
+    },
   },
 };
