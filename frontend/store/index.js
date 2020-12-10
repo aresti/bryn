@@ -92,7 +92,7 @@ const actions = {
     commit("flavors/resetState");
     commit("keypairs/resetState");
   },
-  async getAllTenantData({ dispatch, getters }, { tenant }) {
+  async getAllTenantData({ commit, dispatch, getters, state }, { tenant }) {
     /* Fetch all team data for a specific tenant */
     try {
       await Promise.all([
@@ -101,6 +101,9 @@ const actions = {
         dispatch("instances/getTeamInstances", { tenant }),
         dispatch("keypairs/getTeamKeyPairs", { tenant }),
       ]);
+      if (state.loading) {
+        commit("setLoading", false);
+      }
     } catch (err) {
       const msg = `Error fetching data from ${getters.getRegionNameForTenant(
         tenant
@@ -112,8 +115,9 @@ const actions = {
       }
     }
   },
-  async getAllTeamData({ dispatch, getters }) {
+  async getAllTeamData({ commit, dispatch, getters }) {
     /* Fetch team data for all tenants */
+    commit("setLoading", true);
     const results = await Promise.allSettled(
       getters.tenants.map((tenant) => dispatch("getAllTenantData", { tenant }))
     );

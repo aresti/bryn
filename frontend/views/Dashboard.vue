@@ -60,13 +60,12 @@ export default {
 
   data() {
     return {
-      loading: false,
       erroredOnGet: false,
     };
   },
 
   computed: {
-    ...mapState(["teams", "user"]),
+    ...mapState(["loading", "teams", "user"]),
     ...mapGetters(["team", "tenants", "getTenantById", "getRegionById"]),
   },
 
@@ -107,7 +106,6 @@ export default {
     async getTeamData() {
       /* Fetch data for the active team */
       this.erroredOnGet = false;
-      this.loading = true;
 
       // Result is as per Promise.allSettled
       const results = await this.getAllTeamData();
@@ -123,7 +121,6 @@ export default {
       this.erroredOnGet = results.every(
         (result) => result.status == "rejected"
       );
-      this.loading = false;
     },
   },
 };
