@@ -4,80 +4,12 @@
       <h4 class="title is-4">Launch new server</h4>
       <p>Create a new server instance.</p>
 
-      <form @submit.prevent="onSubmit" novalidate>
-        <base-form-control label="Region" :errors="form.tenant.errors" expanded>
-          <base-form-field-select
-            v-model="form.tenant.value"
-            name="tenant"
-            :options="tenantOptions"
-            null-option-label="Select a region"
-            @validate="validateField"
-            :invalid="!form.tenant.valid"
-            fullwidth
-          />
-        </base-form-control>
-
-        <fieldset :disabled="!form.tenant.valid">
-          <base-form-control
-            label="Flavor"
-            :errors="form.flavor.errors"
-            expanded
-          >
-            <base-form-field-select
-              v-model="form.flavor.value"
-              name="flavor"
-              :options="flavorOptions"
-              null-option-label="Select a flavor"
-              @validate="validateField"
-              :invalid="!form.flavor.valid"
-              fullwidth
-            />
-          </base-form-control>
-
-          <base-form-control label="Image" :errors="form.image.errors" expanded>
-            <base-form-field-select
-              v-model="form.image.value"
-              name="image"
-              :options="imageOptions"
-              null-option-label="Select an image"
-              @validate="validateField"
-              :invalid="!form.image.valid"
-              fullwidth
-            />
-          </base-form-control>
-
-          <base-form-control
-            label="SSH Key"
-            :errors="form.keypair.errors"
-            expanded
-          >
-            <base-form-field-select
-              v-model="form.keypair.value"
-              name="keypair"
-              :options="keypairOptions"
-              null-option-label="Select an keypair"
-              @validate="validateField"
-              :invalid="!form.keypair.valid"
-              fullwidth
-            />
-          </base-form-control>
-        </fieldset>
-
-        <base-form-control label="Server name" :errors="form.name.errors">
-          <base-form-field
-            v-model="form.name.value"
-            name="name"
-            type="text"
-            placeholder="e.g., my-server-name"
-            @validate="validateField"
-            :invalid="!form.name.valid"
-          />
-        </base-form-control>
-
-        <base-button-confirm :loading="submitted" :disabled="!formValid"
-          >Launch server</base-button-confirm
-        >
-      </form>
+      <base-form-validated
+        :fields="form"
+        submitLabel="Launch server"
+        @validate-field="validateField"
+        @submit="onSubmit"
+      />
     </template>
     <template v-slot:right>
       <vue-markdown-it :source="guidance" />
@@ -95,7 +27,7 @@ import {
   isRequired,
   ValidationError,
 } from "@/helpers/validators";
-import { mapActions, mapGetters } from "vuex";
+import { mapState, mapActions, mapGetters } from "vuex";
 
 const defaultMapToOptions = (entities) => {
   return entities.map((entity) => {
@@ -120,12 +52,52 @@ export default {
   data() {
     return {
       guidance,
-      form: this.getCleanFormState(),
+      form: {
+        tenant: {
+          label: "Region",
+          element: "select",
+          options: [],
+          value: "",
+          errors: [],
+          validators: [isRequired],
+        },
+        flavor: {
+          label: "Flavor",
+          element: "select",
+          options: [],
+          value: "",
+          errors: [],
+          validators: [isRequired],
+        },
+        image: {
+          label: "Image",
+          element: "select",
+          options: [],
+          value: "",
+          errors: [],
+          validators: [isRequired],
+        },
+        keypair: {
+          label: "SSH Key",
+          element: "select",
+          options: [],
+          value: "",
+          errors: [],
+          validators: [isRequired],
+        },
+        name: {
+          label: "Name",
+          value: "",
+          errors: [],
+          validators: [isRequired, isAlphaNumHyphensOnly, this.isUniqueName],
+        },
+      },
       submitted: false,
     };
   },
 
   computed: {
+    ...mapState(["filterTenant"]),
     ...mapGetters(["tenants", "getTenantById", "getRegionNameForTenant"]),
     ...mapGetters("flavors", ["getFlavorsForTenant"]),
     ...mapGetters("images", ["getImagesForTenant"]),
@@ -179,19 +151,6 @@ export default {
 
   methods: {
     ...mapActions("instances", ["createInstance"]),
-    getCleanFormState() {
-      return {
-        tenant: { value: "", errors: [], validators: [isRequired] },
-        flavor: { value: "", errors: [], validators: [isRequired] },
-        image: { value: "", errors: [], validators: [isRequired] },
-        keypair: { value: "", errors: [], validators: [isRequired] },
-        name: {
-          value: "",
-          errors: [],
-          validators: [isRequired, isAlphaNumHyphensOnly, this.isUniqueName],
-        },
-      };
-    },
     onClose() {
       this.$emit("close-modal");
     },
@@ -215,13 +174,19 @@ export default {
   },
 
   watch: {
-    selectedtenant() {
-      // Clear dependent selections on tenant change
-      const freshState = this.getCleanFormState();
-      delete freshState.tenant;
-      delete freshState.name;
-      Object.assign(this.form, freshState);
+    selectedTenant() {
+      this.form.flavor.value = "";
+      this.form.flavor.options = this.flavorOptions;
+      this.form.image.value = "";
+      this.form.image.options = this.imageOptions;
+      this.form.keypair.value = "";
+      this.form.keypair.options = this.keypairOptions;
     },
+  },
+
+  mounted() {
+    this.form.tenant.value = this.filterTenant ?? "";
+    this.form.tenant.options = this.tenantOptions;
   },
 };
 </script>
