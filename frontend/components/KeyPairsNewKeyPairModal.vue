@@ -25,7 +25,7 @@ import formValidationMixin from "@/mixins/formValidationMixin";
 import guidance from "@/content/keypairs/newKeyPairGuidance.md";
 
 import VueMarkdownIt from "vue3-markdown-it";
-import { mapGetters } from "vuex";
+import { mapState, mapGetters } from "vuex";
 import {
   isAlphaNumHyphensOnly,
   isPublicKey,
@@ -75,6 +75,7 @@ export default {
   },
 
   computed: {
+    ...mapState(["filterTenant"]),
     ...mapGetters(["tenants", "getTenantById", "getRegionNameForTenant"]),
     ...mapGetters("keypairs", ["getKeyPairsForTenant"]),
     selectedTenant() {
@@ -130,7 +131,9 @@ export default {
   },
 
   mounted() {
-    if (this.tenants.length === 1) {
+    if (this.filterTenant) {
+      this.form.tenant.value = this.filterTenant;
+    } else if (this.tenants.length === 1) {
       this.form.tenant.value = this.tenants[0].id;
       this.validateField("tenant");
     }

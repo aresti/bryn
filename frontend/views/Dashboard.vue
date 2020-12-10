@@ -71,7 +71,6 @@ export default {
 
   watch: {
     async team(_newTeam, _oldTeam) {
-      /* Team has been set, fetch data for all tenants */
       this.getTeamData();
     },
   },

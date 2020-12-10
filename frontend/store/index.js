@@ -69,8 +69,8 @@ const mutations = {
   setActiveTeam(state, { id }) {
     state.activeTeam = id;
   },
-  setFilterTenant(state, { id }) {
-    state.filterTenant = id;
+  setFilterTenant(state, tenant) {
+    state.filterTenant = tenant?.id;
   },
   setLoading(state, loading) {
     state.loading = loading;
@@ -87,6 +87,7 @@ const actions = {
   setActiveTeam({ commit }, team) {
     /* Set the activeTeam id and reset team-specific state */
     commit("setActiveTeam", team);
+    commit("setFilterTenant", null);
     commit("instances/resetState");
     commit("images/resetState");
     commit("flavors/resetState");

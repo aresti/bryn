@@ -8,7 +8,7 @@
       </tr>
     </template>
     <template v-slot:body>
-      <tr v-for="keypair in keypairs" :key="keypair.id">
+      <tr v-for="(keypair, index) in keypairs" :key="index">
         <td>
           <span class="is-family-monospace has-text-weight-semibold">{{
             keypair.name
