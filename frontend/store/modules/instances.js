@@ -22,6 +22,11 @@ const mutations = {
 };
 
 const getters = {
+  getInstancesForTenant(state) {
+    return ({ id }) => {
+      return state.all.filter((instance) => instance.tenant === id);
+    };
+  },
   instancesForFilterTenant(state, _getters, rootState) {
     if (rootState.filterTenant == null) {
       return state.all;

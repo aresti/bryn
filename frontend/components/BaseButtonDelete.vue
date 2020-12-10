@@ -12,15 +12,9 @@
 </template>
 
 <script>
-import BaseButton from "@/components/BaseButton";
-import BaseIcon from "@/components/BaseIcon";
 import bulmaSizeMixin from "@/mixins/bulmaSizeMixin";
 
 export default {
-  components: {
-    BaseButton,
-    BaseIcon,
-  },
   mixins: [bulmaSizeMixin],
 };
 </script>

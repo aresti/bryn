@@ -34,18 +34,9 @@
 </template>
 
 <script>
-import BaseDropdownList from "@/components/BaseDropdownList";
-import BaseLevel from "@/components/BaseLevel";
-import BaseLevelItem from "@/components/BaseLevelItem";
-
 import { mapGetters, mapState } from "vuex";
 
 export default {
-  components: {
-    BaseDropdownList,
-    BaseLevel,
-    BaseLevelItem,
-  },
   computed: {
     ...mapState(["teams"]),
     ...mapGetters(["team"]),

@@ -20,7 +20,6 @@
 
     <key-pairs-new-key-pair-modal
       v-if="showNewKeyPairModal"
-      :key="activeTeam"
       @close-modal="showNewKeyPairModal = false"
     />
   </div>

@@ -34,10 +34,10 @@
     </div>
     <instances-table :instances="filteredInstances" />
 
-    <!-- <instances-new-instance-modal
+    <instances-new-instance-modal
       v-if="showInstancesNewInstanceModal"
       @closeModal="showInstancesNewInstanceModal = false"
-    /> -->
+    />
   </div>
 </template>
 

@@ -13,14 +13,9 @@
 </template>
 
 <script>
-import DeleteButton from "@/components/DeleteButton";
-
 export default {
   emits: {
     "delete-member": null,
-  },
-  components: {
-    DeleteButton,
   },
   props: {
     member: {

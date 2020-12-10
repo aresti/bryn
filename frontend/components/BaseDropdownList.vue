@@ -32,17 +32,10 @@
 </template>
 
 <script>
-import BaseButton from "@/components/BaseButton";
-import BaseDropdown from "@/components/BaseDropdown";
-
 import bulmaDropdownMixin from "@/mixins/bulmaDropdownMixin";
 
 export default {
   mixins: [bulmaDropdownMixin],
-  components: {
-    BaseButton,
-    BaseDropdown,
-  },
   props: {
     items: {
       type: Array,

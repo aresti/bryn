@@ -18,12 +18,10 @@
 </template>
 
 <script>
-import BaseTable from "@/components/BaseTable";
 import InstancesTableRow from "@/components/InstancesTableRow";
 
 export default {
   components: {
-    BaseTable,
     InstancesTableRow,
   },
   props: {

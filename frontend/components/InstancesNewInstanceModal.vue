@@ -1,222 +1,226 @@
 <template>
-  <Form @submit="onSubmit" v-slot="{ errors }" ref="instanceForm">
-    <base-modal-card-classic @closeModal="closeModal">
-      <template v-slot:header>Launch new server</template>
+  <base-modal-split @close-modal="onClose">
+    <template v-slot:left>
+      <h4 class="title is-4">Launch new server</h4>
+      <p>Create a new server instance.</p>
 
-      <template v-slot:default>
-        <base-form-control label="Region" :error="errors.tenant">
-          <div class="select is-fullwidth">
-            <Field
-              name="tenant"
-              v-slot="{ field, handleChange }"
-              :class="{ 'is-danger': errors.tenant }"
-              :rules="tenantValidator"
-            >
-              <select
-                v-bind="field"
-                @change="onTenantSelect($event, handleChange)"
-              >
-                <option disabled value="">Select a region</option>
-                <tenant-select-option
-                  v-for="tenant in tenants"
-                  :key="tenant.id"
-                  :tenant="tenant"
-                />
-              </select>
-            </Field>
-          </div>
+      <form @submit.prevent="onSubmit" novalidate>
+        <base-form-control label="Region" :errors="form.tenant.errors" expanded>
+          <base-form-field-select
+            v-model="form.tenant.value"
+            name="tenant"
+            :options="tenantOptions"
+            null-option-label="Select a region"
+            @validate="validateField"
+            :invalid="!form.tenant.valid"
+            fullwidth
+          />
         </base-form-control>
 
-        <fieldset :disabled="selectedTenant == null">
-          <base-form-control label="Flavor" :error="errors.flavor">
-            <div
-              class="select is-fullwidth"
-              :class="{ 'is-danger': errors.flavor }"
-            >
-              <Field as="select" name="flavor" :rules="flavorValidator">
-                <option disabled value="">Select a flavor</option>
-                <option
-                  v-for="flavor in flavors"
-                  :key="flavor.id"
-                  :value="flavor.id"
-                >
-                  {{ flavor.name }}
-                </option>
-              </Field>
-            </div>
+        <fieldset :disabled="!form.tenant.valid">
+          <base-form-control
+            label="Flavor"
+            :errors="form.flavor.errors"
+            expanded
+          >
+            <base-form-field-select
+              v-model="form.flavor.value"
+              name="flavor"
+              :options="flavorOptions"
+              null-option-label="Select a flavor"
+              @validate="validateField"
+              :invalid="!form.flavor.valid"
+              fullwidth
+            />
           </base-form-control>
 
-          <base-form-control label="Image" :error="errors.image">
-            <div
-              class="select is-fullwidth"
-              :class="{ 'is-danger': errors.image }"
-            >
-              <Field as="select" name="image" :rules="imageValidator">
-                <option disabled value="">Select an image</option>
-                <option
-                  v-for="image in images"
-                  :key="image.id"
-                  :value="image.id"
-                >
-                  {{ image.name }}
-                </option>
-              </Field>
-            </div>
+          <base-form-control label="Image" :errors="form.image.errors" expanded>
+            <base-form-field-select
+              v-model="form.image.value"
+              name="image"
+              :options="imageOptions"
+              null-option-label="Select an image"
+              @validate="validateField"
+              :invalid="!form.image.valid"
+              fullwidth
+            />
           </base-form-control>
 
-          <base-form-control label="SSH Key" :error="errors.keypair">
-            <div
-              class="select is-fullwidth"
-              :class="{ 'is-danger': errors.keypair }"
-            >
-              <Field as="select" name="keypair" :rules="keypairValidator">
-                <option disabled value="">Select a key</option>
-                <option
-                  v-for="keypair in keypairs"
-                  :key="keypair.id"
-                  :value="keypair.id"
-                >
-                  {{ keypair.name }}
-                </option>
-              </Field>
-            </div>
-          </base-form-control>
-
-          <base-form-control label="Server name" :error="errors.name">
-            <Field
-              as="input"
-              name="name"
-              class="input"
-              :class="{ 'is-danger': errors.name }"
-              placeholder="e.g, my-server"
-              :rules="nameValidator"
+          <base-form-control
+            label="SSH Key"
+            :errors="form.keypair.errors"
+            expanded
+          >
+            <base-form-field-select
+              v-model="form.keypair.value"
+              name="keypair"
+              :options="keypairOptions"
+              null-option-label="Select an keypair"
+              @validate="validateField"
+              :invalid="!form.keypair.valid"
+              fullwidth
             />
           </base-form-control>
         </fieldset>
-      </template>
 
-      <template v-slot:footer>
-        <base-button type="submit" color="success">Launch</base-button>
-        <base-button-cancel @click="closeModal" />
-      </template>
-    </base-modal-card-classic>
-  </Form>
+        <base-form-control label="Server name" :errors="form.name.errors">
+          <base-form-field
+            v-model="form.name.value"
+            name="name"
+            type="text"
+            placeholder="e.g., my-server-name"
+            @validate="validateField"
+            :invalid="!form.name.valid"
+          />
+        </base-form-control>
+
+        <base-button-confirm :loading="submitted" :disabled="!formValid"
+          >Launch server</base-button-confirm
+        >
+      </form>
+    </template>
+    <template v-slot:right>
+      <vue-markdown-it :source="guidance" />
+    </template>
+  </base-modal-split>
 </template>
 
 <script>
-import BaseButton from "@/components/BaseButton";
-import BaseButtonCancel from "@/components/BaseButtonCancel";
-import BaseFormControl from "@/components/BaseFormControl";
-import BaseModalCardClassic from "@/components/BaseModalCardClassic";
-import TenantSelectOption from "@/components/TenantSelectOption";
+import formValidationMixin from "@/mixins/formValidationMixin";
+import guidance from "@/content/instances/newInstanceGuidance.md";
 
-import { mapActions, mapState, mapGetters } from "vuex";
+import VueMarkdownIt from "vue3-markdown-it";
+import {
+  isAlphaNumHyphensOnly,
+  isRequired,
+  ValidationError,
+} from "@/helpers/validators";
+import { mapActions, mapGetters } from "vuex";
+
+const defaultMapToOptions = (entities) => {
+  return entities.map((entity) => {
+    return {
+      value: entity.id,
+      label: entity.name,
+    };
+  });
+};
 
 export default {
+  mixins: [formValidationMixin],
+
   emits: {
     "close-modal": null,
   },
 
   components: {
-    BaseButton,
-    BaseButtonCancel,
-    BaseFormControl,
-    BaseModalCardClassic,
-    Form,
-    Field,
-    TenantSelectOption,
+    VueMarkdownIt,
   },
 
   data() {
     return {
-      selectedTenantId: null,
+      guidance,
+      form: this.getCleanFormState(),
+      submitted: false,
     };
   },
 
   computed: {
-    ...mapGetters(["tenants", "getTenantById"]),
+    ...mapGetters(["tenants", "getTenantById", "getRegionNameForTenant"]),
     ...mapGetters("flavors", ["getFlavorsForTenant"]),
     ...mapGetters("images", ["getImagesForTenant"]),
+    ...mapGetters("instances", ["getInstancesForTenant"]),
     ...mapGetters("keypairs", ["getKeyPairsForTenant"]),
     selectedTenant() {
-      return this.getTenantById(this.selectedTenantId);
+      return this.form.tenant.value
+        ? this.getTenantById(parseInt(this.form.tenant.value))
+        : null;
+    },
+    tenantOptions() {
+      return this.tenants.map((tenant) => {
+        return {
+          value: tenant.id,
+          label: this.getRegionNameForTenant(tenant),
+        };
+      });
     },
     images() {
-      return this.selectedTenantId == null
-        ? []
-        : this.getImagesForTenant(this.selectedTenant);
+      return this.selectedTenant
+        ? this.getImagesForTenant(this.selectedTenant)
+        : [];
+    },
+    imageOptions() {
+      return defaultMapToOptions(this.images);
     },
     flavors() {
-      return this.selectedTenantId == null
-        ? []
-        : this.getFlavorsForTenant(this.selectedTenant);
+      return this.selectedTenant
+        ? this.getFlavorsForTenant(this.selectedTenant)
+        : [];
+    },
+    flavorOptions() {
+      return defaultMapToOptions(this.flavors);
     },
     keypairs() {
-      return this.selectedTenantId == null
-        ? []
-        : this.getKeyPairsForTenant(this.selectedTenant);
+      return this.selectedTenant
+        ? this.getKeyPairsForTenant(this.selectedTenant)
+        : [];
+    },
+    keypairOptions() {
+      return defaultMapToOptions(this.keypairs);
+    },
+    invalidNames() {
+      return this.selectedTenant
+        ? this.getInstancesForTenant(this.selectedTenant).map(
+            (instance) => instance.name
+          )
+        : [];
     },
   },
 
   methods: {
     ...mapActions("instances", ["createInstance"]),
-    closeModal() {
+    getCleanFormState() {
+      return {
+        tenant: { value: "", errors: [], validators: [isRequired] },
+        flavor: { value: "", errors: [], validators: [isRequired] },
+        image: { value: "", errors: [], validators: [isRequired] },
+        keypair: { value: "", errors: [], validators: [isRequired] },
+        name: {
+          value: "",
+          errors: [],
+          validators: [isRequired, isAlphaNumHyphensOnly, this.isUniqueName],
+        },
+      };
+    },
+    onClose() {
       this.$emit("close-modal");
     },
-    async onSubmit(values) {
-      try {
-        const result = await this.createInstance(values);
-        console.log(result);
-      } catch (err) {
-        console.log(err.response.data.detail);
-      }
+    onSubmit() {
+      this.validateForm();
     },
-    onTenantSelect(event, handleChange) {
-      return;
-    },
-    selectValidator(validObjects, value) {
-      // Is the selected item a member of the relevant collection?
-      if (
-        value != null &&
-        validObjects.map((obj) => obj.id.toString()).includes(value)
-      ) {
+    // async onSubmit(values) {
+    //   try {
+    //     const result = await this.createInstance(values);
+    //     console.log(result);
+    //   } catch (err) {
+    //     console.log(err.response.data.detail);
+    //   }
+    // },
+    isUniqueName(value) {
+      if (!value || !this.invalidNames.includes(value)) {
         return true;
       }
-
-      return "Please make a selection";
-    },
-    dependentSelectValidator(validObjects, value) {
-      /**
-       * For validations dependent on the selected tenant.
-       * Don't validate until a tenant has been selected.
-       */
-      if (!this.selectedTenantId) {
-        return true;
-      }
-      return this.selectValidator(validObjects, value);
-    },
-    tenantValidator(value) {
-      return this.selectValidator(this.tenants, value);
-    },
-    flavorValidator(value) {
-      return this.dependentSelectValidator(this.flavors, value);
-    },
-    imageValidator(value) {
-      return this.dependentSelectValidator(this.images, value);
-    },
-    keypairValidator(value) {
-      return this.dependentSelectValidator(this.keypairs, value);
+      throw new ValidationError("A unique name is required");
     },
   },
 
   watch: {
-    selectedTenantId() {
-      // Clear flavor and image selections on tenant change
-      this.$refs.instanceForm.setValues({
-        flavor: "",
-        image: "",
-        keypair: "",
-      });
+    selectedtenant() {
+      // Clear dependent selections on tenant change
+      const freshState = this.getCleanFormState();
+      delete freshState.tenant;
+      delete freshState.name;
+      Object.assign(this.form, freshState);
     },
   },
 };

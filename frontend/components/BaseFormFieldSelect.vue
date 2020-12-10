@@ -54,6 +54,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    fullwidth: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ["update:modelValue", "validate"],
   computed: {
@@ -62,6 +66,7 @@ export default {
         "select",
         {
           "is-rounded": this.rounded,
+          "is-fullwidth": this.fullwidth,
         },
       ];
     },
@@ -77,7 +82,8 @@ export default {
   },
   methods: {
     onChange(event) {
-      this.$emit("update:modelValue", event.target.value), this.emitValidate();
+      this.$emit("update:modelValue", event.target.value);
+      this.emitValidate();
     },
     emitValidate() {
       this.$emit("validate", this.name);

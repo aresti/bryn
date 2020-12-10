@@ -20,13 +20,9 @@
 <script>
 import bulmaColorMixin from "@/mixins/bulmaColorMixin";
 import bulmaSizeMixin from "@/mixins/bulmaSizeMixin";
-import BaseIcon from "@/components/BaseIcon";
 
 export default {
   mixins: [bulmaColorMixin, bulmaSizeMixin],
-  components: {
-    BaseIcon,
-  },
   emits: {
     click: null,
   },

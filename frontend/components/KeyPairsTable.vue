@@ -38,20 +38,9 @@
 </template>
 
 <script>
-import BaseButton from "@/components/BaseButton";
-import BaseButtonDelete from "@/components/BaseButtonDelete";
-import BaseIcon from "@/components/BaseIcon";
-import BaseTable from "@/components/BaseTable";
-
 import { mapGetters } from "vuex";
 
 export default {
-  components: {
-    BaseButton,
-    BaseButtonDelete,
-    BaseIcon,
-    BaseTable,
-  },
   props: {
     keypairs: {
       type: Array,

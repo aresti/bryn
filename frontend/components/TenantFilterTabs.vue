@@ -14,11 +14,9 @@
 </template>
 
 <script>
-import BaseTabs from "@/components/BaseTabs";
 import { mapGetters, mapMutations, mapState } from "vuex";
 
 export default {
-  components: { BaseTabs },
   computed: {
     ...mapState(["filterTenant"]),
     ...mapGetters(["tenants", "getRegionNameForTenant"]),

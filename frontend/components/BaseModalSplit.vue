@@ -17,18 +17,11 @@
 </template>
 
 <script>
-import BaseCard from "@/components/BaseCard";
-import BaseModal from "@/components/BaseModal";
-
 export default {
   data() {
     return {
       leftHeightPx: null,
     };
-  },
-  components: {
-    BaseCard,
-    BaseModal,
   },
   computed: {
     rightInlineStyle() {

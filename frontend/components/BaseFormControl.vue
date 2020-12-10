@@ -1,7 +1,7 @@
 <template>
   <div class="field">
     <label v-if="label.length" class="label">{{ label }}</label>
-    <div class="control">
+    <div :class="controlClasses">
       <slot></slot>
     </div>
     <p v-if="errors?.length" class="help is-danger">
@@ -21,11 +21,18 @@ export default {
       type: Array,
       required: false,
     },
+    expanded: {
+      type: Boolean,
+      default: false,
+    },
   },
   computed: {
     errorMessage() {
       /* Derives a single error message from an expected array of ValidationError objects */
       return this.errors?.map((err) => err.message).join(", ");
+    },
+    controlClasses() {
+      return ["control", { "is-expanded": this.expanded }];
     },
   },
 };

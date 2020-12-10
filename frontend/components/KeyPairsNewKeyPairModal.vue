@@ -9,14 +9,14 @@
       </p>
 
       <form @submit.prevent="onSubmit" novalidate>
-        <base-form-control label="Region" :errors="form.tenantId.errors">
+        <base-form-control label="Region" :errors="form.tenant.errors">
           <base-form-field-select
-            v-model="form.tenantId.value"
-            name="tenantId"
+            v-model="form.tenant.value"
+            name="tenant"
             :options="tenantOptions"
             null-option-label="Select a region"
             @validate="validateField"
-            :invalid="!form.tenantId.valid"
+            :invalid="form.tenant.errors?.length"
           />
         </base-form-control>
 
@@ -26,7 +26,7 @@
             name="pubKey"
             element="textarea"
             @validate="validateField"
-            :invalid="!form.pubKey.valid"
+            :invalid="form.pubKey.errors?.length"
           />
         </base-form-control>
 
@@ -37,7 +37,7 @@
             type="text"
             placeholder="e.g., simons-work-laptop"
             @validate="validateField"
-            :invalid="!form.name.valid"
+            :invalid="form.name.errors?.length"
           />
         </base-form-control>
 
@@ -47,20 +47,14 @@
       </form>
     </template>
     <template v-slot:right>
-      <vue-markdown-it :source="instructions" />
+      <vue-markdown-it :source="guidance" />
     </template>
   </base-modal-split>
 </template>
 
 <script>
-import BaseButtonConfirm from "@/components/BaseButtonConfirm";
-import BaseFormControl from "@/components/BaseFormControl";
-import BaseFormField from "@/components/BaseFormField";
-import BaseFormFieldSelect from "@/components/BaseFormFieldSelect";
-import BaseModalSplit from "@/components/BaseModalSplit";
-import TenantSelectOption from "@/components/TenantSelectOption";
 import formValidationMixin from "@/mixins/formValidationMixin";
-import instructions from "@/content/keyPairModalInstructions.md";
+import guidance from "@/content/keypairs/newKeyPairGuidance.md";
 
 import VueMarkdownIt from "vue3-markdown-it";
 import { mapGetters } from "vuex";
@@ -73,23 +67,20 @@ import {
 
 export default {
   components: {
-    BaseButtonConfirm,
-    BaseFormControl,
-    BaseFormField,
-    BaseFormFieldSelect,
-    BaseModalSplit,
-    TenantSelectOption,
     VueMarkdownIt,
   },
+
   mixins: [formValidationMixin],
+
   emits: {
     "close-modal": null,
   },
+
   data() {
     return {
-      instructions,
+      guidance,
       form: {
-        tenantId: { value: "", errors: [], validators: [isRequired] },
+        tenant: { value: "", errors: [], validators: [isRequired] },
         name: {
           value: "",
           errors: [],
@@ -104,11 +95,12 @@ export default {
       submitted: false,
     };
   },
+
   computed: {
     ...mapGetters(["tenants", "getTenantById", "getRegionNameForTenant"]),
     ...mapGetters("keypairs", ["getKeyPairsForTenant"]),
     selectedTenant() {
-      return this.getTenantById(parseInt(this.form.tenantId.value));
+      return this.getTenantById(parseInt(this.form.tenant.value));
     },
     tenantOptions() {
       return this.tenants.map((tenant) => {
@@ -126,6 +118,7 @@ export default {
         : [];
     },
   },
+
   methods: {
     onClose() {
       this.$emit("close-modal");
@@ -140,10 +133,11 @@ export default {
       throw new ValidationError("A unique name is required");
     },
   },
+
   mounted() {
     if (this.tenants.length === 1) {
-      this.form.tenantId.value = this.tenants[0].id;
-      this.validateField("tenantId");
+      this.form.tenant.value = this.tenants[0].id;
+      this.validateField("tenant");
     }
   },
 };

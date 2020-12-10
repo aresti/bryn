@@ -41,11 +41,6 @@
 </template>
 
 <script>
-import BaseButton from "@/components/BaseButton";
-import BaseDropdown from "@/components/BaseDropdown";
-import BaseIcon from "@/components/BaseIcon";
-import BaseTag from "@/components/BaseTag";
-
 import { formatDistanceToNow } from "date-fns";
 
 import { mapGetters } from "vuex";
@@ -57,12 +52,6 @@ const statusColorMap = {
 };
 
 export default {
-  components: {
-    BaseButton,
-    BaseDropdown,
-    BaseIcon,
-    BaseTag,
-  },
   props: {
     instance: {
       type: Object,

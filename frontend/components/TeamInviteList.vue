@@ -16,14 +16,12 @@
 
 <script>
 import TeamInviteListItem from "@/components/TeamInviteListItem";
-import BaseAlert from "@/components/BaseAlert";
 import FetchErrorAlert from "@/components/FetchErrorAlert";
 
 export default {
   inject: ["axios"],
   components: {
     TeamInviteListItem,
-    BaseAlert,
     FetchErrorAlert,
   },
   props: {
