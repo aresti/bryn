@@ -25,7 +25,7 @@ class TeamFromUrlDefault:
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "first_name", "last_name"]
+        fields = ["id", "username", "first_name", "last_name", "email"]
 
 
 class TeamMemberSerializer(serializers.ModelSerializer):
@@ -33,12 +33,11 @@ class TeamMemberSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TeamMember
-        fields = ["id", "user", "is_admin"]
+        fields = ["id", "user", "team", "is_admin"]
 
 
 class InvitationSerializer(serializers.ModelSerializer):
     made_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    to_team = serializers.HiddenField(default=TeamFromUrlDefault())
 
     class Meta:
         model = Invitation

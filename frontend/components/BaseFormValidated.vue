@@ -3,7 +3,7 @@
     <base-form-control
       v-for="[key, value] in Object.entries(fields)"
       :key="key"
-      :label="value.label ? value.label : key"
+      :label="value.label ? value.label : titleCase(key)"
       :errors="value.errors"
       :expanded="value.element === 'select'"
     >
@@ -36,6 +36,8 @@
 </template>
 
 <script>
+import { titleCase } from "@/helpers";
+
 export default {
   props: {
     fields: {
@@ -61,6 +63,9 @@ export default {
     },
     emitValidate(name) {
       this.$emit("validate-field", name);
+    },
+    titleCase(str) {
+      return titleCase(str);
     },
   },
 };

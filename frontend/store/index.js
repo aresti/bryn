@@ -4,6 +4,7 @@ import flavors from "./modules/flavors";
 import images from "./modules/images";
 import instances from "./modules/instances";
 import keypairs from "./modules/keypairs";
+import teamMembers from "./modules/teamMembers";
 import volumes from "./modules/volumes";
 
 const state = {
@@ -22,6 +23,7 @@ const modules = {
   instances,
   keypairs,
   volumes,
+  teamMembers,
 };
 
 const getters = {
@@ -95,6 +97,8 @@ const actions = {
     commit("images/resetState");
     commit("flavors/resetState");
     commit("keypairs/resetState");
+    commit("volumes/resetState");
+    commit("teamMembers/resetState");
   },
   async getAllTenantData({ commit, dispatch, getters, state }, { tenant }) {
     /* Fetch all team data for a specific tenant */
@@ -104,6 +108,7 @@ const actions = {
         dispatch("images/getTeamImages", { tenant }),
         dispatch("instances/getTeamInstances", { tenant }),
         dispatch("keypairs/getTeamKeyPairs", { tenant }),
+        dispatch("teamMembers/getTeamMembers"),
       ]);
       if (state.loading) {
         commit("setLoading", false);

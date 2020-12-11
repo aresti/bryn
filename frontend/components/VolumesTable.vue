@@ -32,7 +32,10 @@
             v-for="attachment in formatAttachments(volume.attachments)"
             :key="attachment.id"
           >
-            {{ attachment.attachedToName }}
+            {{ attachment.attachedToName }}<br />
+            <span class="is-family-monospace is-size-7">{{
+              attachment.device
+            }}</span>
           </span>
         </td>
         <td>
@@ -108,15 +111,11 @@ export default {
 </script>
 
 <style scoped>
-[data-tooltip]:not(.is-loading).has-tooltip-multiline::before,
-[data-tooltip]:not(.is-disabled).has-tooltip-multiline::before,
-[data-tooltip]:not([disabled]).has-tooltip-multiline::before {
-  overflow-wrap: anywhere;
-  width: 25em;
-  max-width: 25em;
-}
-
 td {
   vertical-align: middle;
+}
+
+.actions-cell {
+  text-align: right;
 }
 </style>

@@ -55,22 +55,22 @@ urlpatterns = [
         name="institution_typeahead",
     ),
     path(
-        "api/teams/<int:team_id>/members/<int:pk>",
+        "api/teammembers/<int:pk>",
         views.TeamMemberDetailView.as_view(),
         name="api-teammember-detail",
     ),
     path(
-        "api/teams/<int:team_id>/members/",
+        "api/teammembers/",
         views.TeamMemberListView.as_view(),
         name="api-teammember-list",
     ),
     path(
-        "api/teams/<int:team_id>/invitations/<uuid:pk>",
+        "api/invitations/<uuid:pk>",
         views.InvitationDetailView.as_view(),
         name="api-invitation-detail",
     ),
     path(
-        "api/teams/<int:team_id>/invitations/",
+        "api/invitations/",
         views.InvitationListView.as_view(),
         name="api-invitation-list",
     ),

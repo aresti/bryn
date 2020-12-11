@@ -24,7 +24,9 @@
           </base-button>
         </template>
         <template v-slot="{ toggle: toggleDropdown }">
-          <a @click="toggleDropdown" class="dropdown-item"> Test </a>
+          <a @click="toggleDropdown" class="dropdown-item">Restart</a>
+          <a @click="toggleDropdown" class="dropdown-item">Terminate</a>
+          <a @click="toggleDropdown" class="dropdown-item">Shutdown</a>
         </template>
       </base-dropdown>
     </td>

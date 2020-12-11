@@ -9,10 +9,6 @@ from rest_framework import generics, permissions
 from .forms import CustomUserCreationForm, TeamForm, InvitationForm
 from .models import Institution, TeamMember, Invitation, UserProfile, Region
 from .serializers import TeamMemberSerializer, InvitationSerializer
-from .permissions import (
-    IsTeamMembershipAdminPermission,
-    IsNotSelfTeamMembershipDeletePermission,
-)
 
 
 def register(request):
@@ -148,6 +144,14 @@ def validate_email(request, uuid):
     return HttpResponseRedirect(reverse("home:home"))
 
 
+def get_teams_for_user(user, admin=None, team=None):
+    """
+    Return queryset for all teams that an authenticated user is a member of.
+    If team is specified, returns a queryset with only that team, if the user is a member.
+    """
+    return user.teams.filter(pk=team) if team else user.teams.all()
+
+
 class TeamMemberListView(generics.ListAPIView):
     """
     API list endpoint for TeamMember.
@@ -158,11 +162,12 @@ class TeamMemberListView(generics.ListAPIView):
     serializer_class = TeamMemberSerializer
     permission_classes = [
         permissions.IsAuthenticated,
-        IsTeamMembershipAdminPermission,
     ]
 
     def get_queryset(self):
-        return TeamMember.objects.filter(team=self.kwargs["team_id"])
+        query_team = self.request.query_params.get("team")
+        teams = get_teams_for_user(self.request.user, team=query_team)
+        return TeamMember.objects.filter(team__in=teams)
 
 
 class TeamMemberDetailView(generics.RetrieveDestroyAPIView):
@@ -175,10 +180,11 @@ class TeamMemberDetailView(generics.RetrieveDestroyAPIView):
     serializer_class = TeamMemberSerializer
     permission_classes = [
         permissions.IsAuthenticated,
-        IsTeamMembershipAdminPermission,
-        IsNotSelfTeamMembershipDeletePermission,
     ]
-    queryset = TeamMember.objects.all()
+
+    def get_queryset(self):
+        teams = get_teams_for_user(self.request.user)
+        return TeamMember.objects.filter(team__in=teams)
 
 
 class InvitationListView(generics.ListCreateAPIView):
@@ -192,12 +198,12 @@ class InvitationListView(generics.ListCreateAPIView):
     serializer_class = InvitationSerializer
     permission_classes = [
         permissions.IsAuthenticated,
-        IsTeamMembershipAdminPermission,
     ]
 
     def get_queryset(self):
-        """Filter by team"""
-        return Invitation.objects.filter(to_team=self.kwargs["team_id"], accepted=False)
+        query_team = self.request.query_params.get("team")
+        teams = get_teams_for_user(self.request.user, team=query_team)
+        return Invitation.objects.filter(to_team__in=teams, accepted=False)
 
 
 class InvitationDetailView(generics.RetrieveDestroyAPIView):
@@ -210,6 +216,5 @@ class InvitationDetailView(generics.RetrieveDestroyAPIView):
     serializer_class = InvitationSerializer
     permission_classes = [
         permissions.IsAuthenticated,
-        IsTeamMembershipAdminPermission,
     ]
     queryset = Invitation.objects.all()

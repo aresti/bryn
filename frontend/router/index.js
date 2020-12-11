@@ -46,7 +46,7 @@ const routes = [
         path: "team",
         name: "team",
         component: Team,
-        meta: { displayName: "Team Profile", menuSection: "admin" },
+        meta: { displayName: "Team Management", menuSection: "admin" },
       },
       {
         path: "user",
@@ -54,12 +54,12 @@ const routes = [
         component: UserProfile,
         meta: { displayName: "User Profile", menuSection: "admin" },
       },
-      {
-        path: "licence",
-        name: "licence",
-        component: Licence,
-        meta: { displayName: "Licence", menuSection: "admin" },
-      },
+      // {
+      //   path: "licence",
+      //   name: "licence",
+      //   component: Licence,
+      //   meta: { displayName: "Licence", menuSection: "admin" },
+      // },
     ],
   },
   { path: "/:pathMatch(.*)*", name: "notfound", component: NotFound },
