@@ -32,7 +32,7 @@ export default {
   },
   data() {
     return {
-      headings: ["", "Server", "Flavor", "Status", "Created", ""],
+      headings: ["Server", "Flavor", "Status", "Created", ""],
     };
   },
 };

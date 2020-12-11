@@ -29,10 +29,6 @@
 import { useToast } from "vue-toastification";
 import { mapGetters, mapState } from "vuex";
 
-import BaseButton from "@/components/BaseButton";
-import BaseButtonCreate from "@/components/BaseButtonCreate";
-import BaseLevel from "@/components/BaseLevel";
-import BaseLevelItem from "@/components/BaseLevelItem";
 import KeyPairsNewKeyPairModal from "@/components/KeyPairsNewKeyPairModal";
 import KeyPairsTable from "@/components/KeyPairsTable";
 import TenantFilterTabs from "@/components/TenantFilterTabs";
@@ -44,10 +40,6 @@ export default {
   },
 
   components: {
-    BaseButton,
-    BaseButtonCreate,
-    BaseLevel,
-    BaseLevelItem,
     KeyPairsNewKeyPairModal,
     KeyPairsTable,
     TenantFilterTabs,

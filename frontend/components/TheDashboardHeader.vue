@@ -39,7 +39,7 @@ import { mapGetters, mapState } from "vuex";
 export default {
   computed: {
     ...mapState(["teams"]),
-    ...mapGetters(["team"]),
+    ...mapGetters(["team", "userFullName"]),
   },
   methods: {
     onTeamSelect(team) {

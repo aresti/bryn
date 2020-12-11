@@ -4,14 +4,3 @@
     <p>Sorry, there's nothing here!</p>
   </base-hero-full>
 </template>
-
-<script>
-import BaseHeroFull from "@/components/BaseHeroFull";
-import { mapState } from "vuex";
-
-export default {
-  components: {
-    BaseHeroFull,
-  },
-};
-</script>

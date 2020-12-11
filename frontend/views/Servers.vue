@@ -45,11 +45,6 @@
 import { useToast } from "vue-toastification";
 import { mapGetters, mapState } from "vuex";
 
-import BaseButton from "@/components/BaseButton";
-import BaseButtonCreate from "@/components/BaseButtonCreate";
-import BaseIcon from "@/components/BaseIcon";
-import BaseLevel from "@/components/BaseLevel";
-import BaseLevelItem from "@/components/BaseLevelItem";
 import InstancesNewInstanceModal from "@/components/InstancesNewInstanceModal";
 import InstancesTable from "@/components/InstancesTable";
 import TenantFilterTabs from "@/components/TenantFilterTabs";
@@ -61,11 +56,6 @@ export default {
   },
 
   components: {
-    BaseButton,
-    BaseButtonCreate,
-    BaseIcon,
-    BaseLevel,
-    BaseLevelItem,
     TenantFilterTabs,
     InstancesTable,
     InstancesNewInstanceModal,

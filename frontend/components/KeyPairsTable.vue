@@ -10,9 +10,7 @@
     <template v-slot:body>
       <tr v-for="(keypair, index) in keypairs" :key="index">
         <td>
-          <span class="is-family-monospace has-text-weight-semibold">{{
-            keypair.name
-          }}</span
+          <span class="has-text-weight-semibold">{{ keypair.name }}</span
           ><br />
           <span class="is-size-7">
             {{ getRegionNameForTenant(getTenantById(keypair.tenant)) }}</span

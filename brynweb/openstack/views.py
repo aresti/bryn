@@ -303,9 +303,13 @@ class VolumeListView(OpenstackListView):
     def get_transform_func(self, tenant):
         return lambda r: {
             "id": r.id,
-            "name": r.name,
+            "attachments": r.attachments,
+            "bootable": r.bootable,
+            "name": r.name.replace(tenant.get_tenant_name(), "")
+            if r.name
+            else str(r.id),
             "size": r.size,
             "status": r.status,
-            "attachments": r.attachments,
             "tenant": tenant.pk,
+            "volume_type": r.volume_type,
         }

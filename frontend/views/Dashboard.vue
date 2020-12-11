@@ -36,8 +36,6 @@
 import { mapActions, mapGetters, mapState } from "vuex";
 import { useToast } from "vue-toastification";
 
-import BaseFlexCentered from "@/components/BaseFlexCentered";
-import BaseNotification from "@/components/BaseNotification";
 import TheDashboardContent from "@/components/TheDashboardContent";
 import TheDashboardHeader from "@/components/TheDashboardHeader";
 import TheDashboardMenu from "@/components/TheDashboardMenu";
@@ -50,8 +48,6 @@ export default {
   },
 
   components: {
-    BaseFlexCentered,
-    BaseNotification,
     TheDashboardContent,
     TheDashboardHeader,
     TheDashboardMenu,

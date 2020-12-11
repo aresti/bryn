@@ -9,13 +9,9 @@
 <script>
 import { mapState } from "vuex";
 import NoTeams from "@/components/NoTeams";
-import BaseHeroFull from "@/components/BaseHeroFull";
-import BaseProgress from "@/components/BaseProgress";
 
 export default {
   components: {
-    BaseHeroFull,
-    BaseProgress,
     NoTeams,
   },
   computed: mapState(["teams"]),

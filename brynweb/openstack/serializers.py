@@ -78,7 +78,9 @@ class VolumeAttachmentSerializer(serializers.Serializer):
 class VolumeSerializer(serializers.Serializer):
     tenant = serializers.PrimaryKeyRelatedField(queryset=Tenant.objects.all())
     attachments = VolumeAttachmentSerializer(many=True)
+    bootable = serializers.BooleanField()
     id = serializers.UUIDField()
-    name = serializers.CharField()
+    name = serializers.CharField(required=False, allow_null=True)
     size = serializers.IntegerField()
     status = serializers.CharField()
+    volume_type = serializers.CharField()

@@ -1,8 +1,10 @@
 import { createStore } from "vuex";
-import instances from "./modules/instances";
+
 import flavors from "./modules/flavors";
 import images from "./modules/images";
+import instances from "./modules/instances";
 import keypairs from "./modules/keypairs";
+import volumes from "./modules/volumes";
 
 const state = {
   adminEmail: "Lisa.Marchioretto@quadram.ac.uk",
@@ -19,6 +21,7 @@ const modules = {
   images,
   instances,
   keypairs,
+  volumes,
 };
 
 const getters = {
@@ -105,6 +108,7 @@ const actions = {
       if (state.loading) {
         commit("setLoading", false);
       }
+      await dispatch("volumes/getTeamVolumes", { tenant });
     } catch (err) {
       const msg = `Error fetching data from ${getters.getRegionNameForTenant(
         tenant

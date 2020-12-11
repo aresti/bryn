@@ -1,16 +1,7 @@
 <template>
   <tr class="is-size-6">
     <td>
-      <base-icon
-        :fa-classes="['fas', 'fa-circle']"
-        class="mr-2"
-        :color="statusColor"
-      />
-    </td>
-    <td>
-      <span class="is-family-monospace has-text-weight-semibold">{{
-        instance.name
-      }}</span
+      <span class="has-text-weight-semibold">{{ instance.name }}</span
       ><br />
       <span class="is-size-7">{{ regionName }}</span>
     </td>
@@ -59,13 +50,10 @@ export default {
     },
   },
   computed: {
-    ...mapGetters(["getRegionNameForTenant", "getTenantById"]),
+    ...mapGetters(["getRegionNameForTenant"]),
     ...mapGetters("flavors", ["getFlavorById"]),
-    tenant() {
-      return this.getTenantById(this.instance.tenant);
-    },
     regionName() {
-      return this.getRegionNameForTenant(this.tenant);
+      return this.getRegionNameForTenant(this.instance.tenant);
     },
     flavorName() {
       return (
