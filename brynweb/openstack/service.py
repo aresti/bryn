@@ -1,13 +1,29 @@
+from enum import Enum
+
 from openstack.client import OpenstackClient
 
 
 class OpenstackService:
+    class Services(Enum):
+        KEYPAIRS = "keypairs"
+        SERVERS = "servers"
+        VOLUMES = "volumes"
+        FLAVORS = "flavors"
+        IMAGES = "images"
+
     def __init__(self, tenant):
         self.tenant = tenant
+
         self._client = None
         self._nova = None
         self._cinder = None
         self._glance = None
+
+        self.keypairs = KeypairsService(self)
+        self.servers = ServersService(self)
+        self.volumes = VolumesService(self)
+        self.flavors = FlavorsService(self)
+        self.images = ImagesService(self)
 
     @property
     def client(self):
@@ -30,6 +46,7 @@ class OpenstackService:
     def cinder(self):
         if not self._cinder:
             self._cinder = self.client.get_cinder()
+        return self._cinder
 
     @property
     def glance(self):
@@ -37,48 +54,102 @@ class OpenstackService:
             self._glance = self.client.get_glance()
         return self._glance
 
-    def create_keypair(self, name, public_key):
-        return self.nova.keypairs.create(name=name, public_key=public_key)
 
-    def get_server(self, uuid):
-        return self.nova.servers.get(uuid)
+class KeypairsService:
+    def __init__(self, openstack):
+        self.openstack = openstack
 
-    def get_images(self):
-        return self.glance.images.list()
+    @property
+    def nova(self):
+        return self.openstack.nova
 
-    def get_instances(self):
-        return self.nova.servers.list(detailed=True)
+    def create(self, data):
+        return self.nova.keypairs.create(
+            name=data.get("name"), public_key=data.get("public_key")
+        )
 
-    def get_volumes(self):
-        return self.cinder.volumes.list()
+    def get(self, keypair_id):
+        return self.nova.keypairs.get(keypair_id)
 
-    def get_keypairs(self):
+    def get_list(self):
         return self.nova.keypairs.list()
 
-    def get_flavors(self):
+    def delete(self, keypair_id):
+        keypair = self.get(keypair_id)
+        keypair.delete()
+
+
+class ImagesService:
+    def __init__(self, openstack):
+        self.openstack = openstack
+
+    @property
+    def glance(self):
+        return self.openstack.glance
+
+    def get_list(self):
+        return self.glance.images.list()
+
+
+class FlavorsService:
+    def __init__(self, openstack):
+        self.openstack = openstack
+
+    @property
+    def nova(self):
+        return self.openstack.nova
+
+    def get_list(self):
         return self.nova.flavors.list()
 
-    def start_server(self, uuid):
-        server = self.get_server(uuid)
+
+class VolumesService:
+    def __init__(self, openstack):
+        self.openstack = openstack
+
+    @property
+    def cinder(self):
+        return self.openstack.cinder
+
+    def get_list(self):
+        return self.cinder.volumes.list()
+
+
+class ServersService:
+    def __init__(self, openstack):
+        self.openstack = openstack
+
+    @property
+    def nova(self):
+        return self.openstack.nova
+
+    def get(self, uuid):
+        return self.nova.servers.get(uuid)
+
+    def get_list(self):
+        return self.nova.servers.list(detailed=True)
+
+    def start(self, uuid):
+        server = self.get(uuid)
         server.start()
 
-    def stop_server(self, uuid):
-        server = self.get_server(uuid)
+    def stop(self, uuid):
+        server = self.get(uuid)
         server.stop()
 
-    def terminate_server(self, uuid):
-        server = self.get_server(uuid)
+    def terminate(self, uuid):
+        server = self.get(uuid)
         server.delete()
 
-    def unshelve_server(self, uuid):
-        server = self.get_server(uuid)
+    def unshelve(self, uuid):
+        server = self.get(uuid)
         server.unshelve()
 
-    def reboot_server(self, uuid):
-        server = self.get_server(uuid)
+    def reboot(self, uuid):
+        server = self.get(uuid)
         server.reboot(reboot_type="HARD")
 
-    def launch_instance(self, name, flavor, image, auth_key_name, auth_key_value=None):
+    def launch(self, name, flavor, image, auth_key_name, auth_key_value=None):
         # client = self.get_client()
 
         # Create boot volume, wait for it to become available

@@ -20,6 +20,12 @@ from .serializers import (
 )
 
 
+class InvalidTenant(drf_exceptions.PermissionDenied):
+    default_detail = (
+        "The specified tenant does not exist, or user does not have team membership."
+    )
+
+
 def get_tenants_for_user(user, team=None, tenant=None):
     """
     Return queryset for all tenant(s) owned by teams that the authenticated user is a member of.
@@ -32,6 +38,19 @@ def get_tenants_for_user(user, team=None, tenant=None):
     return all_tenants.filter(pk=tenant) if tenant else all_tenants
 
 
+def get_tenant_for_user(user, tenant_id):
+    tenant = get_tenants_for_user(user, tenant=tenant_id).first()
+
+    if not tenant:
+        raise InvalidTenant
+
+    if tenant.region.disabled:
+        raise ServiceUnavailable
+
+    return tenant
+
+
+# TODO delete after service refactoring
 def get_instance(team_id, tenant_id, instance_id):
     """
     Helper function to retrieve an instance
@@ -65,7 +84,53 @@ class UnsupportedStateTransition(drf_exceptions.APIException):
     default_code = "unsupported_state_transition"
 
 
-class OpenstackListView(APIView):
+class OpenstackAPIView(APIView):
+    """
+    Base class for openstack api views
+    """
+
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
+
+    # You'll need to set these attributes on subclass
+    service = None
+    serializer_class = None
+
+    def get_transform_func(self, tenant):
+        """
+        Returns a func to map openstack response to desired data structure
+        Override as required
+        """
+        return lambda r: {"id": r.id, "name": r.name, "tenant": tenant.pk}
+
+
+class OpenstackRetrieveView(OpenstackAPIView):
+    """
+    Base class for simple openstack tenant detail views.
+    """
+
+    def get(self, request, tenant_id, entity_id):
+        tenant = get_tenant_for_user(request.user, tenant_id)  # may raise
+        if not entity_id:
+            raise drf_exceptions.NotFound
+
+        openstack = OpenstackService(tenant)
+        try:
+            response = methodcaller("get", entity_id)(
+                getattr(openstack, self.service.value)
+            )
+            transform_func = self.get_transform_func(tenant)
+            data = transform_func(response)
+            serialized = self.serializer_class(data=data)
+            serialized.is_valid(raise_exception=True)
+        except Exception as e:
+            raise OpenstackException(detail=str(e))
+
+        return Response(serialized.data)
+
+
+class OpenstackListView(OpenstackAPIView):
     """
     Base class for simple openstack tenant collection views.
     """
@@ -75,9 +140,8 @@ class OpenstackListView(APIView):
     ]
 
     # You'll need to set these attributes on subclass
-    service_get_method = None
-    service_post_method = None
-    serializer_class = None  # serializer class, for response validation
+    service = None
+    serializer_class = None
 
     def get_transform_func(self, tenant):
         """
@@ -101,9 +165,11 @@ class OpenstackListView(APIView):
         for tenant in tenants:
             if tenant.region.disabled:
                 continue
-            service = OpenstackService(tenant)
+            openstack = OpenstackService(tenant)
             try:
-                response = methodcaller(self.service_get_method.__name__)(service)
+                response = methodcaller("get_list")(
+                    getattr(openstack, self.service.value)
+                )
                 transform_func = self.get_transform_func(tenant)
                 data = map(transform_func, response)
                 collection.extend(data)
@@ -120,6 +186,51 @@ class OpenstackListView(APIView):
                 raise OpenstackException(detail=str(e))
 
         return Response([])
+
+
+class OpenstackCreateMixin(OpenstackAPIView):
+    """
+    Mixin to add create/post method to openstack api views
+    """
+
+    def post(self, request):
+        tenant = get_tenant_for_user(
+            request.user, request.data.get("tenant")
+        )  # may raise
+        openstack = OpenstackService(tenant)
+        try:
+            serialized = self.serializer_class(data=request.data)
+            serialized.is_valid(raise_exception=True)
+            response = methodcaller("create", serialized.data)(
+                getattr(openstack, self.service.value)
+            )
+        except Exception as e:
+            raise OpenstackException(detail=str(e))
+
+        transform_func = self.get_transform_func(tenant)
+        return Response(transform_func(response))
+
+
+class OpenstackDeleteMixin(OpenstackAPIView):
+    """
+    Mixin to add delete method to openstack api views
+    """
+
+    def delete(self, request, tenant_id, entity_id):
+        tenant = get_tenant_for_user(request.user, tenant_id)  # may raise
+        if not entity_id:
+            raise drf_exceptions.NotFound
+
+        openstack = OpenstackService(tenant)
+        try:
+            response = methodcaller("delete", entity_id)(
+                getattr(openstack, self.service.value)
+            )
+            print(response)
+        except Exception as e:
+            raise OpenstackException(detail=str(e))
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TenantListView(generics.ListAPIView):
@@ -144,7 +255,7 @@ class InstanceListView(OpenstackListView):
     """
 
     serializer_class = InstanceSerializer
-    service_get_method = OpenstackService.get_instances
+    service = OpenstackService.Services.SERVERS
 
     def get_transform_func(self, tenant):
         public_netname = tenant.region.regionsettings.public_network_name
@@ -261,7 +372,7 @@ class FlavorListView(OpenstackListView):
     """
 
     serializer_class = FlavorSerializer
-    service_get_method = OpenstackService.get_flavors
+    service = OpenstackService.Services.FLAVORS
 
 
 class ImageListView(OpenstackListView):
@@ -270,25 +381,37 @@ class ImageListView(OpenstackListView):
     """
 
     serializer_class = ImageSerializer
-    service_get_method = OpenstackService.get_images
+    service = OpenstackService.Services.IMAGES
 
 
-class KeyPairListView(OpenstackListView):
+def keypair_transform_func(self, tenant):
+    return lambda r: {
+        "id": r.id,
+        "name": r.name,
+        "fingerprint": r.fingerprint,
+        "public_key": r.public_key,
+        "tenant": tenant.pk,
+    }
+
+
+class KeyPairDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
     """
     SSH key pairs for tenants owned by teams that the authenticated user is a member of.
     """
 
     serializer_class = KeyPairSerializer
-    service_get_method = OpenstackService.get_keypairs
+    service = OpenstackService.Services.KEYPAIRS
+    get_transform_func = keypair_transform_func
 
-    def get_transform_func(self, tenant):
-        return lambda r: {
-            "id": r.id,
-            "name": r.name,
-            "fingerprint": r.fingerprint,
-            "public_key": r.public_key,
-            "tenant": tenant.pk,
-        }
+
+class KeyPairListView(OpenstackListView, OpenstackCreateMixin):
+    """
+    SSH key pairs for tenants owned by teams that the authenticated user is a member of.
+    """
+
+    serializer_class = KeyPairSerializer
+    service = OpenstackService.Services.KEYPAIRS
+    get_transform_func = keypair_transform_func
 
 
 class VolumeListView(OpenstackListView):
@@ -297,7 +420,7 @@ class VolumeListView(OpenstackListView):
     """
 
     serializer_class = VolumeSerializer
-    service_get_method = OpenstackService.get_volumes
+    service = OpenstackService.Services.VOLUMES
 
     def get_transform_func(self, tenant):
         return lambda r: {

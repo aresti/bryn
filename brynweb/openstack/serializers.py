@@ -60,10 +60,12 @@ class FlavorSerializer(serializers.Serializer):
 
 
 class KeyPairSerializer(serializers.Serializer):
-    tenant = serializers.PrimaryKeyRelatedField(queryset=Tenant.objects.all())
-    id = serializers.CharField()
+    tenant = serializers.PrimaryKeyRelatedField(
+        queryset=Tenant.objects.all(), required=False
+    )
+    id = serializers.CharField(required=False)
     name = serializers.CharField()
-    fingerprint = serializers.CharField()
+    fingerprint = serializers.CharField(required=False)
     public_key = serializers.CharField()
 
 
