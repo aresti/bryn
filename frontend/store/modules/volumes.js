@@ -44,7 +44,7 @@ const getters = {
 const actions = {
   async getTeamVolumes({ commit, rootState }, { tenant } = {}) {
     commit("setLoading", true);
-    const response = await axios.get(apiRoutes.getVolumes, {
+    const response = await axios.get(apiRoutes.volumes, {
       params: { team: rootState.activeTeam },
     });
     const volumes = response.data;

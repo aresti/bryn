@@ -8,26 +8,29 @@
       </tr>
     </template>
     <template v-slot:body>
-      <tr v-for="(keypair, index) in keypairs" :key="index">
+      <tr v-for="(keyPair, index) in keyPairs" :key="index">
         <td>
-          <span class="has-text-weight-semibold">{{ keypair.name }}</span
+          <span class="has-text-weight-semibold">{{ keyPair.name }}</span
           ><br />
           <span class="is-size-7">
-            {{ getRegionNameForTenant(getTenantById(keypair.tenant)) }}</span
+            {{ getRegionNameForTenant(getTenantById(keyPair.tenant)) }}</span
           >
         </td>
-        <td class="is-family-monospace">{{ keypair.fingerprint }}</td>
+        <td class="is-family-monospace">{{ keyPair.fingerprint }}</td>
         <td>
           <div class="buttons is-right">
             <base-button
               rounded
               size="small"
               class="has-tooltip-left has-tooltip-multiline has-tooltip-text-left"
-              :data-tooltip="keypair.publicKey"
+              :data-tooltip="keyPair.publicKey"
             >
               View Public Key
             </base-button>
-            <base-button-delete size="small" />
+            <base-button-delete
+              size="small"
+              @click="$emit('delete-keypair', keyPair)"
+            />
           </div>
         </td>
       </tr>
@@ -40,9 +43,18 @@ import { mapGetters } from "vuex";
 
 export default {
   props: {
-    keypairs: {
+    keyPairs: {
       type: Array,
       required: true,
+    },
+  },
+  emits: {
+    "delete-keypair": ({ id, name }) => {
+      if (id && name) {
+        return true;
+      }
+      console.warn("Invalid delete-keypair event payload");
+      return false;
     },
   },
   data() {

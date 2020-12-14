@@ -1,7 +1,7 @@
 <template>
   <div class="modal is-active">
     <div class="modal-background" @click="closeModal"></div>
-    <div class="modal-content">
+    <div class="modal-content" :class="{ 'is-modal-wide': wide }">
       <slot></slot>
     </div>
     <button
@@ -14,6 +14,12 @@
 
 <script>
 export default {
+  props: {
+    wide: {
+      type: Boolean,
+      default: false,
+    },
+  },
   emits: {
     "close-modal": null,
   },
@@ -24,3 +30,11 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+@media screen and (min-width: 769px) {
+  .is-modal-wide {
+    width: 800px;
+  }
+}
+</style>

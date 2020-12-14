@@ -22,6 +22,7 @@ app.use(Toast, toastOptions);
 
 // Global base component registration
 import BaseButton from "@/components/BaseButton";
+import BaseButtons from "@/components/BaseButtons";
 import BaseButtonCancel from "@/components/BaseButtonCancel";
 import BaseButtonConfirm from "@/components/BaseButtonConfirm";
 import BaseButtonCreate from "@/components/BaseButtonCreate";
@@ -50,6 +51,7 @@ import BaseTag from "@/components/BaseTag";
 import BaseTabs from "@/components/BaseTabs";
 
 app.component("BaseButton", BaseButton);
+app.component("BaseButtons", BaseButtons);
 app.component("BaseButtonCancel", BaseButtonCancel);
 app.component("BaseButtonConfirm", BaseButtonConfirm);
 app.component("BaseButtonCreate", BaseButtonCreate);

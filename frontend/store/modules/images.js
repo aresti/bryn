@@ -34,7 +34,7 @@ const getters = {
 
 const actions = {
   async getTeamImages({ commit, rootState }, { tenant } = {}) {
-    const response = await axios.get(apiRoutes.getImages, {
+    const response = await axios.get(apiRoutes.images, {
       params: { team: rootState.activeTeam },
     });
     const images = response.data;

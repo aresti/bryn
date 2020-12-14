@@ -16,18 +16,31 @@
         </template>
       </base-level>
     </div>
-    <key-pairs-table :keypairs="keyPairsForFilterTenant" />
+    <key-pairs-table
+      :keyPairs="keyPairsForFilterTenant"
+      @delete-keypair="onDeleteKeyPair"
+    />
 
     <key-pairs-new-key-pair-modal
       v-if="showNewKeyPairModal"
       @close-modal="showNewKeyPairModal = false"
+    />
+
+    <base-modal-delete
+      v-if="confirmDeleteKeyPair"
+      verb="Delete"
+      type="SSH key"
+      :name="confirmDeleteKeyPair.name"
+      :processing="deleteProcessing"
+      @close-modal="onCancelDelete"
+      @confirm-delete="onConfirmDelete"
     />
   </div>
 </template>
 
 <script>
 import { useToast } from "vue-toastification";
-import { mapGetters, mapState } from "vuex";
+import { mapActions, mapGetters, mapState } from "vuex";
 
 import KeyPairsNewKeyPairModal from "@/components/KeyPairsNewKeyPairModal";
 import KeyPairsTable from "@/components/KeyPairsTable";
@@ -48,12 +61,35 @@ export default {
   data() {
     return {
       showNewKeyPairModal: false,
+      confirmDeleteKeyPair: null,
+      deleteProcessing: false,
     };
   },
 
   computed: {
     ...mapState(["activeTeam"]),
-    ...mapGetters("keypairs", ["keyPairsForFilterTenant"]),
+    ...mapGetters("keyPairs", ["keyPairsForFilterTenant"]),
+  },
+
+  methods: {
+    ...mapActions("keyPairs", ["deleteKeyPair"]),
+    onDeleteKeyPair(keyPair) {
+      this.confirmDeleteKeyPair = keyPair;
+    },
+    onCancelDelete() {
+      this.confirmDeleteKeyPair = null;
+    },
+    onConfirmDelete() {
+      if (this.deleteProcessing) {
+        return;
+      }
+      const keyPair = this.confirmDeleteKeyPair;
+      this.deleteProcessing = true;
+      this.deleteKeyPair(keyPair);
+      this.confirmDeleteKeyPair = null;
+      this.deleteProcessing = false;
+      this.toast.info(`SSH key '${keyPair.name}' deleted`);
+    },
   },
 };
 </script>

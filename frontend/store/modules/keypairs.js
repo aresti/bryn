@@ -17,6 +17,12 @@ const mutations = {
   setKeyPairs(state, { keypairs, tenant = {} }) {
     updateTenantCollection(state.all, keypairs, { tenant });
   },
+  addKeyPair(state, keypair) {
+    state.all.push(keypair);
+  },
+  removeKeyPairById(state, id) {
+    state.all.splice(state.all.findIndex((obj) => obj.id === id));
+  },
 };
 
 const getters = {
@@ -42,11 +48,16 @@ const getters = {
 
 const actions = {
   async getTeamKeyPairs({ commit, rootState }, { tenant } = {}) {
-    const response = await axios.get(apiRoutes.getKeyPairs, {
+    const response = await axios.get(apiRoutes.keyPairs, {
       params: { team: rootState.activeTeam },
     });
     const keypairs = response.data;
     commit("setKeyPairs", { keypairs, tenant });
+  },
+  async deleteKeyPair({ commit }, { id, tenant }) {
+    const uri = `${apiRoutes.keyPairs}${tenant}/${id}`;
+    await axios.delete(uri);
+    commit("removeKeyPairById", id);
   },
 };
 

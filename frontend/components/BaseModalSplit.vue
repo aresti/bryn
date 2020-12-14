@@ -1,12 +1,12 @@
 <template>
-  <base-modal>
+  <base-modal wide>
     <base-card>
       <div class="columns is-variable is-5">
-        <div class="column is-7 content" ref="leftCol">
+        <div class="column is-6 content" ref="leftCol">
           <slot name="left"></slot>
         </div>
         <div
-          class="column is-5 content modal-right-col"
+          class="column is-6 content modal-right-col"
           :style="rightInlineStyle"
         >
           <slot name="right"></slot>

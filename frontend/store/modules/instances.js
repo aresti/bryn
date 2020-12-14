@@ -52,14 +52,14 @@ const actions = {
     // If no tenant specified, fetch all for active team
     const params =
       tenant == null ? { team: rootState.activeTeam } : { tenant: tenant.id };
-    const response = await axios.get(apiRoutes.getInstances, {
+    const response = await axios.get(apiRoutes.instances, {
       params: params,
     });
     const instances = response.data;
     commit("setInstances", { instances, tenant });
   },
   async createInstance({ commit }, data) {
-    const response = await axios.post(apiRoutes.postInstance, data);
+    const response = await axios.post(apiRoutes.instances, data);
     console.log(response);
   },
 };

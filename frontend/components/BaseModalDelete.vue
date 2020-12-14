@@ -1,15 +1,24 @@
 <template>
   <base-modal>
-    <template v-slot:header>{{ verb }} {{ entityName }}?</template>
-
-    <template v-slot:default>
-      <p>Are you sure you wish to {{ verb }} {{ deleteName }}?</p>
-    </template>
-
-    <template v-slot:footer>
-      <cancel-button>Cancel</cancel-button>
-      <delete-button>{{ verb }}</delete-button>
-    </template>
+    <base-card class="content is-size-5 has-text-centered">
+      <p>
+        Are you sure you want to {{ verb.toLowerCase() }} this {{ type }}:<br />
+        <span class="has-text-weight-semibold">{{ name }}</span
+        >?
+      </p>
+      <base-buttons>
+        <base-button fullwidth @click="closeModal" :disabled="processing"
+          >Cancel</base-button
+        >
+        <base-button
+          color="danger"
+          fullwidth
+          :loading="processing"
+          @click="confirmDelete"
+          >{{ verb }}</base-button
+        >
+      </base-buttons>
+    </base-card>
   </base-modal>
 </template>
 
@@ -17,18 +26,28 @@
 export default {
   emits: {
     "confirm-delete": null,
-    "close-modal": null
+    "close-modal": null,
   },
   props: {
     verb: {
       required: false,
       type: String,
-      default: "remove"
+      default: "remove",
     },
-    erroredOnDelete: {
+    type: {
+      required: true,
+      type: String,
+      default: "record",
+    },
+    name: {
+      required: false,
+      type: String,
+      default: "item",
+    },
+    processing: {
       required: false,
       type: Boolean,
-      default: false
+      default: false,
     },
   },
   methods: {

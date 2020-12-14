@@ -34,7 +34,7 @@ const getters = {
 
 const actions = {
   async getTeamFlavors({ commit, rootState }, { tenant } = {}) {
-    const response = await axios.get(apiRoutes.getFlavors, {
+    const response = await axios.get(apiRoutes.flavors, {
       params: { team: rootState.activeTeam },
     });
     const flavors = response.data;

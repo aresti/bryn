@@ -3,7 +3,7 @@ import { createStore } from "vuex";
 import flavors from "./modules/flavors";
 import images from "./modules/images";
 import instances from "./modules/instances";
-import keypairs from "./modules/keypairs";
+import keyPairs from "./modules/keypairs";
 import teamMembers from "./modules/teamMembers";
 import volumes from "./modules/volumes";
 
@@ -21,7 +21,7 @@ const modules = {
   flavors,
   images,
   instances,
-  keypairs,
+  keyPairs,
   volumes,
   teamMembers,
 };
@@ -96,7 +96,7 @@ const actions = {
     commit("instances/resetState");
     commit("images/resetState");
     commit("flavors/resetState");
-    commit("keypairs/resetState");
+    commit("keyPairs/resetState");
     commit("volumes/resetState");
     commit("teamMembers/resetState");
   },
@@ -107,7 +107,7 @@ const actions = {
         dispatch("flavors/getTeamFlavors", { tenant }),
         dispatch("images/getTeamImages", { tenant }),
         dispatch("instances/getTeamInstances", { tenant }),
-        dispatch("keypairs/getTeamKeyPairs", { tenant }),
+        dispatch("keyPairs/getTeamKeyPairs", { tenant }),
         dispatch("teamMembers/getTeamMembers"),
       ]);
       if (state.loading) {

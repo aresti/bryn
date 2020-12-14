@@ -22,7 +22,7 @@ const getters = {};
 
 const actions = {
   async getTeamMembers({ commit, rootState }) {
-    const response = await axios.get(apiRoutes.getTeamMembers, {
+    const response = await axios.get(apiRoutes.teamMembers, {
       params: { team: rootState.activeTeam },
     });
     const members = response.data;
