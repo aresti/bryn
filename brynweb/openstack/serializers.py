@@ -21,7 +21,9 @@ class TenantSerializer(serializers.ModelSerializer):
 
 
 class OpenstackBaseSerializer(serializers.Serializer):
-    team = serializers.PrimaryKeyRelatedField(queryset=Team.objects.all())
+    team = serializers.PrimaryKeyRelatedField(
+        queryset=Team.objects.all(), required=False
+    )
     tenant = serializers.PrimaryKeyRelatedField(queryset=Tenant.objects.all())
 
 

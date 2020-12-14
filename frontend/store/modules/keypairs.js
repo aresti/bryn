@@ -54,6 +54,13 @@ const actions = {
     const keypairs = response.data;
     commit("setKeyPairs", { keypairs, tenant });
   },
+  async createKeyPair({ commit }, { tenant, name, publicKey }) {
+    const payload = { tenant, name, publicKey };
+    const response = await axios.post(apiRoutes.keyPairs, payload);
+    const keypair = response.data;
+    commit("addKeyPair", keypair);
+    return keypair;
+  },
   async deleteKeyPair({ commit }, { id, tenant }) {
     const uri = `${apiRoutes.keyPairs}${tenant}/${id}`;
     await axios.delete(uri);

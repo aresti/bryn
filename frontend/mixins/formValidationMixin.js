@@ -1,9 +1,15 @@
 export default {
   computed: {
-    formValid() {
+    formIsValid() {
       return Object.values(this.form).every(
         (fieldObj) => fieldObj.valid || !fieldObj.validators?.length
       );
+    },
+    formValues() {
+      return Object.entries(this.form).reduce((acc, [key, fieldObj]) => {
+        acc[key] = fieldObj.value;
+        return acc;
+      }, {});
     },
   },
   methods: {

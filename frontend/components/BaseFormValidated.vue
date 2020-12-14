@@ -28,9 +28,12 @@
     </base-form-control>
 
     <slot name="buttons"
-      ><base-button-confirm type="submit" :disabled="!formValid">{{
-        submitLabel
-      }}</base-button-confirm></slot
+      ><base-button-confirm
+        type="submit"
+        :disabled="!formIsValid"
+        :loading="submitted"
+        >{{ submitLabel }}</base-button-confirm
+      ></slot
     >
   </form>
 </template>
@@ -48,10 +51,14 @@ export default {
       type: String,
       default: "Submit",
     },
+    submitted: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ["validate-field", "submit"],
   computed: {
-    formValid() {
+    formIsValid() {
       return Object.values(this.fields).every(
         (fieldObj) => fieldObj.valid || !fieldObj.validators?.length
       );

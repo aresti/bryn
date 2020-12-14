@@ -9,7 +9,8 @@
       </p>
       <base-form-validated
         :fields="form"
-        submitLabel="Add key"
+        submitLabel="Add Key"
+        :submitted="submitted"
         @validate-field="validateField"
         @submit="onSubmit"
       />
@@ -21,11 +22,12 @@
 </template>
 
 <script>
+import { useToast } from "vue-toastification";
+import VueMarkdownIt from "vue3-markdown-it";
+
 import formValidationMixin from "@/mixins/formValidationMixin";
 import guidance from "@/content/keypairs/newKeyPairGuidance.md";
-
-import VueMarkdownIt from "vue3-markdown-it";
-import { mapState, mapGetters } from "vuex";
+import { mapActions, mapState, mapGetters } from "vuex";
 import {
   isAlphaNumHyphensOnly,
   isPublicKey,
@@ -34,6 +36,11 @@ import {
 } from "@/helpers/validators";
 
 export default {
+  setup() {
+    const toast = useToast();
+    return { toast };
+  },
+
   components: {
     VueMarkdownIt,
   },
@@ -56,7 +63,7 @@ export default {
           errors: [],
           validators: [isRequired],
         },
-        pubKey: {
+        publicKey: {
           label: "Public Key",
           value: "",
           element: "textarea",
@@ -64,7 +71,7 @@ export default {
           validators: [isRequired, isPublicKey],
         },
         name: {
-          label: "Key name",
+          label: "Key Name",
           value: "",
           errors: [],
           validators: [isRequired, isAlphaNumHyphensOnly, this.isUniqueName],
@@ -77,7 +84,7 @@ export default {
   computed: {
     ...mapState(["filterTenant"]),
     ...mapGetters(["tenants", "getTenantById", "getRegionNameForTenant"]),
-    ...mapGetters("keypairs", ["getKeyPairsForTenant"]),
+    ...mapGetters("keyPairs", ["getKeyPairsForTenant"]),
     selectedTenant() {
       return this.getTenantById(parseInt(this.form.tenant.value));
     },
@@ -99,6 +106,7 @@ export default {
   },
 
   methods: {
+    ...mapActions("keyPairs", ["createKeyPair"]),
     getTenantOptions() {
       return this.tenants.map((tenant) => {
         return {
@@ -110,8 +118,21 @@ export default {
     onClose() {
       this.$emit("close-modal");
     },
-    onSubmit() {
+    async onSubmit() {
       this.validateForm();
+      if (this.submitted || !this.formIsValid) {
+        return;
+      }
+      this.submitted = true;
+      try {
+        const keypair = await this.createKeyPair(this.formValues);
+        this.toast.success(`New SSH key '${keypair.name}' created`);
+        this.onClose();
+      } catch (err) {
+        this.toast.error(err.message);
+      } finally {
+        this.submitted = false;
+      }
     },
     isUniqueName(value) {
       if (!value || !this.invalidNames.includes(value)) {
