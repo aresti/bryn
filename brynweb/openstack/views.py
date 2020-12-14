@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from novaclient import exceptions as nova_exceptions
 
 from userdb.permissions import IsTeamMemberPermission
+from .service import OpenstackService
 from .models import Tenant
 from .serializers import (
     FlavorSerializer,
@@ -74,7 +75,8 @@ class OpenstackListView(APIView):
     ]
 
     # You'll need to set these attributes on subclass
-    tenant_get_method = None  # tenant will be passed as the first argument
+    service_get_method = None
+    service_post_method = None
     serializer_class = None  # serializer class, for response validation
 
     def get_transform_func(self, tenant):
@@ -99,8 +101,9 @@ class OpenstackListView(APIView):
         for tenant in tenants:
             if tenant.region.disabled:
                 continue
+            service = OpenstackService(tenant)
             try:
-                response = methodcaller(self.tenant_get_method.__name__)(tenant)
+                response = methodcaller(self.service_get_method.__name__)(service)
                 transform_func = self.get_transform_func(tenant)
                 data = map(transform_func, response)
                 collection.extend(data)
@@ -141,7 +144,7 @@ class InstanceListView(OpenstackListView):
     """
 
     serializer_class = InstanceSerializer
-    tenant_get_method = Tenant.get_instances
+    service_get_method = OpenstackService.get_instances
 
     def get_transform_func(self, tenant):
         public_netname = tenant.region.regionsettings.public_network_name
@@ -258,7 +261,7 @@ class FlavorListView(OpenstackListView):
     """
 
     serializer_class = FlavorSerializer
-    tenant_get_method = Tenant.get_flavors
+    service_get_method = OpenstackService.get_flavors
 
 
 class ImageListView(OpenstackListView):
@@ -267,7 +270,7 @@ class ImageListView(OpenstackListView):
     """
 
     serializer_class = ImageSerializer
-    tenant_get_method = Tenant.get_images
+    service_get_method = OpenstackService.get_images
 
 
 class KeyPairListView(OpenstackListView):
@@ -276,7 +279,7 @@ class KeyPairListView(OpenstackListView):
     """
 
     serializer_class = KeyPairSerializer
-    tenant_get_method = Tenant.get_keys
+    service_get_method = OpenstackService.get_keypairs
 
     def get_transform_func(self, tenant):
         return lambda r: {
@@ -287,10 +290,6 @@ class KeyPairListView(OpenstackListView):
             "tenant": tenant.pk,
         }
 
-    def post(self, request, team_id, tenant_id):
-        # TODO
-        pass
-
 
 class VolumeListView(OpenstackListView):
     """
@@ -298,7 +297,7 @@ class VolumeListView(OpenstackListView):
     """
 
     serializer_class = VolumeSerializer
-    tenant_get_method = Tenant.get_volumes
+    service_get_method = OpenstackService.get_volumes
 
     def get_transform_func(self, tenant):
         return lambda r: {
