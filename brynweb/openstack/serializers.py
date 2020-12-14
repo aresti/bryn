@@ -2,7 +2,7 @@ import sshpubkeys
 
 from rest_framework import serializers
 
-from userdb.models import Region
+from userdb.models import Region, Team
 
 from . import INSTANCE_STATUS_VALUES
 from .models import Tenant
@@ -20,8 +20,12 @@ class TenantSerializer(serializers.ModelSerializer):
         fields = ["id", "region", "team"]
 
 
-class InstanceSerializer(serializers.Serializer):
+class OpenstackBaseSerializer(serializers.Serializer):
+    team = serializers.PrimaryKeyRelatedField(queryset=Team.objects.all())
     tenant = serializers.PrimaryKeyRelatedField(queryset=Tenant.objects.all())
+
+
+class InstanceSerializer(OpenstackBaseSerializer):
     id = serializers.UUIDField()
     name = serializers.CharField()
     flavor = serializers.UUIDField()
@@ -30,6 +34,7 @@ class InstanceSerializer(serializers.Serializer):
     created = serializers.DateTimeField()
 
 
+# TODO delete after refactoring
 class NewInstanceSerializer(serializers.Serializer):
     name = serializers.RegexField(regex=r"^([a-zA-Z0-9\-]+)$", max_length=50,)
     flavor = serializers.UUIDField()
@@ -47,22 +52,17 @@ class NewInstanceSerializer(serializers.Serializer):
         return value
 
 
-class ImageSerializer(serializers.Serializer):
-    tenant = serializers.PrimaryKeyRelatedField(queryset=Tenant.objects.all())
+class ImageSerializer(OpenstackBaseSerializer):
     id = serializers.UUIDField()
     name = serializers.CharField()
 
 
-class FlavorSerializer(serializers.Serializer):
-    tenant = serializers.PrimaryKeyRelatedField(queryset=Tenant.objects.all())
+class FlavorSerializer(OpenstackBaseSerializer):
     id = serializers.UUIDField()
     name = serializers.CharField()
 
 
-class KeyPairSerializer(serializers.Serializer):
-    tenant = serializers.PrimaryKeyRelatedField(
-        queryset=Tenant.objects.all(), required=False
-    )
+class KeyPairSerializer(OpenstackBaseSerializer):
     id = serializers.CharField(required=False)
     name = serializers.CharField()
     fingerprint = serializers.CharField(required=False)
@@ -77,8 +77,7 @@ class VolumeAttachmentSerializer(serializers.Serializer):
     attached_at = serializers.DateTimeField()
 
 
-class VolumeSerializer(serializers.Serializer):
-    tenant = serializers.PrimaryKeyRelatedField(queryset=Tenant.objects.all())
+class VolumeSerializer(OpenstackBaseSerializer):
     attachments = VolumeAttachmentSerializer(many=True)
     bootable = serializers.BooleanField()
     id = serializers.UUIDField()

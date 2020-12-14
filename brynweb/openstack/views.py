@@ -102,7 +102,12 @@ class OpenstackAPIView(APIView):
         Returns a func to map openstack response to desired data structure
         Override as required
         """
-        return lambda r: {"id": r.id, "name": r.name, "tenant": tenant.pk}
+        return lambda r: {
+            "id": r.id,
+            "name": r.name,
+            "team": tenant.team.pk,
+            "tenant": tenant.pk,
+        }
 
 
 class OpenstackRetrieveView(OpenstackAPIView):
@@ -134,21 +139,6 @@ class OpenstackListView(OpenstackAPIView):
     """
     Base class for simple openstack tenant collection views.
     """
-
-    permission_classes = [
-        permissions.IsAuthenticated,
-    ]
-
-    # You'll need to set these attributes on subclass
-    service = None
-    serializer_class = None
-
-    def get_transform_func(self, tenant):
-        """
-        Returns a func to map openstack response to desired data structure
-        Override as required
-        """
-        return lambda r: {"id": r.id, "name": r.name, "tenant": tenant.pk}
 
     def get(self, request):
         query_tenant = request.query_params.get("tenant")
@@ -260,6 +250,8 @@ class InstanceListView(OpenstackListView):
     def get_transform_func(self, tenant):
         public_netname = tenant.region.regionsettings.public_network_name
         return lambda r: {
+            "team": tenant.team.pk,
+            "tenant": tenant.pk,
             "id": r.id,
             "name": r.name,
             "flavor": r.flavor["id"],
@@ -268,7 +260,6 @@ class InstanceListView(OpenstackListView):
             if public_netname in r.addresses.keys()
             else None,
             "created": r.created,
-            "tenant": tenant.pk,
         }
 
     def post(self, request, format=None):
@@ -386,11 +377,12 @@ class ImageListView(OpenstackListView):
 
 def keypair_transform_func(self, tenant):
     return lambda r: {
+        "team": tenant.team.pk,
+        "tenant": tenant.pk,
         "id": r.id,
         "name": r.name,
         "fingerprint": r.fingerprint,
         "public_key": r.public_key,
-        "tenant": tenant.pk,
     }
 
 
@@ -424,6 +416,8 @@ class VolumeListView(OpenstackListView):
 
     def get_transform_func(self, tenant):
         return lambda r: {
+            "team": tenant.team.pk,
+            "tenant": tenant.pk,
             "id": r.id,
             "attachments": r.attachments,
             "bootable": r.bootable,
@@ -432,6 +426,5 @@ class VolumeListView(OpenstackListView):
             else str(r.id),
             "size": r.size,
             "status": r.status,
-            "tenant": tenant.pk,
             "volume_type": r.volume_type,
         }
