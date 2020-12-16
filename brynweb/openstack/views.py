@@ -100,15 +100,16 @@ class OpenstackAPIView(APIView):
 
     def get_transform_func(self, tenant):
         """
-        Returns a func to map openstack response to desired data structure
+        Returns a func to map openstack response to required serializer data structure
         Override as required
         """
-        return lambda r: {
-            "id": r.id,
-            "name": r.name,
-            "team": tenant.team.pk,
-            "tenant": tenant.pk,
-        }
+
+        def transform_func(obj):
+            obj.tenant = tenant.pk
+            obj.team = tenant.team.pk
+            return obj
+
+        return transform_func
 
 
 class OpenstackRetrieveView(OpenstackAPIView):
@@ -128,8 +129,7 @@ class OpenstackRetrieveView(OpenstackAPIView):
             )
             transform_func = self.get_transform_func(tenant)
             data = transform_func(response)
-            serialized = self.serializer_class(data=data)
-            serialized.is_valid(raise_exception=True)
+            serialized = self.serializer_class(data)
         except Exception as e:
             raise OpenstackException(detail=str(e))
 
@@ -151,32 +151,27 @@ class OpenstackListView(OpenstackAPIView):
             # no tenants for user, or no team membership for specified tenant
             return Response([])
 
-        # query openstack api for each tenant, map response to dict
+        # query openstack api for each tenant, transform response as required
         collection = []
         for tenant in tenants:
             if tenant.region.disabled:
                 continue
             openstack = OpenstackService(tenant)
+            transform_func = self.get_transform_func(tenant)
             try:
                 response = methodcaller("get_list")(
                     getattr(openstack, self.service.value)
                 )
-                transform_func = self.get_transform_func(tenant)
                 data = map(transform_func, response)
                 collection.extend(data)
+
+                if collection:
+                    serialized = self.serializer_class(collection, many=True)
+                    return Response(serialized.data)
+                else:
+                    return Response([])
             except Exception as e:
                 raise OpenstackException(detail=str(e))
-
-        # validate against serializer
-        if collection:
-            try:
-                serialized = self.serializer_class(data=collection, many=True)
-                serialized.is_valid(raise_exception=True)
-                return Response(serialized.data)
-            except Exception as e:
-                raise OpenstackException(detail=str(e))
-
-        return Response([])
 
 
 class OpenstackCreateMixin(OpenstackAPIView):
@@ -189,17 +184,18 @@ class OpenstackCreateMixin(OpenstackAPIView):
             request.user, request.data.get("tenant")
         )  # may raise
         openstack = OpenstackService(tenant)
+        transform_func = self.get_transform_func(tenant)
+
         try:
             serialized = self.serializer_class(data=request.data)
             serialized.is_valid(raise_exception=True)
             response = methodcaller("create", serialized.data)(
                 getattr(openstack, self.service.value)
             )
+            transformed_response = transform_func(response)
+            return Response(self.serializer_class(transformed_response).data)
         except Exception as e:
             raise OpenstackException(detail=str(e))
-
-        transform_func = self.get_transform_func(tenant)
-        return Response(transform_func(response))
 
 
 class OpenstackDeleteMixin(OpenstackAPIView):
@@ -250,18 +246,20 @@ class InstanceListView(OpenstackListView):
 
     def get_transform_func(self, tenant):
         public_netname = tenant.region.regionsettings.public_network_name
-        return lambda r: {
-            "team": tenant.team.pk,
-            "tenant": tenant.pk,
-            "id": r.id,
-            "name": r.name,
-            "flavor": r.flavor["id"],
-            "status": r.status,
-            "ip": r.addresses[public_netname][0]["addr"]
-            if public_netname in r.addresses.keys()
-            else None,
-            "created": r.created,
-        }
+
+        def transform_func(obj):
+            obj.tenant = tenant.pk
+            obj.team = tenant.team.pk
+            obj.flavor = obj.flavor["id"]
+
+            if public_netname in obj.addresses.keys():
+                obj.ip = obj.addresses[public_netname][0]["addr"]
+            else:
+                obj.ip = None
+
+            return obj
+
+        return transform_func
 
     def post(self, request, format=None):
         # Get tenant, validate team membership
@@ -376,17 +374,6 @@ class ImageListView(OpenstackListView):
     service = OpenstackService.Services.IMAGES
 
 
-def keypair_transform_func(self, tenant):
-    return lambda r: {
-        "team": tenant.team.pk,
-        "tenant": tenant.pk,
-        "id": r.id,
-        "name": r.name,
-        "fingerprint": r.fingerprint,
-        "public_key": r.public_key,
-    }
-
-
 class KeyPairDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
     """
     SSH key pairs for tenants owned by teams that the authenticated user is a member of.
@@ -394,7 +381,6 @@ class KeyPairDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
 
     serializer_class = KeyPairSerializer
     service = OpenstackService.Services.KEYPAIRS
-    get_transform_func = keypair_transform_func
 
 
 class KeyPairListView(OpenstackListView, OpenstackCreateMixin):
@@ -404,7 +390,6 @@ class KeyPairListView(OpenstackListView, OpenstackCreateMixin):
 
     serializer_class = KeyPairSerializer
     service = OpenstackService.Services.KEYPAIRS
-    get_transform_func = keypair_transform_func
 
 
 class VolumeListView(OpenstackListView):
@@ -416,19 +401,18 @@ class VolumeListView(OpenstackListView):
     service = OpenstackService.Services.VOLUMES
 
     def get_transform_func(self, tenant):
-        return lambda r: {
-            "team": tenant.team.pk,
-            "tenant": tenant.pk,
-            "id": r.id,
-            "attachments": r.attachments,
-            "bootable": r.bootable,
-            "name": r.name.replace(tenant.get_tenant_name(), "")
-            if r.name
-            else str(r.id),
-            "size": r.size,
-            "status": r.status,
-            "volume_type": r.volume_type,
-        }
+        def transform_func(obj):
+            as_dict = obj.to_dict()
+            as_dict["tenant"] = tenant.pk
+            as_dict["team"] = tenant.team.pk
+            as_dict["name"] = (
+                obj.name.replace(tenant.get_tenant_name(), "")
+                if obj.name
+                else str(obj.id)
+            )
+            return as_dict
+
+        return transform_func
 
 
 class VolumeTypeListView(OpenstackListView):
@@ -438,12 +422,3 @@ class VolumeTypeListView(OpenstackListView):
 
     serializer_class = VolumeTypeSerializer
     service = OpenstackService.Services.VOLUME_TYPES
-
-    def get_transform_func(self, tenant):
-        return lambda r: {
-            "team": tenant.team.pk,
-            "tenant": tenant.pk,
-            "id": r.id,
-            "name": r.name,
-            "is_default": r.is_default,
-        }

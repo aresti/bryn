@@ -118,7 +118,10 @@ class VolumesService:
 
     def create(self, data):
         return self.cinder.volumes.create(
-            imageRef=data.get("image"), name=data.get("name"),
+            imageRef=data.get("image"),
+            name=data.get("name"),
+            size=data.get("size"),
+            type=data.get("size", self.openstack.volume_types.default),
         )
 
     # Create boot volume, wait for it to become available

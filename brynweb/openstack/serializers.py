@@ -2,8 +2,7 @@ import sshpubkeys
 
 from rest_framework import serializers
 
-from userdb.models import Region, Team
-
+from userdb.models import Region
 from . import INSTANCE_STATUS_VALUES
 from .models import Tenant
 
@@ -21,10 +20,8 @@ class TenantSerializer(serializers.ModelSerializer):
 
 
 class OpenstackBaseSerializer(serializers.Serializer):
-    team = serializers.PrimaryKeyRelatedField(
-        queryset=Team.objects.all(), required=False
-    )
-    tenant = serializers.PrimaryKeyRelatedField(queryset=Tenant.objects.all())
+    team = serializers.IntegerField(required=False, allow_null=True)
+    tenant = serializers.IntegerField(required=False, allow_null=True)
 
 
 class InstanceSerializer(OpenstackBaseSerializer):
