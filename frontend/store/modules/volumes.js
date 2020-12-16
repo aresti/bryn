@@ -29,11 +29,6 @@ const getters = {
       ? getters.getVolumesForTenant({ id: rootState.filterTenant })
       : state.all;
   },
-  getKeyPairById(state) {
-    return (id) => {
-      return state.all.find((keypair) => keypair.id === id);
-    };
-  },
   getVolumesForTenant(state) {
     return ({ id }) => {
       return state.all.filter((keypair) => keypair.tenant === id);

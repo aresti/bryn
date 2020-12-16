@@ -6,6 +6,7 @@ import instances from "./modules/instances";
 import keyPairs from "./modules/keypairs";
 import teamMembers from "./modules/teamMembers";
 import volumes from "./modules/volumes";
+import volumeTypes from "./modules/volumeTypes";
 
 const state = {
   adminEmail: "Lisa.Marchioretto@quadram.ac.uk",
@@ -22,8 +23,9 @@ const modules = {
   images,
   instances,
   keyPairs,
-  volumes,
   teamMembers,
+  volumes,
+  volumeTypes,
 };
 
 const getters = {
@@ -98,6 +100,7 @@ const actions = {
     commit("flavors/resetState");
     commit("keyPairs/resetState");
     commit("volumes/resetState");
+    commit("volumeTypes/resetState");
     commit("teamMembers/resetState");
   },
   async getAllTenantData({ commit, dispatch, getters, state }, { tenant }) {
@@ -109,6 +112,7 @@ const actions = {
         dispatch("instances/getTeamInstances", { tenant }),
         dispatch("keyPairs/getTeamKeyPairs", { tenant }),
         dispatch("teamMembers/getTeamMembers"),
+        dispatch("volumeTypes/getTeamVolumeTypes"),
       ]);
       if (state.loading) {
         commit("setLoading", false);
