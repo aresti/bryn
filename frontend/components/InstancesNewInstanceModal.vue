@@ -102,7 +102,7 @@ export default {
     ...mapGetters("flavors", ["getFlavorsForTenant"]),
     ...mapGetters("images", ["getImagesForTenant"]),
     ...mapGetters("instances", ["getInstancesForTenant"]),
-    ...mapGetters("keypairs", ["getKeyPairsForTenant"]),
+    ...mapGetters("keyPairs", ["getKeyPairsForTenant"]),
     selectedTenant() {
       return this.form.tenant.value
         ? this.getTenantById(parseInt(this.form.tenant.value))
