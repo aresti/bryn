@@ -126,10 +126,10 @@ export default {
       this.submitted = true;
       try {
         const keypair = await this.createKeyPair(this.formValues);
-        this.toast.success(`New SSH key '${keypair.name}' created`);
+        this.toast.success(`New SSH key created: ${keypair.name}`);
         this.onClose();
       } catch (err) {
-        this.toast.error(err.message);
+        this.toast.error(`Failed to create SSH key: ${err.message}`);
       } finally {
         this.submitted = false;
       }

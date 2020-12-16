@@ -79,16 +79,21 @@ export default {
     onCancelDelete() {
       this.confirmDeleteKeyPair = null;
     },
-    onConfirmDelete() {
+    async onConfirmDelete() {
       if (this.deleteProcessing) {
         return;
       }
       const keyPair = this.confirmDeleteKeyPair;
       this.deleteProcessing = true;
-      this.deleteKeyPair(keyPair);
-      this.confirmDeleteKeyPair = null;
-      this.deleteProcessing = false;
-      this.toast.info(`SSH key '${keyPair.name}' deleted`);
+      try {
+        await this.deleteKeyPair(keyPair);
+        this.toast.warning(`Deleted SSH key: ${keyPair.name}`);
+      } catch (err) {
+        this.toast.error(`Failed to delete SSH key: ${err.message}`);
+      } finally {
+        this.confirmDeleteKeyPair = null;
+        this.deleteProcessing = false;
+      }
     },
   },
 };

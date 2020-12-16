@@ -41,6 +41,25 @@ $footer-padding: 3rem 1.5rem;
 $tooltip-radius: 6px;
 @import "@creativebulma/bulma-tooltip";
 
+// Vue Toastification
+@import "vue-toastification/dist/index.css";
+
+.Vue-Toastification__toast--default {
+  background-color: $primary;
+}
+.Vue-Toastification__toast--info {
+  background-color: $celadon-blue;
+}
+.Vue-Toastification__toast--success {
+  background-color: $success;
+}
+.Vue-Toastification__toast--error {
+  background-color: $danger;
+}
+.Vue-Toastification__toast--warning {
+  background-color: $warning;
+}
+
 // Page layout, sticky footer
 body {
   display: flex;
