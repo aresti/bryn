@@ -5,11 +5,12 @@ from openstack.client import OpenstackClient
 
 class OpenstackService:
     class Services(Enum):
+        IMAGES = "images"
+        FLAVORS = "flavors"
         KEYPAIRS = "keypairs"
         SERVERS = "servers"
         VOLUMES = "volumes"
-        FLAVORS = "flavors"
-        IMAGES = "images"
+        VOLUME_TYPES = "volume_types"
 
     def __init__(self, tenant):
         self.tenant = tenant
@@ -19,11 +20,12 @@ class OpenstackService:
         self._cinder = None
         self._glance = None
 
+        self.images = ImagesService(self)
+        self.flavors = FlavorsService(self)
         self.keypairs = KeypairsService(self)
         self.servers = ServersService(self)
         self.volumes = VolumesService(self)
-        self.flavors = FlavorsService(self)
-        self.images = ImagesService(self)
+        self.volume_types = VolumeTypesService(self)
 
     @property
     def client(self):
@@ -113,6 +115,59 @@ class VolumesService:
 
     def get_list(self):
         return self.cinder.volumes.list()
+
+    def create(self, data):
+        return self.cinder.volumes.create(
+            imageRef=data.get("image"), name=data.get("name"),
+        )
+
+    # Create boot volume, wait for it to become available
+    #     # cinder = client.get_cinder()
+    #     # volume = cinder.volumes.create(
+    #     #     imageRef=image,
+    #     #     name=f"{self.get_tenant_name()} {name} boot volume",
+    #     #     size=120,
+    #     # )
+    #     # cinder.volumes.set_bootable(volume, True)
+
+    #     # for n in range(20):
+    #     #     # TODO find a better way!
+    #     #     v = cinder.volumes.get(volume.id)
+    #     #     if v.status == "available":
+    #     #         break
+    #     #     time.sleep(1)
+
+    #     # bdm = [
+    #     #     {
+    #     #         "uuid": volume.id,
+    #     #         "source_type": "volume",
+    #     #         "destination_type": "volume",
+    #     #         "boot_index": "0",
+    #     #         "delete_on_termination": True,
+    #     #     }
+    #     # ]
+
+
+class VolumeTypesService:
+    def __init__(self, openstack):
+        self.openstack = openstack
+        self._default = None
+
+    @property
+    def cinder(self):
+        return self.openstack.cinder
+
+    @property
+    def default(self):
+        if not self._default:
+            self._default = self.cinder.volume_types.default().id
+        return self._default
+
+    def get_list(self):
+        volume_types = self.cinder.volume_types.list(is_public=True)
+        for volume_type in volume_types:
+            volume_type.is_default = volume_type.id == self.default
+        return volume_types
 
 
 class ServersService:

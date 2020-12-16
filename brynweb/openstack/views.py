@@ -17,6 +17,7 @@ from .serializers import (
     KeyPairSerializer,
     TenantSerializer,
     VolumeSerializer,
+    VolumeTypeSerializer,
 )
 
 
@@ -427,4 +428,22 @@ class VolumeListView(OpenstackListView):
             "size": r.size,
             "status": r.status,
             "volume_type": r.volume_type,
+        }
+
+
+class VolumeTypeListView(OpenstackListView):
+    """
+    Available VolumesTypes for tenants owned by teams that the authenticated user is a member of.
+    """
+
+    serializer_class = VolumeTypeSerializer
+    service = OpenstackService.Services.VOLUME_TYPES
+
+    def get_transform_func(self, tenant):
+        return lambda r: {
+            "team": tenant.team.pk,
+            "tenant": tenant.pk,
+            "id": r.id,
+            "name": r.name,
+            "is_default": r.is_default,
         }

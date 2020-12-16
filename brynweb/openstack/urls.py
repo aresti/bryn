@@ -26,4 +26,7 @@ urlpatterns = [
         name="api-keypairs-detail",
     ),
     path("volumes/", views.VolumeListView.as_view(), name="api-volume-list"),
+    path(
+        "volumetypes/", views.VolumeTypeListView.as_view(), name="api-volumetype-list"
+    ),
 ]

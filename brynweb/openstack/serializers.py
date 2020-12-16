@@ -87,3 +87,9 @@ class VolumeSerializer(OpenstackBaseSerializer):
     size = serializers.IntegerField()
     status = serializers.CharField()
     volume_type = serializers.CharField()
+
+
+class VolumeTypeSerializer(OpenstackBaseSerializer):
+    id = serializers.UUIDField()
+    name = serializers.CharField()
+    is_default = serializers.BooleanField(default=False)
