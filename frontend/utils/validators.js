@@ -1,5 +1,3 @@
-import { nl } from "date-fns/esm/locale";
-
 // Custom form validators: return true, or throw ValidationError
 class ValidationError extends Error {
   constructor(message) {

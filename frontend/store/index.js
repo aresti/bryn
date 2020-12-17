@@ -1,17 +1,18 @@
 import { createStore } from "vuex";
+import { createFilterByIdGetter } from "@/utils";
 
 import flavors from "./modules/flavors";
 import images from "./modules/images";
 import instances from "./modules/instances";
-import keyPairs from "./modules/keypairs";
+import keyPairs from "./modules/keyPairs";
 import teamMembers from "./modules/teamMembers";
 import volumes from "./modules/volumes";
 import volumeTypes from "./modules/volumeTypes";
 
 const state = {
   adminEmail: "Lisa.Marchioretto@quadram.ac.uk",
-  activeTeam: null,
-  filterTenant: null,
+  activeTeamId: null,
+  filterTenantId: null,
   loading: false,
   regions: [],
   teams: [],
@@ -33,25 +34,24 @@ const getters = {
     return `${state.user.firstName} ${state.user.lastName}`;
   },
   team(state) {
-    return state.teams.find((team) => team.id === state.activeTeam);
+    return state.teams.find((team) => team.id === state.activeTeamId);
   },
   tenants(state, getters) {
-    return state.activeTeam ? getters.team.tenants : [];
+    return state.activeTeamId ? getters.team.tenants : [];
   },
   defaultTenant(_state, getters) {
     return getters.tenants.find(
       (tenant) => tenant.region === getters.team.defaultRegion
     );
   },
+  filterTenant(state, getters) {
+    return getters.tenants.find((tenant) => tenant.id === state.filterTenantId);
+  },
   getTenantById(_state, getters) {
-    return (id) => {
-      return getters.tenants.find((tenant) => tenant.id === id);
-    };
+    return createFilterByIdGetter(getters.tenants);
   },
   getRegionById(state) {
-    return (id) => {
-      return state.regions.find((region) => region.id === id);
-    };
+    return createFilterByIdGetter(state.regions);
   },
   getRegionNameForTenant(_state, getters) {
     return (tenant) => {
@@ -73,11 +73,11 @@ const mutations = {
   initUser(state) {
     state.user = JSON.parse(document.getElementById("userData").textContent);
   },
-  setActiveTeam(state, { id }) {
-    state.activeTeam = id;
+  setActiveTeamId(state, id) {
+    state.activeTeamId = id;
   },
-  setFilterTenant(state, tenant) {
-    state.filterTenant = tenant?.id;
+  setFilterTenantId(state, id) {
+    state.filterTenantId = id;
   },
   setLoading(state, loading) {
     state.loading = loading;
@@ -85,23 +85,19 @@ const mutations = {
 };
 
 const actions = {
-  initStore({ commit }) {
+  async initStore({ commit }) {
     /* Initialise store from embedded Django template json */
     commit("initUser");
     commit("initRegions");
     commit("initTeams");
   },
   setActiveTeam({ commit }, team) {
-    /* Set the activeTeam id and reset team-specific state */
-    commit("setActiveTeam", team);
-    commit("setFilterTenant", null);
-    commit("instances/resetState");
-    commit("images/resetState");
-    commit("flavors/resetState");
-    commit("keyPairs/resetState");
-    commit("volumes/resetState");
-    commit("volumeTypes/resetState");
-    commit("teamMembers/resetState");
+    commit("setActiveTeamId", team.id);
+    commit("setFilterTenantId", null);
+  },
+  setFilterTenant({ commit }, tenant) {
+    /* allow null/undefined */
+    commit("setFilterTenantId", tenant?.id);
   },
   async getAllTenantData({ commit, dispatch, getters, state }, { tenant }) {
     /* Fetch all team data for a specific tenant */
@@ -111,8 +107,7 @@ const actions = {
         dispatch("images/getTeamImages", { tenant }),
         dispatch("instances/getTeamInstances", { tenant }),
         dispatch("keyPairs/getTeamKeyPairs", { tenant }),
-        dispatch("teamMembers/getTeamMembers"),
-        dispatch("volumeTypes/getTeamVolumeTypes"),
+        dispatch("volumeTypes/getTeamVolumeTypes", { tenant }),
       ]);
       if (state.loading) {
         commit("setLoading", false);
@@ -132,9 +127,12 @@ const actions = {
   async getAllTeamData({ commit, dispatch, getters }) {
     /* Fetch team data for all tenants */
     commit("setLoading", true);
-    const results = await Promise.allSettled(
-      getters.tenants.map((tenant) => dispatch("getAllTenantData", { tenant }))
-    );
+    dispatch("teamMembers/getTeamMembers"); /* TODO: handle failure */
+    const results = await Promise.allSettled([
+      ...getters.tenants.map((tenant) =>
+        dispatch("getAllTenantData", { tenant })
+      ),
+    ]);
     return results.map(({ status, value, reason }, index) => {
       return { status, value, reason, tenant: getters.tenants[index].id };
     });

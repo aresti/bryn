@@ -1,30 +1,27 @@
 import { axios, apiRoutes } from "@/api";
+import { collectionForTeamId } from "@/utils";
 
-const getDefaultState = () => {
+const state = () => {
   return {
     all: [],
   };
 };
 
-// initial state
-const state = getDefaultState();
-
 const mutations = {
-  resetState(state) {
-    Object.assign(state, getDefaultState());
-  },
   setTeamMembers(state, members) {
     state.all = members;
   },
 };
 
-const getters = {};
+const getters = {
+  allTeamMembers(state, _getters, rootState) {
+    return collectionForTeamId(state.all, rootState.activeTeamId);
+  },
+};
 
 const actions = {
-  async getTeamMembers({ commit, rootState }) {
-    const response = await axios.get(apiRoutes.teamMembers, {
-      params: { team: rootState.activeTeam },
-    });
+  async getTeamMembers({ commit }) {
+    const response = await axios.get(apiRoutes.teamMembers);
     const members = response.data;
     commit("setTeamMembers", members);
   },

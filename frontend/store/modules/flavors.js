@@ -1,44 +1,39 @@
 import { axios, apiRoutes } from "@/api";
-import { updateTenantCollection } from "@/helpers";
+import {
+  updateTeamCollection,
+  createFilterByIdGetter,
+  createFilterByTenantGetter,
+} from "@/utils";
 
-const getDefaultState = () => {
+const state = () => {
   return {
     all: [],
   };
 };
 
-// initial state
-const state = getDefaultState();
-
 const mutations = {
-  resetState(state) {
-    Object.assign(state, getDefaultState());
-  },
-  setFlavors(state, { flavors, tenant = {} }) {
-    updateTenantCollection(state.all, flavors, { tenant });
+  setFlavors(state, { flavors, team, tenant }) {
+    updateTeamCollection(state.all, flavors, team, tenant);
   },
 };
 
 const getters = {
   getFlavorById(state) {
-    return (id) => {
-      return state.all.find((flavor) => flavor.id === id);
-    };
+    return createFilterByIdGetter(state.all);
   },
   getFlavorsForTenant(state) {
-    return ({ id }) => {
-      return state.all.filter((flavor) => flavor.tenant === id);
-    };
+    return createFilterByTenantGetter(state.all);
   },
 };
 
 const actions = {
-  async getTeamFlavors({ commit, rootState }, { tenant } = {}) {
+  async getTeamFlavors({ commit, rootGetters }, { tenant } = {}) {
+    const team = rootGetters.team;
     const response = await axios.get(apiRoutes.flavors, {
-      params: { team: rootState.activeTeam },
+      params: { team: team.id, tenant: tenant?.id },
     });
     const flavors = response.data;
-    commit("setFlavors", { flavors, tenant });
+    commit("setFlavors", { flavors, team, tenant });
   },
 };
 

@@ -1,44 +1,39 @@
 import { axios, apiRoutes } from "@/api";
-import { updateTenantCollection } from "@/helpers";
+import {
+  updateTeamCollection,
+  collectionForTeamId,
+  createFilterByIdGetter,
+  createFilterByTenantGetter,
+} from "@/utils";
 
 const SHELVED_STATUSES = ["SHELVED", "SHELVED_OFFLOADED"];
 
-const getDefaultState = () => {
+const state = () => {
   return {
     all: [],
   };
 };
 
-// initial state
-const state = getDefaultState();
-
 const mutations = {
-  resetState(state) {
-    Object.assign(state, getDefaultState());
-  },
-  setInstances(state, { instances, tenant = {} }) {
-    updateTenantCollection(state.all, instances, { tenant });
+  setInstances(state, { instances, team, tenant }) {
+    updateTeamCollection(state.all, instances, team, tenant);
   },
 };
 
 const getters = {
   getInstanceById(state) {
-    return (id) => {
-      return state.all.find((instance) => instance.id === id);
-    };
+    return createFilterByIdGetter(state.all);
   },
   getInstancesForTenant(state) {
-    return ({ id }) => {
-      return state.all.filter((instance) => instance.tenant === id);
-    };
+    return createFilterByTenantGetter(state.all);
   },
-  instancesForFilterTenant(state, _getters, rootState) {
-    if (rootState.filterTenant == null) {
-      return state.all;
-    }
-    return state.all.filter(
-      (instance) => instance.tenant === rootState.filterTenant
-    );
+  instancesForActiveTeam(state, _getters, rootState) {
+    return collectionForTeamId(state.all, rootState.activeTeamId);
+  },
+  instancesForFilterTenant(_state, getters, rootState, rootGetters) {
+    return rootState.filterTenantId
+      ? getters.getInstancesForTenant(rootGetters.filterTenant)
+      : getters.instancesForActiveTeam;
   },
   notShelvedForFilterTenant(_state, getters) {
     return getters.instancesForFilterTenant.filter(
@@ -48,15 +43,13 @@ const getters = {
 };
 
 const actions = {
-  async getTeamInstances({ rootState, commit }, { tenant } = {}) {
-    // If no tenant specified, fetch all for active team
-    const params =
-      tenant == null ? { team: rootState.activeTeam } : { tenant: tenant.id };
+  async getTeamInstances({ rootGetters, commit }, { tenant } = {}) {
+    const team = rootGetters.team;
     const response = await axios.get(apiRoutes.instances, {
-      params: params,
+      params: { team: team.id, tenant: tenant?.id },
     });
     const instances = response.data;
-    commit("setInstances", { instances, tenant });
+    commit("setInstances", { instances, team, tenant });
   },
   async createInstance({ commit }, data) {
     const response = await axios.post(apiRoutes.instances, data);

@@ -1,12 +1,12 @@
 <template>
   <base-tabs toggle rounded>
-    <li :class="{ 'is-active': filterTenant == null }">
+    <li :class="{ 'is-active': filterTenantId == null }">
       <a @click="onTabClick">All</a>
     </li>
     <li
       v-for="tenant in tenants"
       :key="tenant.id"
-      :class="{ 'is-active': tenant.id === filterTenant }"
+      :class="{ 'is-active': tenant.id === filterTenantId }"
     >
       <a @click="onTabClick(tenant)">{{ getRegionNameForTenant(tenant) }}</a>
     </li>
@@ -14,15 +14,15 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations, mapState } from "vuex";
+import { mapGetters, mapActions, mapState } from "vuex";
 
 export default {
   computed: {
-    ...mapState(["filterTenant"]),
+    ...mapState(["filterTenantId"]),
     ...mapGetters(["tenants", "getRegionNameForTenant"]),
   },
   methods: {
-    ...mapMutations(["setFilterTenant"]),
+    ...mapActions(["setFilterTenant"]),
     onTabClick(tenant = null) {
       this.setFilterTenant(tenant);
     },

@@ -33,7 +33,7 @@ import {
   isPublicKey,
   isRequired,
   ValidationError,
-} from "@/helpers/validators";
+} from "@/utils/validators";
 
 export default {
   setup() {
@@ -82,7 +82,7 @@ export default {
   },
 
   computed: {
-    ...mapState(["filterTenant"]),
+    ...mapState(["filterTenantId"]),
     ...mapGetters(["tenants", "getTenantById", "getRegionNameForTenant"]),
     ...mapGetters("keyPairs", ["getKeyPairsForTenant"]),
     selectedTenant() {
@@ -152,8 +152,8 @@ export default {
   },
 
   mounted() {
-    if (this.filterTenant) {
-      this.form.tenant.value = this.filterTenant;
+    if (this.filterTenantId) {
+      this.form.tenant.value = this.filterTenantId;
     } else if (this.tenants.length === 1) {
       this.form.tenant.value = this.tenants[0].id;
       this.validateField("tenant");

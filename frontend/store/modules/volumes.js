@@ -1,22 +1,20 @@
 import { axios, apiRoutes } from "@/api";
-import { updateTenantCollection } from "@/helpers";
+import {
+  updateTeamCollection,
+  collectionForTeamId,
+  createFilterByTenantGetter,
+} from "@/utils";
 
-const getDefaultState = () => {
+const state = () => {
   return {
     all: [],
     loading: false,
   };
 };
 
-// initial state
-const state = getDefaultState();
-
 const mutations = {
-  resetState(state) {
-    Object.assign(state, getDefaultState());
-  },
-  setVolumes(state, { volumes, tenant = {} }) {
-    updateTenantCollection(state.all, volumes, { tenant });
+  setVolumes(state, { volumes, team, tenant }) {
+    updateTeamCollection(state.all, volumes, team, tenant);
   },
   setLoading(state, loading) {
     state.loading = loading;
@@ -24,26 +22,28 @@ const mutations = {
 };
 
 const getters = {
-  volumesForFilterTenant(state, getters, rootState) {
-    return rootState.filterTenant
-      ? getters.getVolumesForTenant({ id: rootState.filterTenant })
-      : state.all;
-  },
   getVolumesForTenant(state) {
-    return ({ id }) => {
-      return state.all.filter((keypair) => keypair.tenant === id);
-    };
+    return createFilterByTenantGetter(state.all);
+  },
+  volumesForActiveTeam(state, _getters, rootState) {
+    return collectionForTeamId(state.all, rootState.activeTeamId);
+  },
+  volumesForFilterTenant(_state, getters, rootState, rootGetters) {
+    return rootState.filterTenantId
+      ? getters.getVolumesForTenant(rootGetters.filterTenant)
+      : getters.volumesForActiveTeam;
   },
 };
 
 const actions = {
-  async getTeamVolumes({ commit, rootState }, { tenant } = {}) {
+  async getTeamVolumes({ commit, rootGetters }, { tenant } = {}) {
     commit("setLoading", true);
+    const team = rootGetters.team;
     const response = await axios.get(apiRoutes.volumes, {
-      params: { team: rootState.activeTeam },
+      params: { team: team.id, tenant: tenant?.id },
     });
     const volumes = response.data;
-    commit("setVolumes", { volumes, tenant });
+    commit("setVolumes", { volumes, team, tenant });
     commit("setLoading", false);
   },
 };

@@ -4,7 +4,7 @@
       <team-profile />
     </div>
     <div class="column">
-      <team-members-panel :teamMembers="teamMembers" />
+      <team-members-panel :teamMembers="allTeamMembers" />
       <base-notification color="success">
         Your team licence is valid until 28/01/2021
       </base-notification>
@@ -24,10 +24,8 @@ export default {
     TeamProfile,
   },
   computed: {
-    ...mapState({
-      teamMembers: (state) => state.teamMembers.all,
-    }),
     ...mapGetters(["team"]),
+    ...mapGetters("teamMembers", ["allTeamMembers"]),
   },
 };
 </script>

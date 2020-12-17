@@ -11,7 +11,7 @@
 
 <script>
 import { mapState } from "vuex";
-import { isRequired } from "@/helpers/validators";
+import { isRequired } from "@/utils/validators";
 import formValidationMixin from "@/mixins/formValidationMixin";
 
 export default {

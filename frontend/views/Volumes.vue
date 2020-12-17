@@ -76,7 +76,7 @@ export default {
     ...mapState({
       loading: (state) => state.volumes.loading,
     }),
-    ...mapGetters("volumes", ["volumesForFilterTenant", ,]),
+    ...mapGetters("volumes", ["volumesForFilterTenant"]),
     filteredVolumes() {
       return this.showBootable
         ? this.volumesForFilterTenant

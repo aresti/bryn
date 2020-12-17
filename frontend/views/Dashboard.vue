@@ -6,10 +6,10 @@
 
     <section class="section is-flex is-flex-grow-1">
       <base-flex-centered v-if="erroredOnGet">
-        <base-notification color="danger" light>
+        <base-message color="danger" light>
           All of your tenants were unreachable, there may be a temporary issue
           on our end. Please try again shortly.
-        </base-notification>
+        </base-message>
       </base-flex-centered>
 
       <base-flex-centered v-else-if="loading">
@@ -72,12 +72,12 @@ export default {
   },
 
   created() {
-    /* Set activeTeam for initial route */
+    /* Set activeTeamId for initial route */
     this.setTeamForRoute(this.$route);
   },
 
   beforeRouteUpdate(to, from) {
-    /* Update activeTeam on route change (since Vue component instance is reused) */
+    /* Update activeTeamId on route change (since Vue component instance is reused) */
     if (to.params.teamId !== from.params.teamId) {
       this.setTeamForRoute(to);
     }
@@ -86,7 +86,7 @@ export default {
   methods: {
     ...mapActions(["setActiveTeam", "getAllTeamData"]),
     setTeamForRoute(route) {
-      /* Set the activeTeam state from route params */
+      /* Set the activeTeamId state from route params */
       const toTeam = this.teams.find(
         (team) => team.id === parseInt(route.params.teamId)
       );

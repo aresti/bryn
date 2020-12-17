@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { titleCase } from "@/helpers";
+import { titleCase } from "@/utils";
 
 export default {
   props: {

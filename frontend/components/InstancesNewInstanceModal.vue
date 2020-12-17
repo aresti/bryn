@@ -26,7 +26,7 @@ import {
   isAlphaNumHyphensOnly,
   isRequired,
   ValidationError,
-} from "@/helpers/validators";
+} from "@/utils/validators";
 import { mapState, mapActions, mapGetters } from "vuex";
 
 const defaultMapToOptions = (entities) => {
@@ -97,7 +97,7 @@ export default {
   },
 
   computed: {
-    ...mapState(["filterTenant"]),
+    ...mapState(["filterTenantId"]),
     ...mapGetters(["tenants", "getTenantById", "getRegionNameForTenant"]),
     ...mapGetters("flavors", ["getFlavorsForTenant"]),
     ...mapGetters("images", ["getImagesForTenant"]),
@@ -185,7 +185,7 @@ export default {
   },
 
   mounted() {
-    this.form.tenant.value = this.filterTenant ?? "";
+    this.form.tenant.value = this.filterTenantId ?? "";
     this.form.tenant.options = this.tenantOptions;
   },
 };

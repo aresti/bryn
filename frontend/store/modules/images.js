@@ -1,44 +1,39 @@
 import { axios, apiRoutes } from "@/api";
-import { updateTenantCollection } from "@/helpers";
+import {
+  updateTeamCollection,
+  createFilterByIdGetter,
+  createFilterByTenantGetter,
+} from "@/utils";
 
-const getDefaultState = () => {
+const state = () => {
   return {
     all: [],
   };
 };
 
-// initial state
-const state = getDefaultState();
-
 const mutations = {
-  resetState(state) {
-    Object.assign(state, getDefaultState());
-  },
-  setImages(state, { images, tenant = {} }) {
-    updateTenantCollection(state.all, images, { tenant });
+  setImages(state, { images, team, tenant }) {
+    updateTeamCollection(state.all, images, team, tenant);
   },
 };
 
 const getters = {
   getImageById(state) {
-    return (id) => {
-      return state.all.find((image) => image.id === id);
-    };
+    return createFilterByIdGetter(state.all);
   },
   getImagesForTenant(state) {
-    return ({ id }) => {
-      return state.all.filter((image) => image.tenant === id);
-    };
+    return createFilterByTenantGetter(state.all);
   },
 };
 
 const actions = {
-  async getTeamImages({ commit, rootState }, { tenant } = {}) {
+  async getTeamImages({ commit, rootGetters }, { tenant } = {}) {
+    const team = rootGetters.team;
     const response = await axios.get(apiRoutes.images, {
-      params: { team: rootState.activeTeam },
+      params: { team: team.id, tenant: tenant?.id },
     });
     const images = response.data;
-    commit("setImages", { images, tenant });
+    commit("setImages", { images, team, tenant });
   },
 };
 

@@ -1,24 +1,23 @@
 import { axios, apiRoutes } from "@/api";
-import { updateTenantCollection } from "@/helpers";
+import {
+  updateTeamCollection,
+  collectionForTeamId,
+  createFilterByIdGetter,
+  createFilterByTenantGetter,
+} from "@/utils";
 
-const getDefaultState = () => {
+const state = () => {
   return {
     all: [],
   };
 };
 
-// initial state
-const state = getDefaultState();
-
 const mutations = {
-  resetState(state) {
-    Object.assign(state, getDefaultState());
+  setKeyPairs(state, { keyPairs, team, tenant }) {
+    updateTeamCollection(state.all, keyPairs, team, tenant);
   },
-  setKeyPairs(state, { keypairs, tenant = {} }) {
-    updateTenantCollection(state.all, keypairs, { tenant });
-  },
-  addKeyPair(state, keypair) {
-    state.all.push(keypair);
+  addKeyPair(state, keyPair) {
+    state.all.push(keyPair);
   },
   removeKeyPairById(state, id) {
     state.all.splice(state.all.findIndex((obj) => obj.id === id));
@@ -26,33 +25,30 @@ const mutations = {
 };
 
 const getters = {
-  keyPairsForFilterTenant(state, _getters, rootState) {
-    if (rootState.filterTenant == null) {
-      return state.all;
-    }
-    return state.all.filter(
-      (instance) => instance.tenant === rootState.filterTenant
-    );
-  },
   getKeyPairById(state) {
-    return (id) => {
-      return state.all.find((keypair) => keypair.id === id);
-    };
+    return createFilterByIdGetter(state.all);
   },
   getKeyPairsForTenant(state) {
-    return ({ id }) => {
-      return state.all.filter((keypair) => keypair.tenant === id);
-    };
+    return createFilterByTenantGetter(state.all);
+  },
+  keyPairsForActiveTeam(state, _getters, rootState) {
+    return collectionForTeamId(state.all, rootState.activeTeamId);
+  },
+  keyPairsForFilterTenant(_state, getters, rootState, rootGetters) {
+    return rootState.filterTenantId
+      ? getters.getKeyPairsForTenant(rootGetters.filterTenant)
+      : getters.keyPairsForActiveTeam;
   },
 };
 
 const actions = {
-  async getTeamKeyPairs({ commit, rootState }, { tenant } = {}) {
+  async getTeamKeyPairs({ commit, rootGetters }, { tenant } = {}) {
+    const team = rootGetters.team;
     const response = await axios.get(apiRoutes.keyPairs, {
-      params: { team: rootState.activeTeam },
+      params: { team: team.id, tenant: tenant?.id },
     });
-    const keypairs = response.data;
-    commit("setKeyPairs", { keypairs, tenant });
+    const keyPairs = response.data;
+    commit("setKeyPairs", { keyPairs, team, tenant });
   },
   async createKeyPair({ commit }, { tenant, name, publicKey }) {
     const payload = { tenant, name, publicKey };
