@@ -8,6 +8,7 @@
           </base-level-item>
         </template>
         <template v-slot:right>
+          <base-mini-loader :loading="loading" />
           <base-level-item>
             <base-button rounded @click="showBootable = !showBootable"
               ><template v-slot:icon-before>
@@ -33,10 +34,6 @@
       </base-level>
     </div>
     <volumes-table :volumes="filteredVolumes" />
-
-    <base-flex-centered v-if="loading">
-      <div class="loader is-loading"></div>
-    </base-flex-centered>
 
     <!-- <key-pairs-new-key-pair-modal
       v-if="showNewVolumeModal"
@@ -85,10 +82,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.loader {
-  height: 200px;
-  width: 200px;
-}
-</style>

@@ -61,8 +61,14 @@ export default {
   },
 
   computed: {
-    ...mapState(["loading", "teams", "user"]),
-    ...mapGetters(["team", "tenants", "getTenantById", "getRegionById"]),
+    ...mapState(["teams", "user"]),
+    ...mapGetters([
+      "loading",
+      "team",
+      "tenants",
+      "getTenantById",
+      "getRegionById",
+    ]),
   },
 
   watch: {
@@ -84,7 +90,7 @@ export default {
   },
 
   methods: {
-    ...mapActions(["setActiveTeam", "getAllTeamData"]),
+    ...mapActions(["setActiveTeam", "fetchAll"]),
     setTeamForRoute(route) {
       /* Set the activeTeamId state from route params */
       const toTeam = this.teams.find(
@@ -103,7 +109,7 @@ export default {
       this.erroredOnGet = false;
 
       // Result is as per Promise.allSettled
-      const results = await this.getAllTeamData();
+      const results = await this.fetchAll();
 
       // Trigger toasts for errored tenants
       results

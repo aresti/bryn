@@ -8,6 +8,7 @@
           </base-level-item>
         </template>
         <template v-slot:right>
+          <base-mini-loader :loading="loading" />
           <base-level-item v-if="hasShelved">
             <base-button rounded @click="showShelved = !showShelved"
               ><template v-slot:icon-before>
@@ -69,6 +70,9 @@ export default {
   },
 
   computed: {
+    ...mapState({
+      loading: (state) => state.instances.loading,
+    }),
     ...mapGetters("instances", [
       "instancesForFilterTenant",
       "notShelvedForFilterTenant",

@@ -13,7 +13,6 @@ const state = {
   adminEmail: "Lisa.Marchioretto@quadram.ac.uk",
   activeTeamId: null,
   filterTenantId: null,
-  loading: false,
   regions: [],
   teams: [],
   user: null,
@@ -59,6 +58,9 @@ const getters = {
       return region?.description?.replace("University of ", "");
     };
   },
+  loading(_state, getters) {
+    return !getters.team.initialized;
+  },
 };
 
 const mutations = {
@@ -79,8 +81,10 @@ const mutations = {
   setFilterTenantId(state, id) {
     state.filterTenantId = id;
   },
-  setLoading(state, loading) {
-    state.loading = loading;
+  setTeamInitialized(state) {
+    state.teams.find(
+      (team) => team.id === state.activeTeamId
+    ).initialized = true;
   },
 };
 
@@ -99,8 +103,11 @@ const actions = {
     /* allow null/undefined */
     commit("setFilterTenantId", tenant?.id);
   },
-  async getAllTenantData({ commit, dispatch, getters, state }, { tenant }) {
-    /* Fetch all team data for a specific tenant */
+  async fetchTenantSpecificData(
+    { commit, dispatch, getters, state },
+    { tenant }
+  ) {
+    /* Fetch all tenant-specific data */
     try {
       await Promise.all([
         dispatch("flavors/getTeamFlavors", { tenant }),
@@ -108,11 +115,8 @@ const actions = {
         dispatch("instances/getTeamInstances", { tenant }),
         dispatch("keyPairs/getTeamKeyPairs", { tenant }),
         dispatch("volumeTypes/getTeamVolumeTypes", { tenant }),
+        dispatch("volumes/getTeamVolumes", { tenant }),
       ]);
-      if (state.loading) {
-        commit("setLoading", false);
-      }
-      await dispatch("volumes/getTeamVolumes", { tenant });
     } catch (err) {
       const msg = `Error fetching data from ${getters.getRegionNameForTenant(
         tenant
@@ -124,13 +128,27 @@ const actions = {
       }
     }
   },
-  async getAllTeamData({ commit, dispatch, getters }) {
-    /* Fetch team data for all tenants */
-    commit("setLoading", true);
-    dispatch("teamMembers/getTeamMembers"); /* TODO: handle failure */
+  async fetchTeamSpecificData({ dispatch }) {
+    /* Fetch all team specific data (for the active team) */
+    try {
+      await dispatch("teamMembers/getTeamMembers");
+    } catch (err) {
+      const msg = `Error fetching team data for ${getters.team.name}`;
+      if (err.response && err.response.data.hasOwnProperty("detail")) {
+        throw new Error(`${msg}: ${err.response.data.detail}`);
+      } else {
+        throw new Error(`${msg}: ${err.message}`);
+      }
+    }
+  },
+  async fetchAll({ commit, dispatch, getters }) {
+    if (!getters.team.initialized) {
+      await dispatch("fetchTeamSpecificData"); // Will throw on err
+      commit("setTeamInitialized");
+    }
     const results = await Promise.allSettled([
       ...getters.tenants.map((tenant) =>
-        dispatch("getAllTenantData", { tenant })
+        dispatch("fetchTenantSpecificData", { tenant })
       ),
     ]);
     return results.map(({ status, value, reason }, index) => {

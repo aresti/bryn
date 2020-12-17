@@ -11,12 +11,16 @@ const SHELVED_STATUSES = ["SHELVED", "SHELVED_OFFLOADED"];
 const state = () => {
   return {
     all: [],
+    loading: false,
   };
 };
 
 const mutations = {
   setInstances(state, { instances, team, tenant }) {
     updateTeamCollection(state.all, instances, team, tenant);
+  },
+  setLoading(state, loading) {
+    state.loading = loading;
   },
 };
 
@@ -44,12 +48,14 @@ const getters = {
 
 const actions = {
   async getTeamInstances({ rootGetters, commit }, { tenant } = {}) {
+    commit("setLoading", true);
     const team = rootGetters.team;
     const response = await axios.get(apiRoutes.instances, {
       params: { team: team.id, tenant: tenant?.id },
     });
     const instances = response.data;
     commit("setInstances", { instances, team, tenant });
+    commit("setLoading", false);
   },
   async createInstance({ commit }, data) {
     const response = await axios.post(apiRoutes.instances, data);
