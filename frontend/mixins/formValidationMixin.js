@@ -1,3 +1,5 @@
+import { ValidationError } from "@/utils/validators";
+
 export default {
   computed: {
     formIsValid() {
@@ -32,6 +34,13 @@ export default {
     },
     fieldIsInvalid(field) {
       return Boolean(field.errors?.length);
+    },
+    parseResponseError(error) {
+      Object.entries(error).forEach(([field, value]) => {
+        value.forEach((message) => {
+          this.form[field].errors.push(new ValidationError(message));
+        });
+      });
     },
   },
 };

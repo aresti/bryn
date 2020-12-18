@@ -67,6 +67,13 @@ class KeyPairSerializer(OpenstackBaseSerializer):
     fingerprint = serializers.CharField(required=False)
     public_key = serializers.CharField()
 
+    def validate_public_key(self, value):
+        try:
+            sshpubkeys.SSHKey(value).parse()
+        except sshpubkeys.InvalidKeyException:
+            raise serializers.ValidationError("Invalid SSH key")
+        return value
+
 
 class VolumeAttachmentSerializer(serializers.Serializer):
     id = serializers.UUIDField()

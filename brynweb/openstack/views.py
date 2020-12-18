@@ -35,7 +35,6 @@ def get_tenants_for_user(user, team=None, tenant=None):
     """
     teams = user.teams.filter(pk=team) if team else user.teams.all()
     all_tenants = Tenant.objects.filter(team__in=teams).all()
-
     return all_tenants.filter(pk=tenant) if tenant else all_tenants
 
 
@@ -164,14 +163,14 @@ class OpenstackListView(OpenstackAPIView):
                 )
                 data = map(transform_func, response)
                 collection.extend(data)
-
-                if collection:
-                    serialized = self.serializer_class(collection, many=True)
-                    return Response(serialized.data)
-                else:
-                    return Response([])
             except Exception as e:
                 raise OpenstackException(detail=str(e))
+
+        if collection:
+            serialized = self.serializer_class(collection, many=True)
+            return Response(serialized.data)
+        else:
+            return Response([])
 
 
 class OpenstackCreateMixin(OpenstackAPIView):
@@ -186,9 +185,10 @@ class OpenstackCreateMixin(OpenstackAPIView):
         openstack = OpenstackService(tenant)
         transform_func = self.get_transform_func(tenant)
 
+        serialized = self.serializer_class(data=request.data)
+        serialized.is_valid(raise_exception=True)
+
         try:
-            serialized = self.serializer_class(data=request.data)
-            serialized.is_valid(raise_exception=True)
             response = methodcaller("create", serialized.data)(
                 getattr(openstack, self.service.value)
             )

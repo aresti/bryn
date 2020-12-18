@@ -68,7 +68,7 @@ export default {
           value: "",
           element: "textarea",
           errors: [],
-          validators: [isRequired, isPublicKey],
+          validators: [isRequired, isPublicKey, this.isUniquePublicKey],
         },
         name: {
           label: "Key Name",
@@ -103,6 +103,13 @@ export default {
           )
         : [];
     },
+    invalidPublicKeys() {
+      return this.selectedTenant
+        ? this.getKeyPairsForTenant(this.selectedTenant).map(
+            (keypair) => keypair.publicKey
+          )
+        : [];
+    },
   },
 
   methods: {
@@ -129,7 +136,13 @@ export default {
         this.toast.success(`New SSH key created: ${keypair.name}`);
         this.onClose();
       } catch (err) {
-        this.toast.error(`Failed to create SSH key: ${err.message}`);
+        if (err.response.status === 400) {
+          this.parseResponseError(err.response.data);
+        } else {
+          this.toast.error(
+            `Failed to create SSH key: ${err.response.data.detail}`
+          );
+        }
       } finally {
         this.submitted = false;
       }
@@ -139,6 +152,17 @@ export default {
         return true;
       }
       throw new ValidationError("A unique name is required");
+    },
+    isUniquePublicKey(value) {
+      if (!value || !this.invalidPublicKeys.includes(value)) {
+        return true;
+      }
+      const existing = this.getKeyPairsForTenant(this.selectedTenant).find(
+        (existing) => existing.publicKey === value
+      );
+      throw new ValidationError(
+        `You've already stored this public key as '${existing.name}'`
+      );
     },
   },
 

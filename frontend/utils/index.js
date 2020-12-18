@@ -47,11 +47,17 @@ const titleCase = (str) => {
   });
 };
 
+const snakeToCamel = (str) =>
+  str.replace(/([-_][a-z])/g, (group) =>
+    group.toUpperCase().replace("-", "").replace("_", "")
+  );
+
 export {
-  updateTeamCollection,
-  titleCase,
   createFilterByIdGetter,
   createFilterByTenantGetter,
   collectionForTeamId,
   collectionForTenantId,
+  snakeToCamel,
+  titleCase,
+  updateTeamCollection,
 };

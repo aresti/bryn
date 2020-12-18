@@ -86,9 +86,11 @@ export default {
       this.deleteProcessing = true;
       try {
         await this.deleteKeyPair(keyPair);
-        this.toast.warning(`Deleted SSH key: ${keyPair.name}`);
+        this.toast(`Deleted SSH key: ${keyPair.name}`);
       } catch (err) {
-        this.toast.error(`Failed to delete SSH key: ${err.message}`);
+        this.toast.error(
+          `Failed to delete SSH key: ${err.response.data.detail}`
+        );
       } finally {
         this.confirmDeleteKeyPair = null;
         this.deleteProcessing = false;
