@@ -35,10 +35,10 @@
     </div>
     <volumes-table :volumes="filteredVolumes" />
 
-    <!-- <key-pairs-new-key-pair-modal
+    <volumes-new-volume-modal
       v-if="showNewVolumeModal"
       @close-modal="showNewVolumeModal = false"
-    /> -->
+    />
   </div>
 </template>
 
@@ -47,6 +47,7 @@ import { useToast } from "vue-toastification";
 import { mapGetters, mapState } from "vuex";
 
 // import VolumesNewVolumeModal from "@/components/VolumesNewVolumeModal";
+import VolumesNewVolumeModal from "@/components/VolumesNewVolumeModal";
 import VolumesTable from "@/components/VolumesTable";
 import TenantFilterTabs from "@/components/TenantFilterTabs";
 
@@ -57,7 +58,7 @@ export default {
   },
 
   components: {
-    // VolumesNewVolumeModal,
+    VolumesNewVolumeModal,
     VolumesTable,
     TenantFilterTabs,
   },

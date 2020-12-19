@@ -121,7 +121,7 @@ class VolumesService:
             imageRef=data.get("image"),
             name=data.get("name"),
             size=data.get("size"),
-            type=data.get("size", self.openstack.volume_types.default),
+            volume_type=data.get("volumeType", self.openstack.volume_types.default),
         )
 
     # Create boot volume, wait for it to become available

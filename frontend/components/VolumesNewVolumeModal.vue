@@ -1,27 +1,35 @@
 <template>
   <base-modal-split @close-modal="onClose">
     <template v-slot:left>
-      <h4 class="title is-4">Launch new server</h4>
-      <p>Create a new server instance.</p>
+      <h4 class="title is-4">Create a New Volume</h4>
+      <p>Create a new volume, which can be attached to your instances.</p>
 
       <base-form-validated
         :form="form"
-        submitLabel="Launch server"
+        :nonFieldErrors="formNonFieldErrors"
+        submitLabel="Create Volume"
         @validate-field="formValidateField"
         @submit="onSubmit"
       />
     </template>
     <template v-slot:right>
-      <vue-markdown-it :source="guidance" />
+      <h4 class="title is-4">Help with Volumes</h4>
+      <base-message color="danger"
+        ><strong>Important!</strong><br />As per the user agreement, we cannot
+        guarantee the integrity or availability of your data. It is essential
+        that you backup your data elsewhere.</base-message
+      >
+      <!-- <vue-markdown-it :source="guidance" /> -->
     </template>
   </base-modal-split>
 </template>
 
 <script>
 import formValidationMixin from "@/mixins/formValidationMixin";
-import guidance from "@/content/instances/newInstanceGuidance.md";
+// import guidance from "@/content/instances/newInstanceGuidance.md";
 
 import VueMarkdownIt from "vue3-markdown-it";
+import { useToast } from "vue-toastification";
 import {
   isAlphaNumHyphensOnly,
   isRequired,
@@ -30,6 +38,11 @@ import {
 import { mapState, mapActions, mapGetters } from "vuex";
 
 export default {
+  setup() {
+    const toast = useToast();
+    return { toast };
+  },
+
   mixins: [formValidationMixin],
 
   emits: {
@@ -42,7 +55,7 @@ export default {
 
   data() {
     return {
-      guidance,
+      // guidance,
       form: {
         tenant: {
           label: "Region",
@@ -52,27 +65,19 @@ export default {
           errors: [],
           validators: [isRequired],
         },
-        flavor: {
-          label: "Flavor",
+        volumeType: {
+          label: "Volume Type",
           element: "select",
           options: [],
           value: "",
           errors: [],
           validators: [isRequired],
         },
-        image: {
-          label: "Image",
+        size: {
+          label: "Size",
           element: "select",
           options: [],
-          value: "",
-          errors: [],
-          validators: [isRequired],
-        },
-        keypair: {
-          label: "SSH Key",
-          element: "select",
-          options: [],
-          value: "",
+          value: "250",
           errors: [],
           validators: [isRequired],
         },
@@ -90,14 +95,17 @@ export default {
   computed: {
     ...mapState(["filterTenantId"]),
     ...mapGetters(["tenants", "getTenantById", "getRegionNameForTenant"]),
-    ...mapGetters("flavors", ["getFlavorsForTenant"]),
-    ...mapGetters("images", ["getImagesForTenant"]),
-    ...mapGetters("instances", ["getInstancesForTenant"]),
-    ...mapGetters("keyPairs", ["getKeyPairsForTenant"]),
+    ...mapGetters("volumes", ["getVolumesForTenant"]),
+    ...mapGetters("volumeTypes", ["getVolumeTypesForTenant"]),
     selectedTenant() {
       return this.form.tenant.value
         ? this.getTenantById(parseInt(this.form.tenant.value))
         : null;
+    },
+    sizeOptions() {
+      return [250, 500, 1000, 2000, 5000, 10000, 20000].map((size) => {
+        return { value: size, label: size };
+      });
     },
     tenantOptions() {
       return this.tenants.map((tenant) => {
@@ -107,46 +115,54 @@ export default {
         };
       });
     },
-    images() {
+    volumeTypes() {
       return this.selectedTenant
-        ? this.getImagesForTenant(this.selectedTenant)
+        ? this.getVolumeTypesForTenant(this.selectedTenant)
         : [];
     },
-    flavors() {
-      return this.selectedTenant
-        ? this.getFlavorsForTenant(this.selectedTenant)
-        : [];
-    },
-    keypairs() {
-      return this.selectedTenant
-        ? this.getKeyPairsForTenant(this.selectedTenant)
-        : [];
+    defaultVolumeTypeId() {
+      return this.volumeTypes.find((vt) => vt.isDefault === true)?.id;
     },
     invalidNames() {
       return this.selectedTenant
-        ? this.getInstancesForTenant(this.selectedTenant).map(
-            (instance) => instance.name
+        ? this.getVolumesForTenant(this.selectedTenant).map(
+            (volume) => volume.name
           )
         : [];
     },
   },
 
   methods: {
-    ...mapActions("instances", ["createInstance"]),
+    ...mapActions("volumes", ["createVolume"]),
     onClose() {
       this.$emit("close-modal");
     },
     onSubmit() {
       this.formValidate();
     },
-    // async onSubmit(values) {
-    //   try {
-    //     const result = await this.createInstance(values);
-    //     console.log(result);
-    //   } catch (err) {
-    //     console.log(err.response.data.detail);
-    //   }
-    // },
+    async onSubmit() {
+      this.formValidate();
+      if (this.submitted || !this.formIsValid) {
+        return;
+      }
+      this.submitted = true;
+      try {
+        const volume = await this.createVolume(this.formValues);
+        this.toast.success(`New volume created: ${volume.name}`);
+        this.onClose();
+      } catch (err) {
+        console.log(err);
+        if (err.response.status === 400) {
+          this.formParseResponseError(err.response.data);
+        } else {
+          this.toast.error(
+            `Failed to create volume: ${err.response.data.detail}`
+          );
+        }
+      } finally {
+        this.submitted = false;
+      }
+    },
     isUniqueName(value) {
       if (!value || !this.invalidNames.includes(value)) {
         return true;
@@ -158,12 +174,8 @@ export default {
   watch: {
     selectedTenant: {
       handler(_new, _old) {
-        this.form.flavor.value = "";
-        this.form.flavor.options = this.formMapToOptions(this.flavors);
-        this.form.image.value = "";
-        this.form.image.options = this.formMapToOptions(this.images);
-        this.form.keypair.value = "";
-        this.form.keypair.options = this.formMapToOptions(this.keypairs);
+        this.form.volumeType.value = this.defaultVolumeTypeId;
+        this.form.volumeType.options = this.formMapToOptions(this.volumeTypes);
       },
       immediate: true,
     },
@@ -176,6 +188,7 @@ export default {
     } else if (this.tenants.length === 1) {
       this.form.tenant.value = this.tenants[0].id;
     }
+    this.form.size.options = this.sizeOptions;
   },
 };
 </script>

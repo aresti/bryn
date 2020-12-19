@@ -13,6 +13,9 @@ const state = () => {
 };
 
 const mutations = {
+  addVolume(state, volume) {
+    state.all.push(volume);
+  },
   setVolumes(state, { volumes, team, tenant }) {
     updateTeamCollection(state.all, volumes, team, tenant);
   },
@@ -36,6 +39,13 @@ const getters = {
 };
 
 const actions = {
+  async createVolume({ commit }, { tenant, volumeType, size, name }) {
+    const payload = { tenant, volumeType, size, name };
+    const response = await axios.post(apiRoutes.volumes, payload);
+    const volume = response.data;
+    commit("addVolume", volume);
+    return volume;
+  },
   async getTeamVolumes({ commit, rootGetters }, { tenant } = {}) {
     commit("setLoading", true);
     const team = rootGetters.team;

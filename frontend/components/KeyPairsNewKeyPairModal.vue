@@ -8,10 +8,10 @@
         <span class="is-family-monospace">'simons-hipster-laptop'</span>
       </p>
       <base-form-validated
-        :fields="form"
+        :form="form"
         submitLabel="Add Key"
         :submitted="submitted"
-        @validate-field="validateField"
+        @validate-field="formValidateField"
         @submit="onSubmit"
       />
     </template>
@@ -114,19 +114,11 @@ export default {
 
   methods: {
     ...mapActions("keyPairs", ["createKeyPair"]),
-    getTenantOptions() {
-      return this.tenants.map((tenant) => {
-        return {
-          value: tenant.id,
-          label: this.getRegionNameForTenant(tenant),
-        };
-      });
-    },
     onClose() {
       this.$emit("close-modal");
     },
     async onSubmit() {
-      this.validateForm();
+      this.formValidate();
       if (this.submitted || !this.formIsValid) {
         return;
       }
@@ -137,7 +129,7 @@ export default {
         this.onClose();
       } catch (err) {
         if (err.response.status === 400) {
-          this.parseResponseError(err.response.data);
+          this.formParseResponseError(err.response.data);
         } else {
           this.toast.error(
             `Failed to create SSH key: ${err.response.data.detail}`
@@ -166,21 +158,12 @@ export default {
     },
   },
 
-  watch: {
-    selectedTenant: {
-      handler(_new, _old) {
-        this.form.tenant.options = this.tenantOptions;
-      },
-      immediate: true,
-    },
-  },
-
   mounted() {
+    this.form.tenant.options = this.tenantOptions;
     if (this.filterTenantId) {
       this.form.tenant.value = this.filterTenantId;
     } else if (this.tenants.length === 1) {
       this.form.tenant.value = this.tenants[0].id;
-      this.validateField("tenant");
     }
   },
 };

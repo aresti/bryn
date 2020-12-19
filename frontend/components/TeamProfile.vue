@@ -2,9 +2,9 @@
   <h2>Team Profile</h2>
 
   <base-form-validated
-    :fields="form"
+    :form="form"
     submitLabel="Update"
-    @validate-field="validateForm"
+    @validate-field="formValidate"
     @submit="onSubmit"
   />
 </template>

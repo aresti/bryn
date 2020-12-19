@@ -1,7 +1,7 @@
 <template>
   <form @submit.prevent="$emit('submit')" novalidate>
     <base-form-control
-      v-for="[key, value] in Object.entries(fields)"
+      v-for="[key, value] in Object.entries(form)"
       :key="key"
       :label="value.label ? value.label : titleCase(key)"
       :errors="value.errors"
@@ -12,8 +12,8 @@
         v-model="value.value"
         :name="key"
         :options="value.options"
-        :null-option-label="`Select a ${key}`"
-        :invalid="fieldIsInvalid(value)"
+        :null-option-label="`Select a ${value.label ?? key}`"
+        :invalid="formFieldIsInvalid(value)"
         @validate="emitValidate(key)"
         fullwidth
       />
@@ -22,10 +22,16 @@
         v-model="value.value"
         :name="key"
         :element="value.element"
-        :invalid="fieldIsInvalid(value)"
+        :invalid="formFieldIsInvalid(value)"
         @validate="emitValidate(key)"
       />
     </base-form-control>
+
+    <ul v-if="nonFieldErrors?.length" class="has-text-danger">
+      <template v-for="err in nonFieldErrors" :key="err">
+        <li>{{ err.message }}</li>
+      </template>
+    </ul>
 
     <slot name="buttons"
       ><base-button-confirm
@@ -40,12 +46,23 @@
 
 <script>
 import { titleCase } from "@/utils";
+import formValidationMixin from "@/mixins/formValidationMixin";
 
 export default {
+  setup() {
+    return { titleCase };
+  },
+
+  mixins: [formValidationMixin],
+
   props: {
-    fields: {
+    form: {
       type: Object,
       required: true,
+    },
+    nonFieldErrors: {
+      type: Array,
+      required: false,
     },
     submitLabel: {
       type: String,
@@ -56,23 +73,12 @@ export default {
       default: false,
     },
   },
+
   emits: ["validate-field", "submit"],
-  computed: {
-    formIsValid() {
-      return Object.values(this.fields).every(
-        (fieldObj) => fieldObj.valid || !fieldObj.validators?.length
-      );
-    },
-  },
+
   methods: {
-    fieldIsInvalid(field) {
-      return Boolean(field.errors?.length);
-    },
     emitValidate(name) {
       this.$emit("validate-field", name);
-    },
-    titleCase(str) {
-      return titleCase(str);
     },
   },
 };

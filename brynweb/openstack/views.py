@@ -392,7 +392,7 @@ class KeyPairListView(OpenstackListView, OpenstackCreateMixin):
     service = OpenstackService.Services.KEYPAIRS
 
 
-class VolumeListView(OpenstackListView):
+class VolumeListView(OpenstackListView, OpenstackCreateMixin):
     """
     Volumes for tenants owned by teams that the authenticated user is a member of.
     """
