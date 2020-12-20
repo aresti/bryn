@@ -113,6 +113,9 @@ class VolumesService:
     def cinder(self):
         return self.openstack.cinder
 
+    def get(self, volume_id):
+        return self.cinder.volumes.get(volume_id)
+
     def get_list(self):
         return self.cinder.volumes.list()
 
@@ -123,6 +126,10 @@ class VolumesService:
             size=data.get("size"),
             volume_type=data.get("volumeType", self.openstack.volume_types.default),
         )
+
+    def delete(self, volume_id):
+        volume = self.get(volume_id)
+        volume.delete()
 
     # Create boot volume, wait for it to become available
     #     # cinder = client.get_cinder()

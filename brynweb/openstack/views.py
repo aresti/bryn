@@ -39,6 +39,9 @@ def get_tenants_for_user(user, team=None, tenant=None):
 
 
 def get_tenant_for_user(user, tenant_id):
+    """
+    Return a tenant for a given user, only if that user is a team member.
+    """
     tenant = get_tenants_for_user(user, tenant=tenant_id).first()
 
     if not tenant:
@@ -86,7 +89,7 @@ class UnsupportedStateTransition(drf_exceptions.APIException):
 
 class OpenstackAPIView(APIView):
     """
-    Base class for openstack api views
+    Base class for openstack api views.
     """
 
     permission_classes = [
@@ -113,7 +116,7 @@ class OpenstackAPIView(APIView):
 
 class OpenstackRetrieveView(OpenstackAPIView):
     """
-    Base class for simple openstack tenant detail views.
+    Base class for simple openstack detail views.
     """
 
     def get(self, request, tenant_id, entity_id):
@@ -137,7 +140,7 @@ class OpenstackRetrieveView(OpenstackAPIView):
 
 class OpenstackListView(OpenstackAPIView):
     """
-    Base class for simple openstack tenant collection views.
+    Base class for simple openstack collection views.
     """
 
     def get(self, request):
@@ -175,7 +178,7 @@ class OpenstackListView(OpenstackAPIView):
 
 class OpenstackCreateMixin(OpenstackAPIView):
     """
-    Mixin to add create/post method to openstack api views
+    Mixin to add create/post method to openstack api views.
     """
 
     def post(self, request):
@@ -200,7 +203,7 @@ class OpenstackCreateMixin(OpenstackAPIView):
 
 class OpenstackDeleteMixin(OpenstackAPIView):
     """
-    Mixin to add delete method to openstack api views
+    Mixin to add delete method to openstack api views.
     """
 
     def delete(self, request, tenant_id, entity_id):
@@ -222,7 +225,7 @@ class OpenstackDeleteMixin(OpenstackAPIView):
 
 class TenantListView(generics.ListAPIView):
     """
-    Tenants belonging to teams that user is a member of. Accepts 'team' query parameter.
+    Tenant list view.
     """
 
     serializer_class = TenantSerializer
@@ -238,7 +241,7 @@ class TenantListView(generics.ListAPIView):
 
 class InstanceListView(OpenstackListView):
     """
-    Instances for tenants owned by teams that the authenticated user is a member of.
+    Instance list view.
     """
 
     serializer_class = InstanceSerializer
@@ -260,24 +263,6 @@ class InstanceListView(OpenstackListView):
             return obj
 
         return transform_func
-
-    def post(self, request, format=None):
-        # Get tenant, validate team membership
-        query_tenant = request.query_params.get("tenant")
-        query_team = request.query_params.get("team")
-        tenants = get_tenants_for_user(
-            request.user, tenant=query_tenant, team=query_team
-        )
-
-        if not tenants:
-            # Bad tenant id, or not a team member
-            raise drf_exceptions.PermissionDenied
-
-        tenant = tenants[0]
-        # serialized = NewInstanceSerializer(data=request.data)
-
-        print(tenant.launch_instance())
-        return Response(None, status.HTTP_201_CREATED)
 
 
 class InstanceView(APIView):
@@ -358,7 +343,7 @@ class InstanceStatusView(APIView):
 
 class FlavorListView(OpenstackListView):
     """
-    Flavors for tenants owned by teams that the authenticated user is a member of.
+    Flavor list view.
     """
 
     serializer_class = FlavorSerializer
@@ -367,7 +352,7 @@ class FlavorListView(OpenstackListView):
 
 class ImageListView(OpenstackListView):
     """
-    Images for tenants owned by teams that the authenticated user is a member of.
+    Image list view.
     """
 
     serializer_class = ImageSerializer
@@ -376,7 +361,7 @@ class ImageListView(OpenstackListView):
 
 class KeyPairDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
     """
-    SSH key pairs for tenants owned by teams that the authenticated user is a member of.
+    SSH key pair detail view.
     """
 
     serializer_class = KeyPairSerializer
@@ -385,39 +370,53 @@ class KeyPairDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
 
 class KeyPairListView(OpenstackListView, OpenstackCreateMixin):
     """
-    SSH key pairs for tenants owned by teams that the authenticated user is a member of.
+    SSH key pair list view.
     """
 
     serializer_class = KeyPairSerializer
     service = OpenstackService.Services.KEYPAIRS
 
 
-class VolumeListView(OpenstackListView, OpenstackCreateMixin):
+def get_volume_transform_func(self, tenant):
     """
-    Volumes for tenants owned by teams that the authenticated user is a member of.
+    Transform function factory for Volume views
+    """
+
+    def transform_func(obj):
+        as_dict = obj.to_dict()
+        as_dict["tenant"] = tenant.pk
+        as_dict["team"] = tenant.team.pk
+        as_dict["name"] = (
+            obj.name.replace(tenant.get_tenant_name(), "") if obj.name else str(obj.id)
+        )
+        return as_dict
+
+    return transform_func
+
+
+class VolumeDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
+    """
+    Volume detail view.
     """
 
     serializer_class = VolumeSerializer
     service = OpenstackService.Services.VOLUMES
+    get_transform_func = get_volume_transform_func
 
-    def get_transform_func(self, tenant):
-        def transform_func(obj):
-            as_dict = obj.to_dict()
-            as_dict["tenant"] = tenant.pk
-            as_dict["team"] = tenant.team.pk
-            as_dict["name"] = (
-                obj.name.replace(tenant.get_tenant_name(), "")
-                if obj.name
-                else str(obj.id)
-            )
-            return as_dict
 
-        return transform_func
+class VolumeListView(OpenstackListView, OpenstackCreateMixin):
+    """
+    Volume list view.
+    """
+
+    serializer_class = VolumeSerializer
+    service = OpenstackService.Services.VOLUMES
+    get_transform_func = get_volume_transform_func
 
 
 class VolumeTypeListView(OpenstackListView):
     """
-    Available VolumesTypes for tenants owned by teams that the authenticated user is a member of.
+    Volume type list view.
     """
 
     serializer_class = VolumeTypeSerializer

@@ -8,6 +8,8 @@ import {
 const state = () => {
   return {
     all: [],
+    pollingSymbol: null,
+    pollingTargetStatus: [],
     loading: false,
   };
 };
@@ -21,6 +23,12 @@ const mutations = {
   },
   setLoading(state, loading) {
     state.loading = loading;
+  },
+  updateVolume(state, volume) {
+    const target = state.all.find((target) => target.id === volume.id);
+    if (volume) {
+      Object.assign(target, volume);
+    }
   },
 };
 
@@ -45,6 +53,11 @@ const actions = {
     const volume = response.data;
     commit("addVolume", volume);
     return volume;
+  },
+  async fetchVolume({ commit }, { volume }) {
+    const uri = `${apiRoutes.volumes}${volume.tenant}/${volume.id}`;
+    const response = await axios.get(uri);
+    commit("updateVolume", response.data);
   },
   async getTeamVolumes({ commit, rootGetters }, { tenant } = {}) {
     commit("setLoading", true);

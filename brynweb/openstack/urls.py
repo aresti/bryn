@@ -19,13 +19,18 @@ urlpatterns = [
     ),
     path("flavors/", views.FlavorListView.as_view(), name="api-flavor-list",),
     path("images/", views.ImageListView.as_view(), name="api-image-list",),
-    path("keypairs/", views.KeyPairListView.as_view(), name="api-keypairs-list",),
+    path("keypairs/", views.KeyPairListView.as_view(), name="api-keypair-list",),
     path(
         "keypairs/<int:tenant_id>/<str:entity_id>",
         views.KeyPairDetailView.as_view(),
-        name="api-keypairs-detail",
+        name="api-keypair-detail",
     ),
     path("volumes/", views.VolumeListView.as_view(), name="api-volume-list"),
+    path(
+        "volumes/<int:tenant_id>/<str:entity_id>",
+        views.VolumeDetailView.as_view(),
+        name="api-volume-detail",
+    ),
     path(
         "volumetypes/", views.VolumeTypeListView.as_view(), name="api-volumetype-list"
     ),

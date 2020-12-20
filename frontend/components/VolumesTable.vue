@@ -24,7 +24,7 @@
         <td>{{ formatSize(volume.size) }}</td>
         <td>
           <base-tag :color="statusColor(volume.status)" rounded light>
-            {{ volume.status }}
+            <a @click="fetchVolume({ volume })">{{ volume.status }}</a>
           </base-tag>
         </td>
         <td>
@@ -40,15 +40,7 @@
         </td>
         <td>
           <div class="buttons is-right">
-            <!-- <base-button
-              rounded
-              size="small"
-              class="has-tooltip-left has-tooltip-multiline has-tooltip-text-left"
-              :data-tooltip="volume.publicKey"
-            >
-              View Public Key
-            </base-button>
-            <base-button-delete size="small" /> -->
+            <base-button-delete size="small" />
           </div>
         </td>
       </tr>
@@ -57,7 +49,7 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 export default {
   props: {
@@ -76,6 +68,7 @@ export default {
     ...mapGetters("instances", ["getInstanceById"]),
   },
   methods: {
+    ...mapActions("volumes", ["fetchVolume"]),
     formatAttachments(attachments) {
       return attachments.map((attachment) => {
         return {
