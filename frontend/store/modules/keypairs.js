@@ -17,10 +17,13 @@ const mutations = {
     updateTeamCollection(state.all, keyPairs, team, tenant);
   },
   addKeyPair(state, keyPair) {
-    state.all.push(keyPair);
+    state.all.unshift(keyPair);
   },
   removeKeyPairById(state, id) {
-    state.all.splice(state.all.findIndex((obj) => obj.id === id));
+    state.all.splice(
+      state.all.findIndex((obj) => obj.id === id),
+      1
+    );
   },
 };
 

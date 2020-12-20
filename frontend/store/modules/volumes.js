@@ -48,7 +48,8 @@ const mutations = {
   },
   removePollingTargetByVolumeId(state, volumeId) {
     state.pollingTargets.splice(
-      state.pollingTargets.findIndex((obj) => obj.volumeId === volumeId)
+      state.pollingTargets.findIndex((obj) => obj.volumeId === volumeId),
+      1
     );
   },
   setPollingSymbol(state, pollingSymbol) {
@@ -65,7 +66,10 @@ const mutations = {
     }
   },
   removeVolumeById(state, id) {
-    state.all.splice(state.all.findIndex((obj) => obj.id === id));
+    state.all.splice(
+      state.all.findIndex((obj) => obj.id === id),
+      1
+    );
   },
 };
 
