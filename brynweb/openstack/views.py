@@ -5,7 +5,6 @@ from rest_framework.views import APIView
 from rest_framework import permissions, generics, status
 from rest_framework import exceptions as drf_exceptions
 from rest_framework.response import Response
-from novaclient import exceptions as nova_exceptions
 
 from userdb.permissions import IsTeamMemberPermission
 from .service import OpenstackService
@@ -51,22 +50,6 @@ def get_tenant_for_user(user, tenant_id):
         raise ServiceUnavailable
 
     return tenant
-
-
-# TODO delete after service refactoring
-def get_instance(team_id, tenant_id, instance_id):
-    """
-    Helper function to retrieve an instance
-    or raise an appropriate API exception.
-    """
-    tenant = get_object_or_404(Tenant, pk=tenant_id, team=team_id)
-
-    try:
-        return tenant.get_server(instance_id)
-    except nova_exceptions.NotFound:
-        raise drf_exceptions.NotFound
-    except Exception as e:
-        raise OpenstackException(detail=str(e))
 
 
 class ServiceUnavailable(drf_exceptions.APIException):
@@ -133,6 +116,8 @@ class OpenstackRetrieveView(OpenstackAPIView):
             data = transform_func(response)
             serialized = self.serializer_class(data)
         except Exception as e:
+            if e.code == 404:
+                raise drf_exceptions.NotFound
             raise OpenstackException(detail=str(e))
 
         return Response(serialized.data)
@@ -218,6 +203,8 @@ class OpenstackDeleteMixin(OpenstackAPIView):
             )
             print(response)
         except Exception as e:
+            if e.code == 404:
+                raise drf_exceptions.NotFound
             raise OpenstackException(detail=str(e))
 
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -290,55 +277,55 @@ class InstanceView(APIView):
             raise OpenstackException(detail=str(e))
 
 
-class InstanceStatusView(APIView):
-    """
-    API endpoint for instance status.
-    Supports 'get' and 'put' actions.
-    Authenticated user & team member permissions required.
-    """
+# class InstanceStatusView(APIView):
+#     """
+#     API endpoint for instance status.
+#     Supports 'get' and 'put' actions.
+#     Authenticated user & team member permissions required.
+#     """
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        IsTeamMemberPermission,
-    ]
+#     permission_classes = [
+#         permissions.IsAuthenticated,
+#         IsTeamMemberPermission,
+#     ]
 
-    def get(self, request, team_id, tenant_id, instance_id):
-        instance = get_instance(team_id, tenant_id, instance_id)
-        return Response({"status": instance.status})
+#     def get(self, request, team_id, tenant_id, instance_id):
+#         instance = get_instance(team_id, tenant_id, instance_id)
+#         return Response({"status": instance.status})
 
-    def put(self, request, team_id, tenant_id, instance_id):
-        # Get instance and tenant
-        instance = get_instance(team_id, tenant_id, instance_id)
-        tenant = get_object_or_404(Tenant, pk=tenant_id, team=team_id)
+#     def put(self, request, team_id, tenant_id, instance_id):
+#         # Get instance and tenant
+#         instance = get_instance(team_id, tenant_id, instance_id)
+#         tenant = get_object_or_404(Tenant, pk=tenant_id, team=team_id)
 
-        # Define allowed state transitions & associated methods
-        # top level is target status, 1st level is current status
-        state_transitions = {
-            "ACTIVE": {"ACTIVE": tenant.reboot_server, "SHUTOFF": tenant.start_server},
-            "SHUTOFF": {
-                "ACTIVE": tenant.stop_server,
-                "SHELVED": tenant.unshelve_server,
-            },
-        }
+#         # Define allowed state transitions & associated methods
+#         # top level is target status, 1st level is current status
+#         state_transitions = {
+#             "ACTIVE": {"ACTIVE": tenant.reboot_server, "SHUTOFF": tenant.start_server},
+#             "SHUTOFF": {
+#                 "ACTIVE": tenant.stop_server,
+#                 "SHELVED": tenant.unshelve_server,
+#             },
+#         }
 
-        # Validate target vs current status
-        target_status = request.data.status.upper()
-        current_status = instance.status
+#         # Validate target vs current status
+#         target_status = request.data.status.upper()
+#         current_status = instance.status
 
-        if (
-            target_status not in state_transitions.keys()
-            or current_status not in state_transitions[target_status].keys()
-        ):
-            raise UnsupportedStateTransition
+#         if (
+#             target_status not in state_transitions.keys()
+#             or current_status not in state_transitions[target_status].keys()
+#         ):
+#             raise UnsupportedStateTransition
 
-        # Call transition method
-        try:
-            state_transitions[current_status][target_status](instance_id)
-            return Response(
-                {"status": get_instance(team_id, tenant_id, instance_id).status}
-            )
-        except Exception as e:
-            raise OpenstackException(detail=str(e))
+#         # Call transition method
+#         try:
+#             state_transitions[current_status][target_status](instance_id)
+#             return Response(
+#                 {"status": get_instance(team_id, tenant_id, instance_id).status}
+#             )
+#         except Exception as e:
+#             raise OpenstackException(detail=str(e))
 
 
 class FlavorListView(OpenstackListView):
