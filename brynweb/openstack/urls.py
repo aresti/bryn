@@ -12,11 +12,11 @@ urlpatterns = [
         views.InstanceView.as_view(),
         name="api-instance-detail",
     ),
-    path(
-        "instances/<uuid:instance_id>/status",
-        views.InstanceStatusView.as_view(),
-        name="api-instance-status",
-    ),
+    # path(
+    #     "instances/<uuid:instance_id>/status",
+    #     views.InstanceStatusView.as_view(),
+    #     name="api-instance-status",
+    # ),
     path("flavors/", views.FlavorListView.as_view(), name="api-flavor-list",),
     path("images/", views.ImageListView.as_view(), name="api-image-list",),
     path("keypairs/", views.KeyPairListView.as_view(), name="api-keypair-list",),

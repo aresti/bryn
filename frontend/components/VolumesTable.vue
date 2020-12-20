@@ -10,8 +10,8 @@
     <template v-slot:body>
       <tr v-for="(volume, index) in volumes" :key="index">
         <td>
-          <span class="has-text-weight-semibold">{{ volume.name }}</span
-          ><br />
+          <span class="has-text-weight-semibold">{{ volume.name }}</span>
+          <br />
           <span class="is-size-7">
             {{ getRegionNameForTenant(getTenantById(volume.tenant)) }}</span
           >
@@ -23,9 +23,20 @@
         </td>
         <td>{{ formatSize(volume.size) }}</td>
         <td>
-          <base-tag :color="statusColor(volume.status)" rounded light>
-            <a @click="fetchVolume({ volume })">{{ volume.status }}</a>
-          </base-tag>
+          <div class="control">
+            <div class="tags has-addons">
+              <base-tag v-if="isNew(volume)" color="dark" rounded>New</base-tag>
+              <base-tag :color="statusColor(volume.status)" rounded light>
+                {{ volume.status }}
+                <base-icon
+                  v-if="getVolumeIsPolling(volume)"
+                  class="ml-1"
+                  :fa-classes="['fas', 'fa-spinner', 'fa-spin']"
+                  :decorative="true"
+                />
+              </base-tag>
+            </div>
+          </div>
         </td>
         <td>
           <span
@@ -50,6 +61,7 @@
 
 <script>
 import { mapActions, mapGetters } from "vuex";
+import { formatBytes, minutesSince } from "@/utils";
 
 export default {
   props: {
@@ -58,17 +70,23 @@ export default {
       required: true,
     },
   },
+
   data() {
     return {
       headings: ["Name", "Volume Type", "Size", "Status", "Attached To", ""],
     };
   },
+
   computed: {
     ...mapGetters(["getRegionNameForTenant", "getTenantById"]),
     ...mapGetters("instances", ["getInstanceById"]),
+    ...mapGetters("volumes", ["getVolumeIsPolling"]),
   },
+
   methods: {
-    ...mapActions("volumes", ["fetchVolume"]),
+    isNew(volume) {
+      return minutesSince(volume.createdAt) < 3;
+    },
     formatAttachments(attachments) {
       return attachments.map((attachment) => {
         return {
@@ -78,18 +96,7 @@ export default {
       });
     },
     formatSize(size) {
-      return this.formatBytes(size * Math.pow(1000, 3));
-    },
-    formatBytes(bytes, decimals = 2) {
-      if (bytes === 0) return "0 Bytes";
-
-      const k = 1000;
-      const dm = decimals < 0 ? 0 : decimals;
-      const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
-
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+      return formatBytes(size * Math.pow(1000, 3));
     },
     statusColor(status) {
       const colors = {

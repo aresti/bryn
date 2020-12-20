@@ -86,6 +86,7 @@ class VolumeAttachmentSerializer(serializers.Serializer):
 class VolumeSerializer(OpenstackBaseSerializer):
     attachments = VolumeAttachmentSerializer(many=True, required=False)
     bootable = serializers.BooleanField(required=False, default=False)
+    created_at = serializers.DateTimeField(required=False)
     id = serializers.UUIDField(required=False)
     name = serializers.CharField(required=False, allow_null=True)
     size = serializers.IntegerField()

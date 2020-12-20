@@ -136,17 +136,14 @@ export default {
     onClose() {
       this.$emit("close-modal");
     },
-    onSubmit() {
-      this.formValidate();
+    async onSubmit(values) {
+      // try {
+      //   // const result = await this.createInstance(values);
+      //   console.log(result);
+      // } catch (err) {
+      //   console.log(err.response.data.detail);
+      // }
     },
-    // async onSubmit(values) {
-    //   try {
-    //     const result = await this.createInstance(values);
-    //     console.log(result);
-    //   } catch (err) {
-    //     console.log(err.response.data.detail);
-    //   }
-    // },
     isUniqueName(value) {
       if (!value || !this.invalidNames.includes(value)) {
         return true;

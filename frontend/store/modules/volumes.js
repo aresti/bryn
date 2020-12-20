@@ -2,37 +2,85 @@ import { axios, apiRoutes } from "@/api";
 import {
   updateTeamCollection,
   collectionForTeamId,
+  createFilterByIdGetter,
   createFilterByTenantGetter,
 } from "@/utils";
 
 const state = () => {
   return {
     all: [],
-    pollingSymbol: null,
-    pollingTargetStatus: [],
+    pollingSymbol: null, // Identifier for polling from setInterval()
+    pollingTargets: [], // [{volumeId, ["targetStatus", "alternativeStatus"]}]
     loading: false,
   };
 };
 
 const mutations = {
   addVolume(state, volume) {
-    state.all.push(volume);
+    state.all.unshift(volume);
   },
   setVolumes(state, { volumes, team, tenant }) {
+    /* Update all volumes for a team (fetch [and replace]) */
     updateTeamCollection(state.all, volumes, team, tenant);
   },
   setLoading(state, loading) {
     state.loading = loading;
   },
+  addPollingTarget(state, { volume, status = null }) {
+    /*
+     * Add a polling 'target' object
+     * Target object format:
+     *  - {volumeId, ["targetStatus", "alternativeStatus"]}
+     *  - OR {volumeId, "singleStringStatus"}
+     * Will be removed once volume status has reached one of the target states
+     * 404 (following deletion): remove polling target and volume.
+     */
+    const existingTarget = state.pollingTargets.find(
+      (target) => target.volumeId === volume.id
+    );
+
+    if (existingTarget) {
+      /* Don't add duplicate targets; update status only */
+      existingTarget.status = status;
+    } else {
+      state.pollingTargets.push({ volumeId: volume.id, status });
+    }
+  },
+  removePollingTargetByVolumeId(state, volumeId) {
+    state.pollingTargets.splice(
+      state.pollingTargets.findIndex((obj) => obj.volumeId === volumeId)
+    );
+  },
+  setPollingSymbol(state, pollingSymbol) {
+    state.pollingSymbol = pollingSymbol;
+  },
+  removePollingSymbol(state) {
+    state.pollingSymbol = null;
+  },
   updateVolume(state, volume) {
+    /* Update an existing volume, maintaining the ref */
     const target = state.all.find((target) => target.id === volume.id);
-    if (volume) {
+    if (target) {
       Object.assign(target, volume);
     }
+  },
+  removeVolumeById(state, id) {
+    state.all.splice(state.all.findIndex((obj) => obj.id === id));
   },
 };
 
 const getters = {
+  getVolumeById(state) {
+    return createFilterByIdGetter(state.all);
+  },
+  getVolumeIsPolling(state) {
+    /* Return a getter to check whether a volume has a polling target */
+    return (volume) => {
+      return state.pollingTargets.some(
+        (target) => target.volumeId === volume.id
+      );
+    };
+  },
   getVolumesForTenant(state) {
     return createFilterByTenantGetter(state.all);
   },
@@ -47,19 +95,81 @@ const getters = {
 };
 
 const actions = {
-  async createVolume({ commit }, { tenant, volumeType, size, name }) {
+  async createVolume({ commit, dispatch }, { tenant, volumeType, size, name }) {
     const payload = { tenant, volumeType, size, name };
     const response = await axios.post(apiRoutes.volumes, payload);
     const volume = response.data;
     commit("addVolume", volume);
+    dispatch("addPollingTarget", {
+      volume,
+      status: ["available", "in-use", "error"],
+    });
     return volume;
   },
+  addPollingTarget({ state, commit, dispatch }, { volume, status }) {
+    commit("addPollingTarget", { volume, status });
+    if (!state.pollingSymbol) {
+      /* Start polling */
+      const pollingSymbol = setInterval(() => {
+        console.log("polling");
+        dispatch("fetchPollingTargets");
+      }, 5000);
+      commit("setPollingSymbol", pollingSymbol);
+    }
+  },
+  removeFulfilledPollingTargets({ commit, getters, state }) {
+    /* Remove any polling targets, where the volume has reached target status */
+    for (let i = state.pollingTargets.length - 1; i >= 0; i--) {
+      const target = state.pollingTargets[i];
+      const volume = getters.getVolumeById(target.volumeId);
+      const status =
+        typeof target.status == "string" ? [target.status] : target.status;
+      if (status.includes(volume.status)) {
+        commit("removePollingTargetByVolumeId", volume.id);
+      }
+    }
+    if (!state.pollingTargets.length) {
+      /* Stop polling */
+      clearInterval(state.pollingSymbol);
+      commit("removePollingSymbol");
+    }
+  },
+  async fetchPollingTargets({ dispatch, state, getters }) {
+    /* Fetch & update all polling targets */
+    const results = await Promise.allSettled(
+      state.pollingTargets.map((target) => {
+        const volume = getters.getVolumeById(target.volumeId);
+        dispatch("fetchVolume", { volume });
+      })
+    );
+
+    /* Check for 404 (deleted): remove polling targets and volumes*/
+    results.forEach((result, index) => {
+      if (
+        result.status == "rejected" &&
+        result.reason.response?.status === 404
+      ) {
+        const volumeId = getters.getVolumeById(
+          state.pollingTargets[index].volumeId
+        );
+        commit("removePollingTargetByVolumeId", volumeId);
+        commit("removeVolumeById", volumeId);
+      }
+    });
+
+    /* Remove fulfilled polling targets */
+    dispatch("removeFulfilledPollingTargets");
+  },
   async fetchVolume({ commit }, { volume }) {
+    /* Fetch and update an individual volume */
     const uri = `${apiRoutes.volumes}${volume.tenant}/${volume.id}`;
     const response = await axios.get(uri);
-    commit("updateVolume", response.data);
+    volume = response.data;
+    commit("updateVolume", volume);
+    return volume;
   },
   async getTeamVolumes({ commit, rootGetters }, { tenant } = {}) {
+    /* Fetch [and replace] all volumes for the active team */
     commit("setLoading", true);
     const team = rootGetters.team;
     const response = await axios.get(apiRoutes.volumes, {

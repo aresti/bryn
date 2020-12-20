@@ -1,5 +1,5 @@
 <template>
-  <base-modal-split @close-modal="onClose">
+  <base-modal-split @close-modal="closeModal">
     <template v-slot:left>
       <h4 class="title is-4">Create a New Volume</h4>
       <p>Create a new volume, which can be attached to your instances.</p>
@@ -8,8 +8,9 @@
         :form="form"
         :nonFieldErrors="formNonFieldErrors"
         submitLabel="Create Volume"
+        :submitted="submitted"
         @validate-field="formValidateField"
-        @submit="onSubmit"
+        @submit="submitForm"
       />
     </template>
     <template v-slot:right>
@@ -26,6 +27,7 @@
 
 <script>
 import formValidationMixin from "@/mixins/formValidationMixin";
+import { formatBytes } from "@/utils";
 // import guidance from "@/content/instances/newInstanceGuidance.md";
 
 import VueMarkdownIt from "vue3-markdown-it";
@@ -104,7 +106,10 @@ export default {
     },
     sizeOptions() {
       return [250, 500, 1000, 2000, 5000, 10000, 20000].map((size) => {
-        return { value: size, label: size };
+        return {
+          value: size,
+          label: formatBytes(size * Math.pow(1000, 3)),
+        };
       });
     },
     tenantOptions() {
@@ -134,13 +139,10 @@ export default {
 
   methods: {
     ...mapActions("volumes", ["createVolume"]),
-    onClose() {
+    closeModal() {
       this.$emit("close-modal");
     },
-    onSubmit() {
-      this.formValidate();
-    },
-    async onSubmit() {
+    async submitForm() {
       this.formValidate();
       if (this.submitted || !this.formIsValid) {
         return;
@@ -149,7 +151,7 @@ export default {
       try {
         const volume = await this.createVolume(this.formValues);
         this.toast.success(`New volume created: ${volume.name}`);
-        this.onClose();
+        this.closeModal();
       } catch (err) {
         console.log(err);
         if (err.response.status === 400) {
