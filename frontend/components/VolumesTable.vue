@@ -23,20 +23,18 @@
         </td>
         <td>{{ formatSize(volume.size) }}</td>
         <td>
-          <div class="control">
-            <div class="tags has-addons">
-              <base-tag v-if="isNew(volume)" color="dark" rounded>New</base-tag>
-              <base-tag :color="statusColor(volume.status)" rounded light>
-                {{ volume.status }}
-                <base-icon
-                  v-if="getVolumeIsPolling(volume)"
-                  class="ml-1"
-                  :fa-classes="['fas', 'fa-spinner', 'fa-spin']"
-                  :decorative="true"
-                />
-              </base-tag>
-            </div>
-          </div>
+          <base-tag-control>
+            <base-tag v-if="isNew(volume)" color="dark" rounded>NEW</base-tag>
+            <base-tag :color="statusColor(volume.status)" rounded light>
+              {{ volume.status.toUpperCase() }}
+              <base-icon
+                v-if="getVolumeIsPolling(volume)"
+                class="ml-1"
+                :fa-classes="['fas', 'fa-spinner', 'fa-spin']"
+                :decorative="true"
+              />
+            </base-tag>
+          </base-tag-control>
         </td>
         <td>
           <span
@@ -51,7 +49,10 @@
         </td>
         <td>
           <div class="buttons is-right">
-            <base-button-delete size="small" />
+            <base-button-delete
+              v-if="volume.status === 'available'"
+              size="small"
+            />
           </div>
         </td>
       </tr>

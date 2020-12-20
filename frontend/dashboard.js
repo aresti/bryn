@@ -48,6 +48,7 @@ import BaseNotification from "@/components/BaseNotification";
 import BaseProgress from "@/components/BaseProgress";
 import BaseTable from "@/components/BaseTable";
 import BaseTag from "@/components/BaseTag";
+import BaseTagControl from "@/components/BaseTagControl";
 import BaseTabs from "@/components/BaseTabs";
 
 app.component("BaseButton", BaseButton);
@@ -78,6 +79,7 @@ app.component("BaseNotification", BaseNotification);
 app.component("BaseProgress", BaseProgress);
 app.component("BaseTable", BaseTable);
 app.component("BaseTag", BaseTag);
+app.component("BaseTagControl", BaseTagControl);
 app.component("BaseTabs", BaseTabs);
 
 app.mount("#dashboardApp");
