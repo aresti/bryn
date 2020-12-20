@@ -7,7 +7,7 @@ from rest_framework import exceptions as drf_exceptions
 from rest_framework.response import Response
 
 from userdb.permissions import IsTeamMemberPermission
-from .service import OpenstackService
+from .service import OpenstackService, ServiceUnavailable, OpenstackException
 from .models import Tenant
 from .serializers import (
     FlavorSerializer,
@@ -50,24 +50,6 @@ def get_tenant_for_user(user, tenant_id):
         raise ServiceUnavailable
 
     return tenant
-
-
-class ServiceUnavailable(drf_exceptions.APIException):
-    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
-    default_detail = "Service temporarily unavailable, try again later."
-    default_code = "service_unavailable"
-
-
-class OpenstackException(drf_exceptions.APIException):
-    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-    default_detail = "An unexpected exception occurred."
-    default_code = "openstack_exception"
-
-
-class UnsupportedStateTransition(drf_exceptions.APIException):
-    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
-    default_detail = "Unsupported state transition"
-    default_code = "unsupported_state_transition"
 
 
 class OpenstackAPIView(APIView):

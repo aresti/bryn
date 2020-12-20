@@ -1,6 +1,26 @@
 from enum import Enum
 
+from rest_framework import exceptions as drf_exceptions
+from rest_framework import status
 from openstack.client import OpenstackClient
+
+
+class ServiceUnavailable(drf_exceptions.APIException):
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    default_detail = "Service temporarily unavailable, try again later."
+    default_code = "service_unavailable"
+
+
+class OpenstackException(drf_exceptions.APIException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_detail = "An unexpected exception occurred."
+    default_code = "openstack_exception"
+
+
+# class UnsupportedStateTransition(drf_exceptions.APIException):
+#     status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+#     default_detail = "Unsupported state transition"
+#     default_code = "unsupported_state_transition"
 
 
 class OpenstackService:
@@ -129,6 +149,10 @@ class VolumesService:
 
     def delete(self, volume_id):
         volume = self.get(volume_id)
+        if volume.status != "available":
+            raise OpenstackException(
+                "Only volumes with 'available' status can be deleted."
+            )
         volume.delete()
 
     # Create boot volume, wait for it to become available
