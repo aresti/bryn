@@ -153,12 +153,13 @@ export default {
         this.toast.success(`New volume created: ${volume.name}`);
         this.closeModal();
       } catch (err) {
-        console.log(err);
-        if (err.response.status === 400) {
+        if (err.response?.status === 400) {
           this.formParseResponseError(err.response.data);
         } else {
           this.toast.error(
-            `Failed to create volume: ${err.response.data.detail}`
+            `Failed to create volume: ${
+              err.response?.data.detail ?? "unexpected error"
+            }`
           );
         }
       } finally {

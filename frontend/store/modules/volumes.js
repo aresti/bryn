@@ -6,6 +6,9 @@ import {
   createFilterByTenantGetter,
 } from "@/utils";
 
+const getVolumeDetailUri = (volume) =>
+  `${apiRoutes.volumes}${volume.tenant}/${volume.id}`;
+
 const state = () => {
   return {
     all: [],
@@ -171,7 +174,7 @@ const actions = {
   },
   async fetchVolume({ commit }, { volume }) {
     /* Fetch and update an individual volume */
-    const uri = `${apiRoutes.volumes}${volume.tenant}/${volume.id}`;
+    const uri = getVolumeDetailUri(volume);
     const response = await axios.get(uri);
     volume = response.data;
     commit("updateVolume", volume);
@@ -179,7 +182,7 @@ const actions = {
   },
   async deleteVolume({ dispatch }, volume) {
     /* Delete a volume */
-    const uri = `${apiRoutes.volumes}${volume.tenant}/${volume.id}`;
+    const uri = getVolumeDetailUri(volume);
     await axios.delete(uri);
     dispatch("addPollingTarget", {
       volume,
@@ -195,6 +198,24 @@ const actions = {
     const volumes = response.data;
     commit("setVolumes", { volumes, team, tenant });
     commit("setLoading", false);
+  },
+  async attachVolume({ dispatch }, { volume, server }) {
+    const payload = { attachments: [{ serverId: server.id }] };
+    const uri = getVolumeDetailUri(volume);
+    await axios.patch(uri, payload);
+    dispatch("addPollingTarget", {
+      volume,
+      status: "in-use",
+    });
+  },
+  async detachVolume({ dispatch }, volume) {
+    const payload = { attachments: [] }; // Empty array
+    const uri = getVolumeDetailUri(volume);
+    await axios.patch(uri, payload);
+    dispatch("addPollingTarget", {
+      volume,
+      status: "available",
+    });
   },
 };
 

@@ -1,15 +1,22 @@
 <template>
   <div>
     <div class="block mb-3">
+      <!-- Actions & filters level -->
       <base-level>
+        <!-- Level left -->
         <template v-slot:left>
           <base-level-item>
+            <!-- Tenant filter tabs -->
             <tenant-filter-tabs />
           </base-level-item>
         </template>
 
+        <!-- Level right -->
         <template v-slot:right>
+          <!-- Loading indicator -->
           <base-mini-loader :loading="loading" />
+
+          <!-- Show/hide bootable button -->
           <base-level-item>
             <base-button rounded @click="showBootable = !showBootable"
               ><template v-slot:icon-before>
@@ -27,6 +34,7 @@
             </base-button>
           </base-level-item>
 
+          <!-- New volume button -->
           <base-level-item>
             <base-button-create @click="showNewVolumeModal = true">
               New volume
@@ -36,13 +44,28 @@
       </base-level>
     </div>
 
-    <volumes-table :volumes="filteredVolumes" @delete-volume="onDeleteVolume" />
+    <!-- Volumes table -->
+    <volumes-table
+      :volumes="filteredVolumes"
+      @attach-volume="onAttachVolume"
+      @delete-volume="onDeleteVolume"
+      @detach-volume="onDetachVolume"
+    />
 
+    <!-- New volume modal -->
     <volumes-new-volume-modal
       v-if="showNewVolumeModal"
       @close-modal="showNewVolumeModal = false"
     />
 
+    <!-- Attach volume modal -->
+    <volumes-attach-modal
+      v-if="attachVolume"
+      :volume="attachVolume"
+      @close-modal="attachVolume = null"
+    />
+
+    <!-- Confirm delete modal -->
     <base-modal-delete
       v-if="confirmDeleteVolume"
       verb="Delete"
@@ -52,6 +75,17 @@
       @close-modal="onCancelDelete"
       @confirm-delete="onConfirmDelete"
     />
+
+    <!-- Confirm detach modal -->
+    <base-modal-delete
+      v-if="confirmDetachVolume"
+      verb="Detach"
+      type="volume"
+      :name="confirmDetachVolume.name"
+      :processing="detachProcessing"
+      @close-modal="onCancelDetach"
+      @confirm-delete="onConfirmDetach"
+    />
   </div>
 </template>
 
@@ -59,7 +93,7 @@
 import { useToast } from "vue-toastification";
 import { mapActions, mapGetters, mapState } from "vuex";
 
-// import VolumesNewVolumeModal from "@/components/VolumesNewVolumeModal";
+import VolumesAttachModal from "@/components/VolumesAttachModal";
 import VolumesNewVolumeModal from "@/components/VolumesNewVolumeModal";
 import VolumesTable from "@/components/VolumesTable";
 import TenantFilterTabs from "@/components/TenantFilterTabs";
@@ -71,6 +105,7 @@ export default {
   },
 
   components: {
+    VolumesAttachModal,
     VolumesNewVolumeModal,
     VolumesTable,
     TenantFilterTabs,
@@ -78,10 +113,13 @@ export default {
 
   data() {
     return {
+      attachVolume: null,
+      confirmDeleteVolume: null,
+      confirmDetachVolume: null,
+      deleteProcessing: false,
+      detachProcessing: false,
       showBootable: false,
       showNewVolumeModal: false,
-      confirmDeleteVolume: null,
-      deleteProcessing: false,
     };
   },
 
@@ -98,7 +136,14 @@ export default {
   },
 
   methods: {
-    ...mapActions("volumes", ["deleteVolume"]),
+    ...mapActions("volumes", ["deleteVolume", "detachVolume"]),
+
+    /* Volume attachment */
+    onAttachVolume(volume) {
+      this.attachVolume = volume;
+    },
+
+    /* Volume deletion */
     onDeleteVolume(volume) {
       this.confirmDeleteVolume = volume;
     },
@@ -116,11 +161,42 @@ export default {
         this.toast(`Deleted volume: ${volume.name}`);
       } catch (err) {
         this.toast.error(
-          `Failed to delete volume: ${err.response.data.detail}`
+          `Failed to delete volume: ${
+            err.response?.data.detail ?? "unexpected error"
+          }`
         );
       } finally {
         this.confirmDeleteVolume = null;
         this.deleteProcessing = false;
+      }
+    },
+
+    /* Volume detachment */
+    onDetachVolume(volume) {
+      this.confirmDetachVolume = volume;
+    },
+    onCancelDetach() {
+      this.confirmDetachVolume = null;
+    },
+    async onConfirmDetach() {
+      if (this.detachProcessing) {
+        return;
+      }
+      const volume = this.confirmDetachVolume;
+      this.detachProcessing = true;
+      try {
+        await this.detachVolume(volume);
+        this.toast(`Detached volume: ${volume.name}`);
+      } catch (err) {
+        console.log(err);
+        this.toast.error(
+          `Failed to detach volume: ${
+            err.response?.data.detail ?? "unexpected error"
+          }`
+        );
+      } finally {
+        this.confirmDetachVolume = null;
+        this.detachProcessing = false;
       }
     },
   },

@@ -132,7 +132,9 @@ export default {
           this.formParseResponseError(err.response.data);
         } else {
           this.toast.error(
-            `Failed to create SSH key: ${err.response.data.detail}`
+            `Failed to create SSH key: ${
+              err.response?.data.detail ?? "unexpected error"
+            }`
           );
         }
       } finally {

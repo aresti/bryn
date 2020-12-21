@@ -89,7 +89,9 @@ export default {
         this.toast(`Deleted SSH key: ${keyPair.name}`);
       } catch (err) {
         this.toast.error(
-          `Failed to delete SSH key: ${err.response.data.detail}`
+          `Failed to delete SSH key: ${
+            err.response?.data.detail ?? "unexpected error"
+          }`
         );
       } finally {
         this.confirmDeleteKeyPair = null;
