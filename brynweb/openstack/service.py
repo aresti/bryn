@@ -98,7 +98,7 @@ class KeypairsService:
 
     def delete(self, keypair_id):
         keypair = self.get(keypair_id)
-        keypair.delete()
+        return keypair.delete()
 
 
 class ImagesService:
@@ -133,6 +133,10 @@ class VolumesService:
     def cinder(self):
         return self.openstack.cinder
 
+    @property
+    def nova(self):
+        return self.openstack.nova
+
     def get(self, volume_id):
         return self.cinder.volumes.get(volume_id)
 
@@ -154,6 +158,17 @@ class VolumesService:
                 "Only volumes with 'available' status can be deleted."
             )
         return volume.delete()
+
+    def attach(self, volume_id, server_id):
+        return self.nova.volumes.create_server_volume(server_id, volume_id, None)
+
+    def detach(self, volume_id):
+        volume = self.get(volume_id)
+        attachments = volume.attachments
+        if not attachments:
+            raise OpenstackException("Volume has no attachments to detach")
+        server_id = attachments[0].get("server_id")
+        return self.nova.volumes.delete_server_volume(server_id, volume_id)
 
     # Create boot volume, wait for it to become available
     #     # cinder = client.get_cinder()

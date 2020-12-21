@@ -10,6 +10,7 @@ from userdb.permissions import IsTeamMemberPermission
 from .service import OpenstackService, ServiceUnavailable, OpenstackException
 from .models import Tenant
 from .serializers import (
+    AttachmentSerializer,
     FlavorSerializer,
     ImageSerializer,
     InstanceSerializer,
@@ -98,7 +99,7 @@ class OpenstackRetrieveView(OpenstackAPIView):
             data = transform_func(response)
             serialized = self.serializer_class(data)
         except Exception as e:
-            if e.code == 404:
+            if getattr(e, "code", None) == 404:
                 raise drf_exceptions.NotFound
             raise OpenstackException(detail=str(e))
 
@@ -182,7 +183,7 @@ class OpenstackDeleteMixin(OpenstackAPIView):
         try:
             methodcaller("delete", entity_id)(getattr(openstack, self.service.value))
         except Exception as e:
-            if e.code == 404:
+            if getattr(e, "code", None) == 404:
                 raise drf_exceptions.NotFound
             raise OpenstackException(detail=str(e))
 
@@ -368,6 +369,31 @@ class VolumeDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
     serializer_class = VolumeSerializer
     service = OpenstackService.Services.VOLUMES
     get_transform_func = get_volume_transform_func
+
+    def patch(self, request, tenant_id, entity_id):
+        tenant = get_tenant_for_user(request.user, tenant_id)  # may raise
+        if not entity_id:
+            raise drf_exceptions.NotFound
+
+        openstack = OpenstackService(tenant)
+        service = getattr(openstack, self.service.value)
+        attachments = request.data.get("attachments")
+        try:
+            if attachments is not None and len(attachments) == 0:
+                # Detach
+                methodcaller("detach", entity_id)(service)
+            elif attachments:
+                # Create attachment
+                serialized_attachment = AttachmentSerializer(attachments[0])
+                methodcaller(
+                    "attach", entity_id, serialized_attachment.data["server_id"]
+                )(service)
+        except Exception as e:
+            if getattr(e, "code", None) == 404 == 404:
+                raise drf_exceptions.NotFound
+            raise OpenstackException(detail=str(e))
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class VolumeListView(OpenstackListView, OpenstackCreateMixin):

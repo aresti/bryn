@@ -25,46 +25,28 @@ class OpenstackBaseSerializer(serializers.Serializer):
 
 
 class InstanceSerializer(OpenstackBaseSerializer):
-    id = serializers.UUIDField()
+    id = serializers.UUIDField(read_only=True)
     name = serializers.CharField()
     flavor = serializers.UUIDField()
     status = serializers.ChoiceField(choices=INSTANCE_STATUS_VALUES)
-    ip = serializers.IPAddressField(required=False, allow_null=True)
-    created = serializers.DateTimeField()
-
-
-# TODO delete after refactoring
-class NewInstanceSerializer(serializers.Serializer):
-    name = serializers.RegexField(regex=r"^([a-zA-Z0-9\-]+)$", max_length=50,)
-    flavor = serializers.UUIDField()
-    image = serializers.UUIDField()
-    auth_key_name = serializers.RegexField(
-        regex=r"^([a-zA-Z0-9\-]+)$", max_length=50, required=False
-    )
-    auth_key_value = serializers.CharField(required=False)
-
-    def validate_auth_key_value(self, value):
-        try:
-            sshpubkeys.SSHKey(value).parse()
-        except sshpubkeys.InvalidKeyException:
-            raise serializers.ValidationError("Invalid SSH key")
-        return value
+    ip = serializers.IPAddressField(read_only=True, required=False, allow_null=True)
+    created = serializers.DateTimeField(read_only=True)
 
 
 class ImageSerializer(OpenstackBaseSerializer):
-    id = serializers.UUIDField()
+    id = serializers.UUIDField(read_only=True)
     name = serializers.CharField()
 
 
 class FlavorSerializer(OpenstackBaseSerializer):
-    id = serializers.UUIDField()
+    id = serializers.UUIDField(read_only=True)
     name = serializers.CharField()
 
 
 class KeyPairSerializer(OpenstackBaseSerializer):
-    id = serializers.CharField(required=False)
+    id = serializers.CharField(read_only=True)
     name = serializers.CharField()
-    fingerprint = serializers.CharField(required=False)
+    fingerprint = serializers.CharField(read_only=True)
     public_key = serializers.CharField()
 
     def validate_public_key(self, value):
@@ -75,26 +57,26 @@ class KeyPairSerializer(OpenstackBaseSerializer):
         return value
 
 
-class VolumeAttachmentSerializer(serializers.Serializer):
-    id = serializers.UUIDField()
-    attachment_id = serializers.UUIDField()
+class AttachmentSerializer(serializers.Serializer):
+    id = serializers.UUIDField(read_only=True)
+    attachment_id = serializers.UUIDField(read_only=True)
     server_id = serializers.UUIDField()
-    device = serializers.CharField()
-    attached_at = serializers.DateTimeField()
+    device = serializers.CharField(read_only=True)
+    attached_at = serializers.DateTimeField(read_only=True)
 
 
 class VolumeSerializer(OpenstackBaseSerializer):
-    attachments = VolumeAttachmentSerializer(many=True, required=False)
+    attachments = AttachmentSerializer(many=True, required=False)
     bootable = serializers.BooleanField(required=False, default=False)
-    created_at = serializers.DateTimeField(required=False)
-    id = serializers.UUIDField(required=False)
+    created_at = serializers.DateTimeField(read_only=True)
+    id = serializers.UUIDField(read_only=True)
     name = serializers.CharField(required=False, allow_null=True)
     size = serializers.IntegerField()
-    status = serializers.CharField(required=False)
+    status = serializers.CharField(read_only=True)
     volume_type = serializers.CharField()
 
 
 class VolumeTypeSerializer(OpenstackBaseSerializer):
-    id = serializers.UUIDField()
-    name = serializers.CharField()
-    is_default = serializers.BooleanField(default=False)
+    id = serializers.UUIDField(read_only=True)
+    name = serializers.CharField(read_only=True)
+    is_default = serializers.BooleanField(read_only=True, default=False)
