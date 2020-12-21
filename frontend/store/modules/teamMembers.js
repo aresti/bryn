@@ -1,5 +1,5 @@
 import { axios, apiRoutes } from "@/api";
-import { collectionForTeamId } from "@/utils";
+import { collectionForTeamId } from "@/utils/store";
 
 const state = () => {
   return {

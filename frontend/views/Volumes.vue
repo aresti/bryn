@@ -160,6 +160,7 @@ export default {
         await this.deleteVolume(volume);
         this.toast(`Deleted volume: ${volume.name}`);
       } catch (err) {
+        console.log(err);
         this.toast.error(
           `Failed to delete volume: ${
             err.response?.data.detail ?? "unexpected error"

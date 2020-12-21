@@ -156,6 +156,7 @@ export default {
         if (err.response?.status === 400) {
           this.formParseResponseError(err.response.data);
         } else {
+          console.log(err);
           this.toast.error(
             `Failed to create volume: ${
               err.response?.data.detail ?? "unexpected error"

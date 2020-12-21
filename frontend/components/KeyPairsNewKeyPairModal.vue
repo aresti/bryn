@@ -128,7 +128,7 @@ export default {
         this.toast.success(`New SSH key created: ${keypair.name}`);
         this.onClose();
       } catch (err) {
-        if (err.response.status === 400) {
+        if (err.response?.status === 400) {
           this.formParseResponseError(err.response.data);
         } else {
           this.toast.error(

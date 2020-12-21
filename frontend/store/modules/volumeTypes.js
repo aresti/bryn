@@ -1,5 +1,8 @@
 import { axios, apiRoutes } from "@/api";
-import { updateTeamCollection, createFilterByTenantGetter } from "@/utils";
+import {
+  updateTeamCollection,
+  createFilterByTenantGetter,
+} from "@/utils/store";
 
 const state = () => {
   return {

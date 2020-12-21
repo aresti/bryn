@@ -52,10 +52,11 @@ export default {
     },
   },
   computed: {
-    ...mapGetters(["getRegionNameForTenant"]),
+    ...mapGetters(["getTenantById", "getRegionNameForTenant"]),
     ...mapGetters("flavors", ["getFlavorById"]),
     regionName() {
-      return this.getRegionNameForTenant(this.instance.tenant);
+      const tenant = this.getTenantById(this.instance.tenant);
+      return this.getRegionNameForTenant(tenant);
     },
     flavorName() {
       return (

@@ -3,7 +3,7 @@ import {
   updateTeamCollection,
   createFilterByIdGetter,
   createFilterByTenantGetter,
-} from "@/utils";
+} from "@/utils/store";
 
 const state = () => {
   return {

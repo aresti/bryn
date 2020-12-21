@@ -4,7 +4,7 @@ import {
   collectionForTeamId,
   createFilterByIdGetter,
   createFilterByTenantGetter,
-} from "@/utils";
+} from "@/utils/store";
 
 const SHELVED_STATUSES = ["SHELVED", "SHELVED_OFFLOADED"];
 

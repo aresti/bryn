@@ -1,5 +1,5 @@
 import { createStore } from "vuex";
-import { createFilterByIdGetter } from "@/utils";
+import { createFilterByIdGetter } from "@/utils/store";
 
 import flavors from "./modules/flavors";
 import images from "./modules/images";
