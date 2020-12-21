@@ -112,6 +112,7 @@ const actions = {
   },
   addPollingTarget({ state, commit, dispatch }, { volume, status }) {
     commit("addPollingTarget", { volume, status });
+    dispatch("fetchPollingTargets"); // First/immediate update
     if (!state.pollingSymbol) {
       /* Start polling */
       const pollingSymbol = setInterval(() => {

@@ -136,13 +136,16 @@ export default {
 
   methods: {
     isNew(volume) {
-      return minutesSince(volume.createdAt) < 3;
+      return minutesSince(volume.createdAt) < 3 && !this.isDeleting(volume);
     },
     isAvailable(volume) {
       return volume.status === "available";
     },
     isInUse(volume) {
       return volume.status === "in-use";
+    },
+    isDeleting(volume) {
+      return volume.status === "deleting";
     },
     timeSinceCreated(volume) {
       return formatDistanceToNow(new Date(volume.createdAt)) + " ago";
