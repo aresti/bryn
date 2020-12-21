@@ -16,12 +16,14 @@
             {{ getRegionNameForTenant(getTenantById(volume.tenant)) }}</span
           >
         </td>
+
         <td>
-          <span class="has-text-weight-semibold">{{ volume.volumeType }}</span
-          ><br />
+          {{ volume.volumeType }}<br />
           <span v-if="volume.bootable" class="is-size-7">Bootable</span>
         </td>
+
         <td>{{ formatSize(volume.size) }}</td>
+
         <td>
           <base-tag-control>
             <base-tag v-if="isNew(volume)" color="dark" rounded>NEW</base-tag>
@@ -36,6 +38,7 @@
             </base-tag>
           </base-tag-control>
         </td>
+
         <td>
           <span
             v-for="attachment in formatAttachments(volume.attachments)"
@@ -47,11 +50,39 @@
             }}</span>
           </span>
         </td>
+
+        <td class="is-size-6">{{ timeSinceCreated(volume) }}</td>
+
         <td>
           <div class="buttons is-right">
-            <base-button-delete
-              v-if="volume.status === 'available'"
+            <base-button
+              v-if="isAvailable(volume)"
               size="small"
+              color="success"
+              outlined
+              rounded
+            >
+              <template v-slot:default>Mount</template>
+              <template v-slot:icon-before>
+                <base-icon
+                  :fa-classes="['fas', 'fa-link']"
+                  :decorative="true"
+                />
+              </template>
+            </base-button>
+            <base-button v-if="isInUse(volume)" size="small" outlined rounded>
+              <template v-slot:default>Unmount</template>
+              <template v-slot:icon-before>
+                <base-icon
+                  :fa-classes="['fas', 'fa-unlink']"
+                  :decorative="true"
+                />
+              </template>
+            </base-button>
+            <base-button-delete
+              v-if="isAvailable(volume)"
+              size="small"
+              @click="$emit('delete-volume', volume)"
             />
           </div>
         </td>
@@ -63,6 +94,7 @@
 <script>
 import { mapActions, mapGetters } from "vuex";
 import { formatBytes, minutesSince } from "@/utils";
+import { formatDistanceToNow } from "date-fns";
 
 export default {
   props: {
@@ -72,9 +104,27 @@ export default {
     },
   },
 
+  emits: {
+    "delete-volume": ({ id, name }) => {
+      if (id && name) {
+        return true;
+      }
+      console.warn("Invalid delete-volume event payload");
+      return false;
+    },
+  },
+
   data() {
     return {
-      headings: ["Name", "Volume Type", "Size", "Status", "Attached To", ""],
+      headings: [
+        "Name",
+        "Type",
+        "Size",
+        "Status",
+        "Attached To",
+        "Created",
+        "",
+      ],
     };
   },
 
@@ -87,6 +137,15 @@ export default {
   methods: {
     isNew(volume) {
       return minutesSince(volume.createdAt) < 3;
+    },
+    isAvailable(volume) {
+      return volume.status === "available";
+    },
+    isInUse(volume) {
+      return volume.status === "in-use";
+    },
+    timeSinceCreated(volume) {
+      return formatDistanceToNow(new Date(volume.createdAt)) + " ago";
     },
     formatAttachments(attachments) {
       return attachments.map((attachment) => {

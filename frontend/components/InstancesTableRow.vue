@@ -15,7 +15,7 @@
       ><br />
       <span class="is-family-monospace is-size-7">{{ instance.ip }}</span>
     </td>
-    <td>{{ createdDistanceToNow }}</td>
+    <td>{{ timeSinceCreated }}</td>
     <td class="actions-cell">
       <base-dropdown right>
         <template v-slot:trigger="{ toggle: toggleDropdown }">
@@ -62,7 +62,7 @@ export default {
         this.getFlavorById(this.instance.flavor)?.name ?? "[legacy flavor]"
       );
     },
-    createdDistanceToNow() {
+    timeSinceCreated() {
       return formatDistanceToNow(new Date(this.instance.created)) + " ago";
     },
     statusColor() {

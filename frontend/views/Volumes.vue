@@ -7,6 +7,7 @@
             <tenant-filter-tabs />
           </base-level-item>
         </template>
+
         <template v-slot:right>
           <base-mini-loader :loading="loading" />
           <base-level-item>
@@ -25,6 +26,7 @@
               }}</template>
             </base-button>
           </base-level-item>
+
           <base-level-item>
             <base-button-create @click="showNewVolumeModal = true">
               New volume
@@ -33,18 +35,29 @@
         </template>
       </base-level>
     </div>
-    <volumes-table :volumes="filteredVolumes" />
+
+    <volumes-table :volumes="filteredVolumes" @delete-volume="onDeleteVolume" />
 
     <volumes-new-volume-modal
       v-if="showNewVolumeModal"
       @close-modal="showNewVolumeModal = false"
+    />
+
+    <base-modal-delete
+      v-if="confirmDeleteVolume"
+      verb="Delete"
+      type="volume"
+      :name="confirmDeleteVolume.name"
+      :processing="deleteProcessing"
+      @close-modal="onCancelDelete"
+      @confirm-delete="onConfirmDelete"
     />
   </div>
 </template>
 
 <script>
 import { useToast } from "vue-toastification";
-import { mapGetters, mapState } from "vuex";
+import { mapActions, mapGetters, mapState } from "vuex";
 
 // import VolumesNewVolumeModal from "@/components/VolumesNewVolumeModal";
 import VolumesNewVolumeModal from "@/components/VolumesNewVolumeModal";
@@ -67,6 +80,8 @@ export default {
     return {
       showBootable: false,
       showNewVolumeModal: false,
+      confirmDeleteVolume: null,
+      deleteProcessing: false,
     };
   },
 
@@ -79,6 +94,34 @@ export default {
       return this.showBootable
         ? this.volumesForFilterTenant
         : this.volumesForFilterTenant.filter((volume) => !volume.bootable);
+    },
+  },
+
+  methods: {
+    ...mapActions("volumes", ["deleteVolume"]),
+    onDeleteVolume(volume) {
+      this.confirmDeleteVolume = volume;
+    },
+    onCancelDelete() {
+      this.confirmDeleteVolume = null;
+    },
+    async onConfirmDelete() {
+      if (this.deleteProcessing) {
+        return;
+      }
+      const volume = this.confirmDeleteVolume;
+      this.deleteProcessing = true;
+      try {
+        await this.deleteVolume(volume);
+        this.toast(`Deleted volume: ${volume.name}`);
+      } catch (err) {
+        this.toast.error(
+          `Failed to delete volume: ${err.response.data.detail}`
+        );
+      } finally {
+        this.confirmDeleteVolume = null;
+        this.deleteProcessing = false;
+      }
     },
   },
 };

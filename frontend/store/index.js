@@ -146,11 +146,11 @@ const actions = {
       await dispatch("fetchTeamSpecificData"); // Will throw on err
       commit("setTeamInitialized");
     }
-    const results = await Promise.allSettled([
-      ...getters.tenants.map((tenant) =>
+    const results = await Promise.allSettled(
+      getters.tenants.map((tenant) =>
         dispatch("fetchTenantSpecificData", { tenant })
-      ),
-    ]);
+      )
+    );
     return results.map(({ status, value, reason }, index) => {
       return { status, value, reason, tenant: getters.tenants[index].id };
     });

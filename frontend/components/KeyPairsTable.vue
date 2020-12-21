@@ -48,6 +48,7 @@ export default {
       required: true,
     },
   },
+
   emits: {
     "delete-keypair": ({ id, name }) => {
       if (id && name) {
@@ -57,11 +58,13 @@ export default {
       return false;
     },
   },
+
   data() {
     return {
       headings: ["Name", "Fingerprint", ""],
     };
   },
+
   computed: {
     ...mapGetters(["getRegionNameForTenant", "getTenantById"]),
   },

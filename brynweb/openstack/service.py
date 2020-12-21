@@ -153,7 +153,7 @@ class VolumesService:
             raise OpenstackException(
                 "Only volumes with 'available' status can be deleted."
             )
-        volume.delete()
+        return volume.delete()
 
     # Create boot volume, wait for it to become available
     #     # cinder = client.get_cinder()

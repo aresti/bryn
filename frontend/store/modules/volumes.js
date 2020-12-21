@@ -128,6 +128,12 @@ const actions = {
       const volume = getters.getVolumeById(target.volumeId);
       const status =
         typeof target.status == "string" ? [target.status] : target.status;
+
+      if (status == null) {
+        // resolves by 404, skip this test
+        continue;
+      }
+
       if (status.includes(volume.status)) {
         commit("removePollingTargetByVolumeId", volume.id);
       }
@@ -138,12 +144,12 @@ const actions = {
       commit("removePollingSymbol");
     }
   },
-  async fetchPollingTargets({ dispatch, state, getters }) {
+  async fetchPollingTargets({ commit, dispatch, state, getters }) {
     /* Fetch & update all polling targets */
     const results = await Promise.allSettled(
       state.pollingTargets.map((target) => {
         const volume = getters.getVolumeById(target.volumeId);
-        dispatch("fetchVolume", { volume });
+        return dispatch("fetchVolume", { volume });
       })
     );
 
@@ -153,9 +159,7 @@ const actions = {
         result.status == "rejected" &&
         result.reason.response?.status === 404
       ) {
-        const volumeId = getters.getVolumeById(
-          state.pollingTargets[index].volumeId
-        );
+        const volumeId = state.pollingTargets[index].volumeId;
         commit("removePollingTargetByVolumeId", volumeId);
         commit("removeVolumeById", volumeId);
       }
@@ -171,6 +175,14 @@ const actions = {
     volume = response.data;
     commit("updateVolume", volume);
     return volume;
+  },
+  async deleteVolume({ dispatch }, volume) {
+    /* Delete a volume */
+    const uri = `${apiRoutes.volumes}${volume.tenant}/${volume.id}`;
+    await axios.delete(uri);
+    dispatch("addPollingTarget", {
+      volume,
+    });
   },
   async getTeamVolumes({ commit, rootGetters }, { tenant } = {}) {
     /* Fetch [and replace] all volumes for the active team */

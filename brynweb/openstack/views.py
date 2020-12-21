@@ -180,10 +180,7 @@ class OpenstackDeleteMixin(OpenstackAPIView):
 
         openstack = OpenstackService(tenant)
         try:
-            response = methodcaller("delete", entity_id)(
-                getattr(openstack, self.service.value)
-            )
-            print(response)
+            methodcaller("delete", entity_id)(getattr(openstack, self.service.value))
         except Exception as e:
             if e.code == 404:
                 raise drf_exceptions.NotFound
