@@ -5,38 +5,64 @@
       ><br />
       <span class="is-size-7">{{ regionName }}</span>
     </td>
+
     <td>
       {{ flavorName }}
     </td>
+
     <td>
-      <base-tag :color="statusColor" rounded light>{{
-        instance.status
-      }}</base-tag
-      ><br />
+      <base-tag-control>
+        <base-tag v-if="isNew" color="dark" rounded>NEW</base-tag>
+        <base-tag :color="statusColor" rounded light>
+          {{ instance.status }}
+          <base-icon
+            v-if="isPolling"
+            class="ml-1"
+            :fa-classes="['fas', 'fa-spinner', 'fa-spin']"
+            :decorative="true"
+          />
+        </base-tag>
+      </base-tag-control>
       <span class="is-family-monospace is-size-7">{{ instance.ip }}</span>
     </td>
+
     <td>{{ timeSinceCreated }}</td>
+
     <td class="actions-cell">
-      <base-dropdown right>
-        <template v-slot:trigger="{ toggle: toggleDropdown }">
-          <base-button @click="toggleDropdown" dropdown outlined>
-            Actions
-          </base-button>
-        </template>
-        <template v-slot="{ toggle: toggleDropdown }">
-          <a @click="toggleDropdown" class="dropdown-item">Restart</a>
-          <a @click="toggleDropdown" class="dropdown-item">Terminate</a>
-          <a @click="toggleDropdown" class="dropdown-item">Shutdown</a>
-        </template>
-      </base-dropdown>
+      <base-buttons v-if="!isPolling" class="is-right">
+        <base-button
+          v-for="action in stateTransitionActions"
+          :key="action"
+          :color="action.color"
+          size="small"
+          outlined
+          rounded
+          @click="onActionClick(action)"
+        >
+          {{ action.verb }}
+        </base-button>
+      </base-buttons>
     </td>
   </tr>
+
+  <!-- Confirm action modal -->
+  <base-modal-delete
+    v-if="confirmAction"
+    :verb="confirmAction.verb"
+    type="server"
+    :name="instance.name"
+    :processing="actionProcessing"
+    @close-modal="onCancelAction"
+    @confirm-delete="onConfirmAction"
+  />
 </template>
 
 <script>
-import { formatDistanceToNow } from "date-fns";
+import { minutesSince } from "@/utils";
 
-import { mapGetters } from "vuex";
+import { formatDistanceToNow } from "date-fns";
+import { useToast } from "vue-toastification";
+import { mapActions, mapGetters } from "vuex";
 
 const statusColorMap = {
   ACTIVE: "success",
@@ -44,16 +70,73 @@ const statusColorMap = {
   SHELVED: "grey-lighter",
 };
 
+/*
+ * State transitions
+ * Top level is current status, 1st level is target status
+ */
+const stateTransitions = {
+  ACTIVE: [
+    {
+      targetStatus: "ACTIVE",
+      verb: "Reboot",
+      color: "warning",
+      confirm: true,
+    },
+    {
+      targetStatus: "SHUTOFF",
+      verb: "Stop",
+      color: "danger",
+      confirm: true,
+    },
+  ],
+  SHUTOFF: [
+    {
+      targetStatus: "ACTIVE",
+      verb: "Start",
+      color: "success",
+      confirm: false,
+    },
+  ],
+  SHELVED: [
+    {
+      targetStatus: "SHUTOFF",
+      verb: "Unshelve",
+      color: "info",
+      confirm: false,
+    },
+  ],
+};
+
 export default {
+  setup() {
+    const toast = useToast();
+    return { toast };
+  },
+
   props: {
     instance: {
       type: Object,
       required: true,
     },
   },
+
+  data() {
+    return {
+      confirmAction: null,
+      actionProcessing: false,
+    };
+  },
+
   computed: {
     ...mapGetters(["getTenantById", "getRegionNameForTenant"]),
     ...mapGetters("flavors", ["getFlavorById"]),
+    ...mapGetters("instances", ["getInstanceIsPolling"]),
+    isNew() {
+      return minutesSince(this.instance.created) < 3;
+    },
+    isPolling() {
+      return this.getInstanceIsPolling(this.instance);
+    },
     regionName() {
       const tenant = this.getTenantById(this.instance.tenant);
       return this.getRegionNameForTenant(tenant);
@@ -69,6 +152,53 @@ export default {
     statusColor() {
       const { [this.instance.status]: color } = statusColorMap;
       return color;
+    },
+    stateTransitionActions() {
+      return stateTransitions[this.instance.status];
+    },
+  },
+
+  methods: {
+    ...mapActions("instances", ["fetchInstance", "targetInstanceStatus"]),
+    onActionClick(action) {
+      if (action.confirm) {
+        this.confirmAction = action;
+      } else {
+        this.performAction(action);
+      }
+    },
+    onCancelAction() {
+      this.confirmAction = null;
+    },
+    async onConfirmAction() {
+      await this.performAction(this.confirmAction);
+      this.confirmAction = null;
+    },
+    async performAction(action) {
+      if (this.actionProcessing) {
+        return;
+      }
+      this.actionProcessing = true;
+      const toastMsg = `${action.verb}ing ${this.instance.name}`;
+      try {
+        if (action.color == "success") {
+          this.toast.success(toastMsg);
+        } else {
+          this.toast(toastMsg);
+        }
+        await this.targetInstanceStatus({
+          instance: this.instance,
+          status: action.targetStatus,
+        });
+      } catch (err) {
+        this.toast.error(
+          `Failed to ${action.verb} ${this.instance.name}: ${
+            err.response?.data.detail ?? "unexpected error"
+          }`
+        );
+      } finally {
+        this.actionProcessing = false;
+      }
     },
   },
 };

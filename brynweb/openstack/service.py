@@ -1,3 +1,5 @@
+import time
+
 from enum import Enum
 
 from rest_framework import exceptions as drf_exceptions
@@ -170,32 +172,6 @@ class VolumesService:
         server_id = attachments[0].get("server_id")
         return self.nova.volumes.delete_server_volume(server_id, volume_id)
 
-    # Create boot volume, wait for it to become available
-    #     # cinder = client.get_cinder()
-    #     # volume = cinder.volumes.create(
-    #     #     imageRef=image,
-    #     #     name=f"{self.get_tenant_name()} {name} boot volume",
-    #     #     size=120,
-    #     # )
-    #     # cinder.volumes.set_bootable(volume, True)
-
-    #     # for n in range(20):
-    #     #     # TODO find a better way!
-    #     #     v = cinder.volumes.get(volume.id)
-    #     #     if v.status == "available":
-    #     #         break
-    #     #     time.sleep(1)
-
-    #     # bdm = [
-    #     #     {
-    #     #         "uuid": volume.id,
-    #     #         "source_type": "volume",
-    #     #         "destination_type": "volume",
-    #     #         "boot_index": "0",
-    #     #         "delete_on_termination": True,
-    #     #     }
-    #     # ]
-
 
 class VolumeTypesService:
     def __init__(self, openstack):
@@ -227,73 +203,73 @@ class ServersService:
     def nova(self):
         return self.openstack.nova
 
+    @property
+    def cinder(self):
+        return self.openstack.cinder
+
+    @property
+    def network_id(self):
+        return self.openstack.tenant.get_network_id()
+
     def get(self, uuid):
         return self.nova.servers.get(uuid)
 
     def get_list(self):
         return self.nova.servers.list(detailed=True)
 
-    def start(self, uuid):
-        server = self.get(uuid)
-        server.start()
+    def create(self, data):
+        flavor = data["flavor"]
+        image = data["image"]
+        keypair = data["keypair"]
+        name = data["name"]
 
-    def stop(self, uuid):
-        server = self.get(uuid)
-        server.stop()
+        # Create boot volume
+        volume = self.cinder.volumes.create(
+            imageRef=image, name=f"{name}: BOOT VOLUME", size=120,
+        )
+        self.cinder.volumes.set_bootable(volume, True)
 
-    def terminate(self, uuid):
-        server = self.get(uuid)
-        server.delete()
+        # Wait for boot volume availability
+        for n in range(20):
+            # TODO: move volume creation to frontend, otherwise tidy up a bit
+            v = self.cinder.volumes.get(volume.id)
+            if v.status == "available":
+                break
+            time.sleep(1)
 
-    def unshelve(self, uuid):
-        server = self.get(uuid)
-        server.unshelve()
+        # Block device mapping
+        bdm = [
+            {
+                "uuid": volume.id,
+                "source_type": "volume",
+                "destination_type": "volume",
+                "boot_index": "0",
+                "delete_on_termination": True,
+            }
+        ]
 
-    def reboot(self, uuid):
-        server = self.get(uuid)
+        # Create server
+        return self.nova.servers.create(
+            name,
+            "",
+            flavor=flavor,
+            nics=[{"net-id": self.network_id}],
+            key_name=keypair,
+            block_device_mapping_v2=bdm,
+        )
+
+    def reboot(self, server):
         server.reboot(reboot_type="HARD")
 
-    def launch(self, name, flavor, image, auth_key_name, auth_key_value=None):
-        # client = self.get_client()
+    def stop(self, server):
+        server.stop()
 
-        # Create boot volume, wait for it to become available
-        # cinder = client.get_cinder()
-        # volume = cinder.volumes.create(
-        #     imageRef=image,
-        #     name=f"{self.get_tenant_name()} {name} boot volume",
-        #     size=120,
-        # )
-        # cinder.volumes.set_bootable(volume, True)
+    def start(self, server):
+        server.start()
 
-        # for n in range(20):
-        #     # TODO find a better way!
-        #     v = cinder.volumes.get(volume.id)
-        #     if v.status == "available":
-        #         break
-        #     time.sleep(1)
+    def unshelve(self, server):
+        server.unshelve()
 
-        # bdm = [
-        #     {
-        #         "uuid": volume.id,
-        #         "source_type": "volume",
-        #         "destination_type": "volume",
-        #         "boot_index": "0",
-        #         "delete_on_termination": True,
-        #     }
-        # ]
-
-        net_id = self.get_network_id()
-
-        print(name)
-        print(flavor)
-        print(net_id)
-        print(auth_key_name)
-
-        # return nova.servers.create(
-        #     server_name,
-        #     "",
-        #     flavor=flavor_id,
-        #     nics=[{"net-id": net_id}],
-        #     key_name=auth_key_name,
-        #     block_device_mapping_v2=bdm,
-        # )
+    # def terminate(self, uuid):
+    #     server = self.get(uuid)
+    #     server.delete()

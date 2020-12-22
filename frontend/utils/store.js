@@ -42,13 +42,8 @@ function createFilterByTenantGetter(collection) {
 }
 
 function addTargetMutation(state, { entity, status = null }) {
-  /**
-   * Adds a polling target object to a state.pollingTargets
-   * @param {Object[]} targets - The targets array to be updated
-   * @param {Object} [options] - The options object
-   * @param {Object} [options.entity] - The entity to target
-   * @param {string[]|string} [options.status] - Target status'
-   * @returns {void}
+  /*
+   * Adds a polling target object to state.pollingTargets
    */
   const targets = state.pollingTargets;
   const existingTarget = targets.find((target) => target.id === entity.id);

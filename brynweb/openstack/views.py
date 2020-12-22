@@ -1,12 +1,10 @@
 from operator import methodcaller
 
-from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework import permissions, generics, status
 from rest_framework import exceptions as drf_exceptions
 from rest_framework.response import Response
 
-from userdb.permissions import IsTeamMemberPermission
 from .service import OpenstackService, ServiceUnavailable, OpenstackException
 from .models import Tenant
 from .serializers import (
@@ -206,106 +204,77 @@ class TenantListView(generics.ListAPIView):
         )
 
 
-class InstanceListView(OpenstackListView):
+def get_instance_transform_func(self, tenant):
+    """
+    Transform function factory for Instance views
+    """
+    public_netname = tenant.region.regionsettings.public_network_name
+
+    def transform_func(obj):
+        obj.tenant = tenant.pk
+        obj.team = tenant.team.pk
+        obj.flavor = obj.flavor["id"]
+
+        if public_netname in obj.addresses.keys():
+            obj.ip = obj.addresses[public_netname][0]["addr"]
+        else:
+            obj.ip = None
+
+        return obj
+
+    return transform_func
+
+
+class InstanceListView(OpenstackListView, OpenstackCreateMixin):
     """
     Instance list view.
     """
 
     serializer_class = InstanceSerializer
     service = OpenstackService.Services.SERVERS
-
-    def get_transform_func(self, tenant):
-        public_netname = tenant.region.regionsettings.public_network_name
-
-        def transform_func(obj):
-            obj.tenant = tenant.pk
-            obj.team = tenant.team.pk
-            obj.flavor = obj.flavor["id"]
-
-            if public_netname in obj.addresses.keys():
-                obj.ip = obj.addresses[public_netname][0]["addr"]
-            else:
-                obj.ip = None
-
-            return obj
-
-        return transform_func
+    get_transform_func = get_instance_transform_func
 
 
-class InstanceView(APIView):
+class InstanceDetailView(OpenstackRetrieveView):
     """
-    API detail endpoint for instances.
-    Supports 'get' and 'delete' actions.
-    Authenticated user & team member permissions required.
+    Instance detail view.
     """
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        IsTeamMemberPermission,
-    ]
+    serializer_class = InstanceSerializer
+    service = OpenstackService.Services.SERVERS
+    get_transform_func = get_instance_transform_func
 
-    def get(self, request, team_id, tenant_id, instance_id):
-        pass
+    # Define allowed state transitions & associated method names
+    # top level is current status, 1st level is target status
+    state_transitions = {
+        "ACTIVE": {"ACTIVE": "reboot", "SHUTOFF": "stop"},
+        "SHUTOFF": {"ACTIVE": "start"},
+        "SHELVED": {"SHUTOFF": "unshelve"},
+    }
 
-    def delete(self, request, team_id, tenant_id, instance_id):
-        tenant = get_object_or_404(Tenant, pk=tenant_id, team=team_id)
+    def patch(self, request, tenant_id, entity_id):
+        tenant = get_tenant_for_user(request.user, tenant_id)  # may raise
+        if not entity_id:
+            raise drf_exceptions.NotFound
+
+        openstack = OpenstackService(tenant)
+        service = getattr(openstack, self.service.value)
+
+        target_status = request.data.get("status")
+        if not target_status:
+            raise drf_exceptions.BadRequest
 
         try:
-            tenant.terminate_server(instance_id)
-            return Response(None, status.HTTP_204_NO_CONTENT)
+            server = service.get(entity_id)
+            current_status = server.status
+            method_name = self.state_transitions[current_status][target_status]
+            methodcaller(method_name, server)(service)
         except Exception as e:
+            if getattr(e, "code", None) == 404:
+                raise drf_exceptions.NotFound
             raise OpenstackException(detail=str(e))
 
-
-# class InstanceStatusView(APIView):
-#     """
-#     API endpoint for instance status.
-#     Supports 'get' and 'put' actions.
-#     Authenticated user & team member permissions required.
-#     """
-
-#     permission_classes = [
-#         permissions.IsAuthenticated,
-#         IsTeamMemberPermission,
-#     ]
-
-#     def get(self, request, team_id, tenant_id, instance_id):
-#         instance = get_instance(team_id, tenant_id, instance_id)
-#         return Response({"status": instance.status})
-
-#     def put(self, request, team_id, tenant_id, instance_id):
-#         # Get instance and tenant
-#         instance = get_instance(team_id, tenant_id, instance_id)
-#         tenant = get_object_or_404(Tenant, pk=tenant_id, team=team_id)
-
-#         # Define allowed state transitions & associated methods
-#         # top level is target status, 1st level is current status
-#         state_transitions = {
-#             "ACTIVE": {"ACTIVE": tenant.reboot_server, "SHUTOFF": tenant.start_server},
-#             "SHUTOFF": {
-#                 "ACTIVE": tenant.stop_server,
-#                 "SHELVED": tenant.unshelve_server,
-#             },
-#         }
-
-#         # Validate target vs current status
-#         target_status = request.data.status.upper()
-#         current_status = instance.status
-
-#         if (
-#             target_status not in state_transitions.keys()
-#             or current_status not in state_transitions[target_status].keys()
-#         ):
-#             raise UnsupportedStateTransition
-
-#         # Call transition method
-#         try:
-#             state_transitions[current_status][target_status](instance_id)
-#             return Response(
-#                 {"status": get_instance(team_id, tenant_id, instance_id).status}
-#             )
-#         except Exception as e:
-#             raise OpenstackException(detail=str(e))
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class FlavorListView(OpenstackListView):
@@ -389,7 +358,7 @@ class VolumeDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
                     "attach", entity_id, serialized_attachment.data["server_id"]
                 )(service)
         except Exception as e:
-            if getattr(e, "code", None) == 404 == 404:
+            if getattr(e, "code", None) == 404:
                 raise drf_exceptions.NotFound
             raise OpenstackException(detail=str(e))
 

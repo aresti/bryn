@@ -8,15 +8,10 @@ urlpatterns = [
     path("tenants/", views.TenantListView.as_view(), name="api-tenant-list",),
     path("instances/", views.InstanceListView.as_view(), name="api-instance-list",),
     path(
-        "instances/<uuid:instance_id>",
-        views.InstanceView.as_view(),
+        "instances/<int:tenant_id>/<str:entity_id>",
+        views.InstanceDetailView.as_view(),
         name="api-instance-detail",
     ),
-    # path(
-    #     "instances/<uuid:instance_id>/status",
-    #     views.InstanceStatusView.as_view(),
-    #     name="api-instance-status",
-    # ),
     path("flavors/", views.FlavorListView.as_view(), name="api-flavor-list",),
     path("images/", views.ImageListView.as_view(), name="api-image-list",),
     path("keypairs/", views.KeyPairListView.as_view(), name="api-keypair-list",),

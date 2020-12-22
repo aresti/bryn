@@ -7,8 +7,9 @@
       <base-form-validated
         :form="form"
         submitLabel="Launch server"
+        :submitted="submitted"
         @validate-field="formValidateField"
-        @submit="onSubmit"
+        @submit="submitForm"
       />
     </template>
     <template v-slot:right>
@@ -20,16 +21,22 @@
 <script>
 import formValidationMixin from "@/mixins/formValidationMixin";
 import guidance from "@/content/instances/newInstanceGuidance.md";
-
-import VueMarkdownIt from "vue3-markdown-it";
 import {
   isAlphaNumHyphensOnly,
   isRequired,
   ValidationError,
 } from "@/utils/validators";
+
+import VueMarkdownIt from "vue3-markdown-it";
+import { useToast } from "vue-toastification";
 import { mapState, mapActions, mapGetters } from "vuex";
 
 export default {
+  setup() {
+    const toast = useToast();
+    return { toast };
+  },
+
   mixins: [formValidationMixin],
 
   emits: {
@@ -94,6 +101,7 @@ export default {
     ...mapGetters("images", ["getImagesForTenant"]),
     ...mapGetters("instances", ["getInstancesForTenant"]),
     ...mapGetters("keyPairs", ["getKeyPairsForTenant"]),
+
     selectedTenant() {
       return this.form.tenant.value
         ? this.getTenantById(parseInt(this.form.tenant.value))
@@ -136,13 +144,30 @@ export default {
     onClose() {
       this.$emit("close-modal");
     },
-    async onSubmit(values) {
-      // try {
-      //   // const result = await this.createInstance(values);
-      //   console.log(result);
-      // } catch (err) {
-      //   console.log(err.response.data.detail);
-      // }
+    async submitForm() {
+      this.formValidate();
+      if (this.submitted || !this.formIsValid) {
+        return;
+      }
+      this.submitted = true;
+      try {
+        const instance = await this.createInstance(this.formValues);
+        this.toast.success(`New server created: ${instance.name}`);
+        this.closeModal();
+      } catch (err) {
+        if (err.response?.status === 400) {
+          this.formParseResponseError(err.response.data);
+        } else {
+          console.log(err);
+          this.toast.error(
+            `Failed to create server: ${
+              err.response?.data.detail ?? "unexpected error"
+            }`
+          );
+        }
+      } finally {
+        this.submitted = false;
+      }
     },
     isUniqueName(value) {
       if (!value || !this.invalidNames.includes(value)) {

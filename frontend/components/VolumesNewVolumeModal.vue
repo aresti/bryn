@@ -28,15 +28,15 @@
 <script>
 import formValidationMixin from "@/mixins/formValidationMixin";
 import { formatBytes } from "@/utils";
-// import guidance from "@/content/instances/newInstanceGuidance.md";
-
-import VueMarkdownIt from "vue3-markdown-it";
-import { useToast } from "vue-toastification";
 import {
   isAlphaNumHyphensOnly,
   isRequired,
   ValidationError,
 } from "@/utils/validators";
+// import guidance from "@/content/instances/newInstanceGuidance.md";
+
+import VueMarkdownIt from "vue3-markdown-it";
+import { useToast } from "vue-toastification";
 import { mapState, mapActions, mapGetters } from "vuex";
 
 export default {

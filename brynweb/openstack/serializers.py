@@ -20,15 +20,17 @@ class TenantSerializer(serializers.ModelSerializer):
 
 
 class OpenstackBaseSerializer(serializers.Serializer):
-    team = serializers.IntegerField(required=False, allow_null=True)
-    tenant = serializers.IntegerField(required=False, allow_null=True)
+    team = serializers.IntegerField(read_only=True)
+    tenant = serializers.IntegerField(read_only=True)
 
 
 class InstanceSerializer(OpenstackBaseSerializer):
     id = serializers.UUIDField(read_only=True)
     name = serializers.CharField()
     flavor = serializers.UUIDField()
-    status = serializers.ChoiceField(choices=INSTANCE_STATUS_VALUES)
+    image = serializers.UUIDField(required=False)
+    keypair = serializers.CharField(required=False)
+    status = serializers.ChoiceField(choices=INSTANCE_STATUS_VALUES, required=False)
     ip = serializers.IPAddressField(read_only=True, required=False, allow_null=True)
     created = serializers.DateTimeField(read_only=True)
 

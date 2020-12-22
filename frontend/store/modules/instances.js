@@ -1,5 +1,6 @@
 import { axios, apiRoutes } from "@/api";
 import {
+  pollingUtils,
   updateTeamCollection,
   collectionForTeamId,
   createFilterByIdGetter,
@@ -8,25 +9,48 @@ import {
 
 const SHELVED_STATUSES = ["SHELVED", "SHELVED_OFFLOADED"];
 
+const getInstanceDetailUri = (instance) =>
+  `${apiRoutes.instances}${instance.tenant}/${instance.id}`;
+
 const state = () => {
   return {
     all: [],
+    pollingSymbol: null, // Identifier for polling from setInterval()
+    pollingTargets: [], // [{volumeId, ["targetStatus", "alternativeStatus"]}]
     loading: false,
   };
 };
 
 const mutations = {
+  pollingAddTarget: pollingUtils.addTargetMutation,
+  pollingRemoveTarget: pollingUtils.removeTargetMutation,
+  pollingSetSymbol: pollingUtils.setSymbolMutation,
+  pollingClearSymbol: pollingUtils.clearSymbolMutation,
+
+  addInstance(state, instance) {
+    state.all.unshift(instance);
+  },
   setInstances(state, { instances, team, tenant }) {
     updateTeamCollection(state.all, instances, team, tenant);
   },
   setLoading(state, loading) {
     state.loading = loading;
   },
+  updateInstance(state, instance) {
+    /* Update an existing instance, maintaining the ref */
+    const target = state.all.find((target) => target.id === instance.id);
+    if (target) {
+      Object.assign(target, instance);
+    }
+  },
 };
 
 const getters = {
   getInstanceById(state) {
     return createFilterByIdGetter(state.all);
+  },
+  getInstanceIsPolling(state) {
+    return pollingUtils.createEntityIsPollingGetter(state);
   },
   getInstancesForTenant(state) {
     return createFilterByTenantGetter(state.all);
@@ -47,6 +71,49 @@ const getters = {
 };
 
 const actions = {
+  pollingAddTarget({ state, commit, dispatch }, { entity, status }) {
+    pollingUtils.addTargetAction(
+      { state, commit, dispatch },
+      { entity, status, fetchActionName: "fetchInstance" }
+    );
+  },
+  pollingFetchTargets: pollingUtils.fetchTargetsAction,
+  pollingRemoveFulfilled: pollingUtils.removeFulfilledAction,
+
+  async fetchInstance({ commit }, instance) {
+    /* Fetch and update an individual instance */
+    const uri = getInstanceDetailUri(instance);
+    const response = await axios.get(uri);
+    instance = response.data;
+    commit("updateInstance", instance);
+    return instance;
+  },
+
+  async createInstance(
+    { commit, dispatch },
+    { tenant, keypair, flavor, image, name }
+  ) {
+    const payload = { tenant, keypair, flavor, image, name };
+    const response = await axios.post(apiRoutes.instances, payload);
+    const instance = response.data;
+    commit("addInstance", instance);
+    dispatch("pollingAddTarget", {
+      entity: instance,
+      status: ["ACTIVE", "ERROR"],
+    });
+    return instance;
+  },
+
+  async targetInstanceStatus({ dispatch }, { instance, status }) {
+    const payload = { status };
+    const uri = getInstanceDetailUri(instance);
+    await axios.patch(uri, payload);
+    dispatch("pollingAddTarget", {
+      entity: instance,
+      status,
+    });
+  },
+
   async getTeamInstances({ rootGetters, commit }, { tenant } = {}) {
     commit("setLoading", true);
     const team = rootGetters.team;
@@ -56,10 +123,6 @@ const actions = {
     const instances = response.data;
     commit("setInstances", { instances, team, tenant });
     commit("setLoading", false);
-  },
-  async createInstance({ commit }, data) {
-    const response = await axios.post(apiRoutes.instances, data);
-    console.log(response);
   },
 };
 

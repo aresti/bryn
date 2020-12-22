@@ -42,12 +42,6 @@ const mutations = {
       Object.assign(target, volume);
     }
   },
-  removeVolumeById(state, id) {
-    state.all.splice(
-      state.all.findIndex((obj) => obj.id === id),
-      1
-    );
-  },
 };
 
 const getters = {
