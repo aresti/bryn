@@ -1,5 +1,5 @@
 <template>
-  <base-modal-split @close-modal="onClose">
+  <base-modal-split @close-modal="closeModal">
     <template v-slot:left>
       <h4 class="title is-4">Launch new server</h4>
       <p>Create a new server instance.</p>
@@ -141,7 +141,7 @@ export default {
 
   methods: {
     ...mapActions("instances", ["createInstance"]),
-    onClose() {
+    closeModal() {
       this.$emit("close-modal");
     },
     async submitForm() {

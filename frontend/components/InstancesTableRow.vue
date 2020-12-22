@@ -96,6 +96,12 @@ const stateTransitions = {
       color: "success",
       confirm: false,
     },
+    {
+      targetStatus: "DELETED",
+      verb: "Delete",
+      color: "danger",
+      confirm: true,
+    },
   ],
   SHELVED: [
     {
@@ -159,7 +165,11 @@ export default {
   },
 
   methods: {
-    ...mapActions("instances", ["fetchInstance", "targetInstanceStatus"]),
+    ...mapActions("instances", [
+      "deleteInstance",
+      "fetchInstance",
+      "targetInstanceStatus",
+    ]),
     onActionClick(action) {
       if (action.confirm) {
         this.confirmAction = action;
@@ -186,10 +196,14 @@ export default {
         } else {
           this.toast(toastMsg);
         }
-        await this.targetInstanceStatus({
-          instance: this.instance,
-          status: action.targetStatus,
-        });
+        if (action.targetStatus === "DELETED") {
+          await this.deleteInstance(this.instance);
+        } else {
+          await this.targetInstanceStatus({
+            instance: this.instance,
+            status: action.targetStatus,
+          });
+        }
       } catch (err) {
         this.toast.error(
           `Failed to ${action.verb} ${this.instance.name}: ${

@@ -114,6 +114,15 @@ const actions = {
     });
   },
 
+  async deleteInstance({ dispatch }, instance) {
+    /* Delete an instance */
+    const uri = getInstanceDetailUri(instance);
+    await axios.delete(uri);
+    dispatch("pollingAddTarget", {
+      entity: instance,
+    });
+  },
+
   async getTeamInstances({ rootGetters, commit }, { tenant } = {}) {
     commit("setLoading", true);
     const team = rootGetters.team;

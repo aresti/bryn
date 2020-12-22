@@ -19,12 +19,6 @@ class OpenstackException(drf_exceptions.APIException):
     default_code = "openstack_exception"
 
 
-# class UnsupportedStateTransition(drf_exceptions.APIException):
-#     status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
-#     default_detail = "Unsupported state transition"
-#     default_code = "unsupported_state_transition"
-
-
 class OpenstackService:
     class Services(Enum):
         IMAGES = "images"
@@ -258,6 +252,12 @@ class ServersService:
             block_device_mapping_v2=bdm,
         )
 
+    def delete(self, server_id):
+        server = self.get(server_id)
+        if server.status != "SHUTOFF":
+            raise OpenstackException("Only SHUTOFF servers can be deleted.")
+        server.delete()
+
     def reboot(self, server):
         server.reboot(reboot_type="HARD")
 
@@ -269,7 +269,3 @@ class ServersService:
 
     def unshelve(self, server):
         server.unshelve()
-
-    # def terminate(self, uuid):
-    #     server = self.get(uuid)
-    #     server.delete()

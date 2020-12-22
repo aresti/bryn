@@ -235,7 +235,7 @@ class InstanceListView(OpenstackListView, OpenstackCreateMixin):
     get_transform_func = get_instance_transform_func
 
 
-class InstanceDetailView(OpenstackRetrieveView):
+class InstanceDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
     """
     Instance detail view.
     """
