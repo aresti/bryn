@@ -10,7 +10,7 @@ class Tenant(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="tenants")
     region = models.ForeignKey(Region, on_delete=models.CASCADE)
     created_tenant_id = models.CharField(max_length=50)
-    auth_password = models.CharField(max_length=50)
+    auth_password = models.CharField(max_length=50, blank=True)
     created_network_id = models.CharField(max_length=50, blank=True)
 
     # TODO property decorator

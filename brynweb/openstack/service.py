@@ -1,10 +1,16 @@
 import time
 
-from enum import Enum
+from novaclient import client as novaclient
+from keystoneauth1 import loading
+from keystoneauth1 import session as keystonesession
+from glanceclient import Client as GlanceClient
+from cinderclient import client as cinderclient
 
+from enum import Enum
 from rest_framework import exceptions as drf_exceptions
 from rest_framework import status
-from openstack.client import OpenstackClient
+
+from . import auth_settings
 
 
 class ServiceUnavailable(drf_exceptions.APIException):
@@ -31,11 +37,12 @@ class OpenstackService:
     def __init__(self, tenant):
         self.tenant = tenant
 
-        self._client = None
+        self._session = None
         self._nova = None
         self._cinder = None
         self._glance = None
 
+        self.auth_settings = auth_settings.AUTHENTICATION[self.tenant.region.name]
         self.images = ImagesService(self)
         self.flavors = FlavorsService(self)
         self.keypairs = KeypairsService(self)
@@ -44,32 +51,42 @@ class OpenstackService:
         self.volume_types = VolumeTypesService(self)
 
     @property
-    def client(self):
-        if not self._client:
-            self._client = OpenstackClient(
-                self.tenant.region.name,
-                username=self.tenant.get_tenant_name(),
-                password=self.tenant.auth_password,
-                project_name=self.tenant.get_tenant_name(),
+    def session(self):
+        if not self._session:
+            loader = loading.get_plugin_loader("password")
+            if self.tenant.auth_password:
+                # TODO: Remove once all legacy tenants updated
+                username = self.tenant.get_tenant_name()
+                password = self.tenant.auth_password
+            else:
+                username = self.auth_settings["SERVICE_USERNAME"]
+                password = self.auth_settings["SERVICE_PASSWORD"]
+            auth = loader.load_from_options(
+                auth_url=self.auth_settings["AUTH_URL"],
+                username=username,
+                password=password,
+                project_id=self.tenant.created_tenant_id,
             )
-        return self._client
+            self._session = keystonesession.Session(auth=auth)
+            print(self._session.get_project_id())
+        return self._session
 
     @property
     def nova(self):
         if not self._nova:
-            self._nova = self.client.get_nova()
+            self._nova = novaclient.Client(2, session=self.session)
         return self._nova
 
     @property
     def cinder(self):
         if not self._cinder:
-            self._cinder = self.client.get_cinder()
+            self._cinder = cinderclient.Client(2, session=self.session)
         return self._cinder
 
     @property
     def glance(self):
         if not self._glance:
-            self._glance = self.client.get_glance()
+            self._glance = GlanceClient(2, session=self.session)
         return self._glance
 
 
