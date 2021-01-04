@@ -144,7 +144,7 @@ def validate_email(request, uuid):
     return HttpResponseRedirect(reverse("home:home"))
 
 
-def get_teams_for_user(user, admin=None, team=None):
+def get_teams_for_user(user, team=None):
     """
     Return queryset for all teams that an authenticated user is a member of.
     If team is specified, returns a queryset with only that team, if the user is a member.
@@ -152,17 +152,39 @@ def get_teams_for_user(user, admin=None, team=None):
     return user.teams.filter(pk=team) if team else user.teams.all()
 
 
+class IsTeamAdmin(permissions.BasePermission):
+    """
+    Object level permission to only allow team admins.
+    Assumes the model instance has a 'team' or 'to_team' attribute.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        team = obj.to_team if hasattr(obj, "to_team") else obj.team
+        return (
+            len(TeamMember.objects.filter(team=team, user=request.user, is_admin=True))
+            == 1
+        )
+
+
+class IsTeamAdminOrReadOnly(IsTeamAdmin):
+    """
+    Object level permission to only allow team admins to edit/destroy.
+    Assumes the model instance has a 'team' or 'to_team' attribute.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return super().has_object_permission(request, view, obj)
+
+
 class TeamMemberListView(generics.ListAPIView):
     """
     API list endpoint for TeamMember.
-    Supports GET.
-    Authenticated user & team admin permissions required.
     """
 
     serializer_class = TeamMemberSerializer
-    permission_classes = [
-        permissions.IsAuthenticated,
-    ]
+    permission_classes = [permissions.IsAuthenticated, IsTeamAdminOrReadOnly]
 
     def get_queryset(self):
         query_team = self.request.query_params.get("team")
@@ -173,14 +195,10 @@ class TeamMemberListView(generics.ListAPIView):
 class TeamMemberDetailView(generics.RetrieveDestroyAPIView):
     """
     API detail endpoint for TeamMember.
-    Supports 'get' and 'destroy' actions.
-    Authenticated user & team admin permissions required.
     """
 
     serializer_class = TeamMemberSerializer
-    permission_classes = [
-        permissions.IsAuthenticated,
-    ]
+    permission_classes = [permissions.IsAuthenticated, IsTeamAdmin]
 
     def get_queryset(self):
         teams = get_teams_for_user(self.request.user)
@@ -190,15 +208,10 @@ class TeamMemberDetailView(generics.RetrieveDestroyAPIView):
 class InvitationListView(generics.ListCreateAPIView):
     """
     API list endpoint for Invitation.
-    Supports 'get' and 'create' actions.
-    Authenticated user & team admin permissions required.
-    Invitation email handled by post_save signal.
     """
 
     serializer_class = InvitationSerializer
-    permission_classes = [
-        permissions.IsAuthenticated,
-    ]
+    permission_classes = [permissions.IsAuthenticated, IsTeamAdmin]
 
     def get_queryset(self):
         query_team = self.request.query_params.get("team")
@@ -209,12 +222,8 @@ class InvitationListView(generics.ListCreateAPIView):
 class InvitationDetailView(generics.RetrieveDestroyAPIView):
     """
     API detail endpoint for Invitation.
-    Supports 'get' and 'destroy' actions.
-    Authenticated user & team admin permissions required.
     """
 
     serializer_class = InvitationSerializer
-    permission_classes = [
-        permissions.IsAuthenticated,
-    ]
+    permission_classes = [permissions.IsAuthenticated, IsTeamAdmin]
     queryset = Invitation.objects.all()

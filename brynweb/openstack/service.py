@@ -68,7 +68,6 @@ class OpenstackService:
                 project_id=self.tenant.created_tenant_id,
             )
             self._session = keystonesession.Session(auth=auth)
-            print(self._session.get_project_id())
         return self._session
 
     @property
