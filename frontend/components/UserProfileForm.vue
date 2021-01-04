@@ -4,8 +4,8 @@
   <base-form-validated
     :form="form"
     submitLabel="Update"
-    @validate-field="formValidate"
     @submit="onSubmit"
+    requireInput
   />
 </template>
 

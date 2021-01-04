@@ -23,6 +23,10 @@ export default {
           (fieldObj.value && !this.formFieldIsInvalid(fieldObj))
       );
     },
+    formIsDirty() {
+      /* Has the user input any data? */
+      return Object.values(this.form).some((fieldObj) => fieldObj.dirty);
+    },
     formValues() {
       /* Reduce the form object to simply {key: value, ...}. Trim string inputs. */
       return Object.entries(this.form).reduce((acc, [key, fieldObj]) => {
@@ -36,6 +40,11 @@ export default {
   },
 
   methods: {
+    formDirtyField(name) {
+      /* Mark field as dirty (user has modified) */
+      const field = this.form[name];
+      field.dirty = true;
+    },
     formMapToOptions(entities) {
       /* Quick map to convert simple entities to {value, label} option lists */
       return entities.map((entity) => {

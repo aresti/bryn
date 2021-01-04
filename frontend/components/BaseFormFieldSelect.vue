@@ -59,7 +59,7 @@ export default {
       default: false,
     },
   },
-  emits: ["update:modelValue", "validate"],
+  emits: ["update:modelValue", "validate", "change"],
   computed: {
     wrapperClasses() {
       return [
@@ -83,6 +83,7 @@ export default {
   methods: {
     onChange(event) {
       this.$emit("update:modelValue", event.target.value);
+      this.$emit("change");
       this.emitValidate();
     },
     emitValidate() {

@@ -8,7 +8,6 @@
         :form="form"
         submitLabel="Launch server"
         :submitted="submitted"
-        @validate-field="formValidateField"
         @submit="submitForm"
       />
     </template>

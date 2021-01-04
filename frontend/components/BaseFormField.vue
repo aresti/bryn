@@ -55,7 +55,7 @@ export default {
       default: false,
     },
   },
-  emits: ["update:modelValue", "validate"],
+  emits: ["update:modelValue", "validate", "input"],
   computed: {
     classes() {
       return [
@@ -72,6 +72,7 @@ export default {
   methods: {
     onInput(event) {
       this.$emit("update:modelValue", event.target.value);
+      this.$emit("input");
       if (!this.silentOnInput) {
         this.emitValidate();
       }

@@ -14,7 +14,8 @@
         :options="value.options"
         :null-option-label="`Select a ${value.label ?? key}`"
         :invalid="formFieldIsInvalid(value)"
-        @validate="emitValidate(key)"
+        @validate="formValidateField(key)"
+        @change="formDirtyField(key)"
         fullwidth
       />
       <base-form-field
@@ -23,7 +24,8 @@
         :name="key"
         :element="value.element"
         :invalid="formFieldIsInvalid(value)"
-        @validate="emitValidate(key)"
+        @validate="formValidateField(key)"
+        @input="formDirtyField(key)"
       />
     </base-form-control>
 
@@ -36,7 +38,7 @@
     <slot name="buttons"
       ><base-button-confirm
         type="submit"
-        :disabled="!formIsValid"
+        :disabled="submitDisabled"
         :loading="submitted"
         >{{ submitLabel }}</base-button-confirm
       ></slot
@@ -64,6 +66,10 @@ export default {
       type: Array,
       required: false,
     },
+    requireInput: {
+      type: Boolean,
+      default: false,
+    },
     submitLabel: {
       type: String,
       default: "Submit",
@@ -75,6 +81,16 @@ export default {
   },
 
   emits: ["validate-field", "submit"],
+
+  computed: {
+    submitDisabled() {
+      if (this.requireInput) {
+        return !(this.formIsValid && this.formIsDirty);
+      } else {
+        return !this.formIsValid;
+      }
+    },
+  },
 
   methods: {
     emitValidate(name) {

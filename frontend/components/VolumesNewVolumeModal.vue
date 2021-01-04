@@ -9,7 +9,6 @@
         :nonFieldErrors="formNonFieldErrors"
         submitLabel="Create Volume"
         :submitted="submitted"
-        @validate-field="formValidateField"
         @submit="submitForm"
       />
     </template>

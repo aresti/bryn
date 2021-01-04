@@ -79,12 +79,14 @@ const stateTransitions = {
     {
       targetStatus: "ACTIVE",
       verb: "Reboot",
+      presentParticiple: "Rebooting",
       color: "warning",
       confirm: true,
     },
     {
       targetStatus: "SHUTOFF",
       verb: "Stop",
+      presentParticiple: "Stopping",
       color: "danger",
       confirm: true,
     },
@@ -93,12 +95,14 @@ const stateTransitions = {
     {
       targetStatus: "ACTIVE",
       verb: "Start",
+      presentParticiple: "Starting",
       color: "success",
       confirm: false,
     },
     {
       targetStatus: "DELETED",
       verb: "Delete",
+      presentParticiple: "Deleting",
       color: "danger",
       confirm: true,
     },
@@ -107,6 +111,7 @@ const stateTransitions = {
     {
       targetStatus: "SHUTOFF",
       verb: "Unshelve",
+      presentParticiple: "Unshelving",
       color: "info",
       confirm: false,
     },
@@ -189,7 +194,7 @@ export default {
         return;
       }
       this.actionProcessing = true;
-      const toastMsg = `${action.verb}ing ${this.instance.name}`;
+      const toastMsg = `${action.presentParticiple} ${this.instance.name}`;
       try {
         if (action.color == "success") {
           this.toast.success(toastMsg);

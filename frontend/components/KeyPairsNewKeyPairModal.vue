@@ -11,7 +11,6 @@
         :form="form"
         submitLabel="Add Key"
         :submitted="submitted"
-        @validate-field="formValidateField"
         @submit="onSubmit"
       />
     </template>
