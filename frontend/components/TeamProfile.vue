@@ -1,11 +1,11 @@
 <template>
   <h2>Team: {{ team.name }}</h2>
-
   <base-form-validated
     :form="form"
     submitLabel="Update"
     @submit="onSubmit"
     :submitted="submitted"
+    :disabled="!userIsAdmin"
     requireInput
   />
 </template>
@@ -45,7 +45,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["team"]),
+    ...mapGetters(["team", "userIsAdmin"]),
   },
 
   methods: {
@@ -76,10 +76,16 @@ export default {
     },
   },
 
-  mounted() {
-    this.form.institution.value = this.team.institution;
-    this.form.department.value = this.team.department;
-    this.form.phoneNumber.value = this.team.phoneNumber;
+  watch: {
+    team: {
+      handler(_new, _old) {
+        console.log("bang");
+        this.form.institution.value = this.team.institution;
+        this.form.department.value = this.team.department;
+        this.form.phoneNumber.value = this.team.phoneNumber;
+      },
+      immediate: true,
+    },
   },
 };
 </script>

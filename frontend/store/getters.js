@@ -4,6 +4,11 @@ export const getters = {
   userFullName(state) {
     return `${state.user.firstName} ${state.user.lastName}`;
   },
+  userIsAdmin(state, getters) {
+    return getters["teamMembers/adminTeamMembers"].some(
+      (member) => member.user.id === state.user.id
+    );
+  },
   team(state) {
     return state.teams.find((team) => team.id === state.activeTeamId);
   },

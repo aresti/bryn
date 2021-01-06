@@ -17,6 +17,9 @@ const getters = {
   allTeamMembers(state, _getters, rootState) {
     return collectionForTeamId(state.all, rootState.activeTeamId);
   },
+  adminTeamMembers(_state, getters) {
+    return getters.allTeamMembers.filter((member) => member.isAdmin);
+  },
 };
 
 const actions = {

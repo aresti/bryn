@@ -14,6 +14,7 @@
         :options="value.options"
         :null-option-label="`Select a ${value.label ?? key}`"
         :invalid="formFieldIsInvalid(value)"
+        :disabled="disabled"
         @validate="formValidateField(key)"
         @change="formDirtyField(key)"
         fullwidth
@@ -24,6 +25,7 @@
         :name="key"
         :element="value.element"
         :invalid="formFieldIsInvalid(value)"
+        :disabled="disabled"
         @validate="formValidateField(key)"
         @input="formDirtyField(key)"
       />
@@ -38,7 +40,7 @@
     <slot name="buttons"
       ><base-button-confirm
         type="submit"
-        :disabled="submitDisabled"
+        :disabled="submitDisabled || disabled"
         :loading="submitted"
         >{{ submitLabel }}</base-button-confirm
       ></slot
@@ -75,6 +77,10 @@ export default {
       default: "Submit",
     },
     submitted: {
+      type: Boolean,
+      default: false,
+    },
+    disabled: {
       type: Boolean,
       default: false,
     },

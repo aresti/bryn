@@ -54,17 +54,16 @@ const actions = {
   },
 
   async fetchAll({ commit, dispatch, getters }) {
+    const tenants = getters.tenants; // store value, active team/tenants may have changed by the time function returns
     if (!getters.team.initialized) {
       await dispatch("fetchTeamSpecificData"); // Will throw on err
       commit("setTeamInitialized");
     }
     const results = await Promise.allSettled(
-      getters.tenants.map((tenant) =>
-        dispatch("fetchTenantSpecificData", { tenant })
-      )
+      tenants.map((tenant) => dispatch("fetchTenantSpecificData", { tenant }))
     );
     return results.map(({ status, value, reason }, index) => {
-      return { status, value, reason, tenant: getters.tenants[index].id };
+      return { status, value, reason, tenant: tenants[index].id };
     });
   },
 
