@@ -54,6 +54,7 @@ urlpatterns = [
         views.institution_typeahead,
         name="institution_typeahead",
     ),
+    path("api/teams/<int:pk>", views.TeamDetailView.as_view(), name="api-team-detail",),
     path(
         "api/teammembers/<int:pk>",
         views.TeamMemberDetailView.as_view(),

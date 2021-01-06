@@ -7,8 +7,8 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework import generics, permissions
 
 from .forms import CustomUserCreationForm, TeamForm, InvitationForm
-from .models import Institution, TeamMember, Invitation, UserProfile, Region
-from .serializers import TeamMemberSerializer, InvitationSerializer
+from .models import Institution, Team, TeamMember, Invitation, UserProfile, Region
+from .serializers import TeamSerializer, TeamMemberSerializer, InvitationSerializer
 
 
 def register(request):
@@ -155,11 +155,17 @@ def get_teams_for_user(user, team=None):
 class IsTeamAdmin(permissions.BasePermission):
     """
     Object level permission to only allow team admins.
-    Assumes the model instance has a 'team' or 'to_team' attribute.
+    Assumes the model instance is a Team object, or otherwise has a
+    'team' or 'to_team' attribute.
     """
 
     def has_object_permission(self, request, view, obj):
-        team = obj.to_team if hasattr(obj, "to_team") else obj.team
+        if isinstance(obj, Team):
+            team = obj
+        elif hasattr(obj, "to_team"):
+            team = obj.to_team
+        else:
+            team = obj.team
         return (
             len(TeamMember.objects.filter(team=team, user=request.user, is_admin=True))
             == 1
@@ -169,13 +175,26 @@ class IsTeamAdmin(permissions.BasePermission):
 class IsTeamAdminOrReadOnly(IsTeamAdmin):
     """
     Object level permission to only allow team admins to edit/destroy.
-    Assumes the model instance has a 'team' or 'to_team' attribute.
+    Assumes the model instance is a Team object, or otherwise has
+    a 'team' or 'to_team' attribute.
     """
 
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
         return super().has_object_permission(request, view, obj)
+
+
+class TeamDetailView(generics.RetrieveUpdateAPIView):
+    """
+    API detail endpoint for Team.
+    """
+
+    permission_classes = [permissions.IsAuthenticated, IsTeamAdminOrReadOnly]
+    serializer_class = TeamSerializer
+
+    def get_queryset(self):
+        return get_teams_for_user(self.request.user)
 
 
 class TeamMemberListView(generics.ListAPIView):

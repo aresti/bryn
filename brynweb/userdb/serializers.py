@@ -1,25 +1,7 @@
-from rest_framework import serializers, exceptions, validators
+from rest_framework import serializers, validators
 
 from openstack.serializers import TenantSerializer
 from .models import User, TeamMember, Invitation, Team
-
-
-class TeamFromUrlDefault:
-    """
-    May be applied as a `default=...` value on a serializer field.
-    Returns the team identified by team_id in the resolved url.
-    """
-
-    requires_context = True
-
-    def __call__(self, serializer_field):
-        request = serializer_field.context["request"]
-        team_id = request.resolver_match.kwargs["team_id"]
-        try:
-            team = Team.objects.get(pk=team_id)
-        except Team.DoesNotExist:
-            raise exceptions.NotFound
-        return team
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -52,7 +34,7 @@ class InvitationSerializer(serializers.ModelSerializer):
 
 
 class TeamSerializer(serializers.ModelSerializer):
-    tenants = TenantSerializer(many=True)
+    tenants = TenantSerializer(many=True, read_only=True)
 
     class Meta:
         model = Team
@@ -67,3 +49,4 @@ class TeamSerializer(serializers.ModelSerializer):
             "tenants_available",
             "tenants",
         ]
+        read_only_fields = ["id", "name", "verified", "tenants_available"]

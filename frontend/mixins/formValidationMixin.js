@@ -45,6 +45,15 @@ export default {
       const field = this.form[name];
       field.dirty = true;
     },
+    formResetValidation() {
+      /* Remove all errors, validation flags and dirty flags */
+      this.formNonFieldErrors = [];
+      Object.values(this.form).forEach((field) => {
+        delete field.errors;
+        delete field.valid;
+        delete field.dirty;
+      });
+    },
     formMapToOptions(entities) {
       /* Quick map to convert simple entities to {value, label} option lists */
       return entities.map((entity) => {
