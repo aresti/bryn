@@ -79,7 +79,6 @@ export default {
   watch: {
     team: {
       handler(_new, _old) {
-        console.log("bang");
         this.form.institution.value = this.team.institution;
         this.form.department.value = this.team.department;
         this.form.phoneNumber.value = this.team.phoneNumber;

@@ -79,7 +79,6 @@ function addTargetAction(
   if (!state.pollingSymbol) {
     /* Start polling */
     const pollingSymbol = setInterval(() => {
-      console.log("polling");
       dispatch("pollingFetchTargets", { fetchActionName });
     }, 5000);
     commit("pollingSetSymbol", pollingSymbol);

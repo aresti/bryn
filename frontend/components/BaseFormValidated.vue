@@ -21,7 +21,7 @@
       />
       <base-form-field
         v-else
-        v-model="value.value"
+        v-model.trim="value.value"
         :name="key"
         :element="value.element"
         :invalid="formFieldIsInvalid(value)"

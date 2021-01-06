@@ -11,6 +11,12 @@ const mutations = {
   setTeamMembers(state, members) {
     state.all = members;
   },
+  removeTeamMemberById(state, id) {
+    state.all.splice(
+      state.all.findIndex((obj) => obj.id === id),
+      1
+    );
+  },
 };
 
 const getters = {
@@ -27,6 +33,12 @@ const actions = {
     const response = await axios.get(apiRoutes.teamMembers);
     const members = response.data;
     commit("setTeamMembers", members);
+  },
+  async deleteTeamMember({ commit }, teamMember) {
+    /* Delete a team member */
+    const uri = `${apiRoutes.teamMembers}${teamMember.id}`;
+    await axios.delete(uri);
+    commit("removeTeamMemberById", teamMember.id);
   },
 };
 
