@@ -19,7 +19,7 @@
         guarantee the integrity or availability of your data. It is essential
         that you backup your data elsewhere.</base-message
       >
-      <!-- <vue-markdown-it :source="guidance" /> -->
+      <vue-markdown-it :source="guidance" />
     </template>
   </base-modal-split>
 </template>
@@ -32,7 +32,7 @@ import {
   isRequired,
   ValidationError,
 } from "@/utils/validators";
-// import guidance from "@/content/instances/newInstanceGuidance.md";
+import guidance from "@/content/volumes/newVolumeGuidance.md";
 
 import VueMarkdownIt from "vue3-markdown-it";
 import { useToast } from "vue-toastification";
@@ -56,7 +56,7 @@ export default {
 
   data() {
     return {
-      // guidance,
+      guidance,
       form: {
         tenant: {
           label: "Region",

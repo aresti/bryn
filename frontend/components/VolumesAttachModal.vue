@@ -21,14 +21,14 @@
 
     <template v-slot:right>
       <h4 class="title is-4">Help with attachments</h4>
-      <!-- <vue-markdown-it :source="guidance" /> -->
+      <vue-markdown-it :source="guidance" />
     </template>
   </base-modal-split>
 </template>
 
 <script>
 import formValidationMixin from "@/mixins/formValidationMixin";
-// import guidance from "@/content/instances/newInstanceGuidance.md";
+import guidance from "@/content/volumes/newVolumeGuidance.md";
 
 import VueMarkdownIt from "vue3-markdown-it";
 import { useToast } from "vue-toastification";
@@ -60,7 +60,7 @@ export default {
 
   data() {
     return {
-      // guidance,
+      guidance,
       form: {
         server: {
           label: "Server",
