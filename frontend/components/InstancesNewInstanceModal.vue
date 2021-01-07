@@ -8,6 +8,7 @@
         :form="form"
         submitLabel="Launch server"
         :submitted="submitted"
+        :nonFieldErrors="nonFieldErrors"
         @submit="submitForm"
       />
     </template>
@@ -55,7 +56,7 @@ export default {
           element: "select",
           options: [],
           value: "",
-          errors: [],
+          iconClasses: ["fas", "fa-globe-europe"],
           validators: [isRequired],
         },
         flavor: {
@@ -63,7 +64,7 @@ export default {
           element: "select",
           options: [],
           value: "",
-          errors: [],
+          iconClasses: ["fas", "fa-server"],
           validators: [isRequired],
         },
         image: {
@@ -71,7 +72,7 @@ export default {
           element: "select",
           options: [],
           value: "",
-          errors: [],
+          iconClasses: ["fas", "fa-save"],
           validators: [isRequired],
         },
         keypair: {
@@ -79,16 +80,17 @@ export default {
           element: "select",
           options: [],
           value: "",
-          errors: [],
+          iconClasses: ["fas", "fa-key"],
           validators: [isRequired],
         },
         name: {
           label: "Name",
           value: "",
-          errors: [],
+          iconClasses: ["fas", "fa-tag"],
           validators: [isRequired, isAlphaNumHyphensOnly, this.isUniqueName],
         },
       },
+      nonFieldErrors: [],
       submitted: false,
     };
   },

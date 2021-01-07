@@ -11,6 +11,7 @@
         :form="form"
         submitLabel="Add Key"
         :submitted="submitted"
+        :nonFieldErrors="nonFieldErrors"
         @submit="onSubmit"
       />
     </template>
@@ -59,23 +60,23 @@ export default {
           value: "",
           element: "select",
           options: [],
-          errors: [],
+          iconClasses: ["fas", "fa-globe-europe"],
           validators: [isRequired],
         },
         publicKey: {
           label: "Public Key",
           value: "",
           element: "textarea",
-          errors: [],
           validators: [isRequired, isPublicKey, this.isUniquePublicKey],
         },
         name: {
           label: "Key Name",
           value: "",
-          errors: [],
+          iconClasses: ["fas", "fa-tag"],
           validators: [isRequired, isAlphaNumHyphensOnly, this.isUniqueName],
         },
       },
+      nonFieldErrors: [],
       submitted: false,
     };
   },

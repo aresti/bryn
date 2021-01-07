@@ -10,6 +10,7 @@ const baseUrlUser = "/user/api";
 const apiRoutes = {
   images: baseUrl + "/images/",
   instances: baseUrl + "/instances/",
+  invitations: baseUrlUser + "/invitations/",
   flavors: baseUrl + "/flavors/",
   keyPairs: baseUrl + "/keypairs/",
   team: baseUrlUser + "/teams/",

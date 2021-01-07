@@ -19,10 +19,26 @@ export default {
       type: Array,
       required: true,
     },
+    left: {
+      type: Boolean,
+      required: false,
+    },
+    right: {
+      type: Boolean,
+      required: false,
+    },
   },
   computed: {
     containerClasses() {
-      return ["icon", this.sizeClass, this.textColorClass];
+      return [
+        "icon",
+        this.sizeClass,
+        this.textColorClass,
+        {
+          "is-left": this.left,
+          "is-right": this.right,
+        },
+      ];
     },
   },
 };

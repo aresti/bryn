@@ -1,35 +1,12 @@
 <template>
   <form @submit.prevent="$emit('submit')" novalidate>
-    <base-form-control
-      v-for="[key, value] in Object.entries(form)"
-      :key="key"
-      :label="value.label ? value.label : titleCase(key)"
-      :errors="value.errors"
-      :expanded="value.element === 'select'"
-    >
-      <base-form-field-select
-        v-if="value.element === 'select'"
-        v-model="value.value"
-        :name="key"
-        :options="value.options"
-        :null-option-label="`Select a ${value.label ?? key}`"
-        :invalid="formFieldIsInvalid(value)"
+    <base-form-field v-for="[name, field] in Object.entries(form)" :key="name">
+      <base-form-validated-control
+        :field="field"
+        :name="name"
         :disabled="disabled"
-        @validate="formValidateField(key)"
-        @change="formDirtyField(key)"
-        fullwidth
       />
-      <base-form-field
-        v-else
-        v-model.trim="value.value"
-        :name="key"
-        :element="value.element"
-        :invalid="formFieldIsInvalid(value)"
-        :disabled="disabled"
-        @validate="formValidateField(key)"
-        @input="formDirtyField(key)"
-      />
-    </base-form-control>
+    </base-form-field>
 
     <ul v-if="nonFieldErrors?.length" class="has-text-danger">
       <template v-for="err in nonFieldErrors" :key="err">
@@ -49,14 +26,9 @@
 </template>
 
 <script>
-import { titleCase } from "@/utils";
 import formValidationMixin from "@/mixins/formValidationMixin";
 
 export default {
-  setup() {
-    return { titleCase };
-  },
-
   mixins: [formValidationMixin],
 
   props: {
@@ -86,7 +58,7 @@ export default {
     },
   },
 
-  emits: ["validate-field", "submit"],
+  emits: ["submit"],
 
   computed: {
     submitDisabled() {
@@ -95,12 +67,6 @@ export default {
       } else {
         return !this.formIsValid;
       }
-    },
-  },
-
-  methods: {
-    emitValidate(name) {
-      this.$emit("validate-field", name);
     },
   },
 };

@@ -1,10 +1,10 @@
 <template>
-  <h2>Team: {{ team.name }}</h2>
   <base-form-validated
     :form="form"
     submitLabel="Update"
     @submit="onSubmit"
     :submitted="submitted"
+    :nonFieldErrors="nonFieldErrors"
     :disabled="!userIsAdmin"
     requireInput
   />
@@ -30,16 +30,20 @@ export default {
         institution: {
           value: "",
           validators: [isRequired],
+          iconClasses: ["fas", "fa-university"],
         },
         department: {
           value: "",
+          iconClasses: ["fas", "fa-building"],
         },
         phoneNumber: {
           label: "Phone",
           value: "",
+          iconClasses: ["fas", "fa-phone"],
           validators: [isRequired],
         },
       },
+      nonFieldErrors: [],
       submitted: false,
     };
   },

@@ -43,6 +43,7 @@ const actions = {
     /* Fetch all team specific data (for the active team) */
     try {
       await dispatch("teamMembers/getTeamMembers");
+      await dispatch("invitations/getInvitations");
     } catch (err) {
       const msg = `Error fetching team data for ${getters.team.name}`;
       if (err.response && err.response.data.hasOwnProperty("detail")) {

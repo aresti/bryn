@@ -26,6 +26,13 @@ const isAlphaNumHyphensOnly = (value) => {
   throw new ValidationError("Only letters, numbers and hyphens are allowed");
 };
 
+const isValidEmailSyntax = (value) => {
+  if (!value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    return true;
+  }
+  throw new ValidationError("Please enter a valid email address");
+};
+
 const isPublicKey = (value) => {
   const re = /^(ssh-rsa AAAAB3NzaC1yc2|ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNT|ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlzdHAzOD|ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlzdHA1Mj|ssh-ed25519 AAAAC3NzaC1lZDI1NTE5|ssh-dss AAAAB3NzaC1kc3)[0-9A-Za-z+/]+[=]{0,3}( .*)?$/;
   if (!value || re.test(value)) {
@@ -34,4 +41,10 @@ const isPublicKey = (value) => {
   throw new ValidationError("A valid SSH key is required");
 };
 
-export { ValidationError, isAlphaNumHyphensOnly, isPublicKey, isRequired };
+export {
+  ValidationError,
+  isAlphaNumHyphensOnly,
+  isPublicKey,
+  isRequired,
+  isValidEmailSyntax,
+};

@@ -6,9 +6,9 @@
 
       <base-form-validated
         :form="form"
-        :nonFieldErrors="formNonFieldErrors"
         submitLabel="Create Volume"
         :submitted="submitted"
+        :nonFieldErrors="nonFieldErrors"
         @submit="submitForm"
       />
     </template>
@@ -63,7 +63,7 @@ export default {
           element: "select",
           options: [],
           value: "",
-          errors: [],
+          iconClasses: ["fas", "fa-globe-europe"],
           validators: [isRequired],
         },
         volumeType: {
@@ -71,7 +71,7 @@ export default {
           element: "select",
           options: [],
           value: "",
-          errors: [],
+          iconClasses: ["fas", "fa-hdd"],
           validators: [isRequired],
         },
         size: {
@@ -79,16 +79,17 @@ export default {
           element: "select",
           options: [],
           value: "250",
-          errors: [],
+          iconClasses: ["fas", "fa-save"],
           validators: [isRequired],
         },
         name: {
           label: "Name",
           value: "",
-          errors: [],
+          iconClasses: ["fas", "fa-tag"],
           validators: [isRequired, isAlphaNumHyphensOnly, this.isUniqueName],
         },
       },
+      nonFieldErrors: [],
       submitted: false,
     };
   },

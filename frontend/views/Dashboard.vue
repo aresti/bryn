@@ -17,7 +17,7 @@
       </base-flex-centered>
 
       <div v-else class="container">
-        <div class="columns is-variable is-8">
+        <div class="columns is-variable is-6">
           <div class="column is-one-fifth">
             <the-dashboard-menu />
           </div>

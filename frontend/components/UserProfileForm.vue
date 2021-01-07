@@ -5,6 +5,8 @@
     :form="form"
     submitLabel="Update"
     @submit="onSubmit"
+    :nonFieldErrors="nonFieldErrors"
+    :submitted="submitted"
     requireInput
   />
 </template>
@@ -35,6 +37,8 @@ export default {
           validators: [isRequired],
         },
       },
+      nonFieldErrors: [],
+      submitted: false,
     };
   },
   computed: {

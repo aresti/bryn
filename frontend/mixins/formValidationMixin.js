@@ -1,12 +1,23 @@
-import { ValidationError } from "@/utils/validators";
+import { isRequired, ValidationError } from "@/utils/validators";
+
+const validateField = (field) => {
+  /*
+   * Run all validators for a particular field.
+   * Push errors to array.
+   * Set 'valid' property (absence can be assumed to mean no validation has occurred).
+   */
+  field.errors = [];
+  field.validators?.forEach((validator) => {
+    try {
+      validator(field.value);
+    } catch (err) {
+      field.errors.push(err);
+    }
+  });
+  field.valid = !field.errors.length;
+};
 
 export default {
-  data() {
-    return {
-      formNonFieldErrors: [],
-    };
-  },
-
   computed: {
     formIsValid() {
       /*
@@ -40,14 +51,13 @@ export default {
   },
 
   methods: {
-    formDirtyField(name) {
+    formDirtyField(field) {
       /* Mark field as dirty (user has modified) */
-      const field = this.form[name];
       field.dirty = true;
     },
     formResetValidation() {
       /* Remove all errors, validation flags and dirty flags */
-      this.formNonFieldErrors = [];
+      this.nonFieldErrors = [];
       Object.values(this.form).forEach((field) => {
         delete field.errors;
         delete field.valid;
@@ -65,27 +75,18 @@ export default {
     },
     formValidate() {
       /* Validate all form fields */
-      this.formNonFieldErrors = [];
-      Object.keys(this.form).forEach((key) => {
-        this.formValidateField(key);
+      this.nonFieldErrors = [];
+      Object.values(this.form).forEach((field) => {
+        this.formValidateField(field);
       });
     },
-    formValidateField(name) {
-      /*
-       * Run all validators for a particular field.
-       * Push errors to array.
-       * Set 'valid' property (absence can be assumed to mean no validation has occurred).
-       */
-      const field = this.form[name];
-      field.errors = [];
-      field.validators?.forEach((validator) => {
-        try {
-          validator(field.value);
-        } catch (err) {
-          field.errors.push(err);
-        }
-      });
-      field.valid = !field.errors.length;
+    formValidateField(field) {
+      validateField(field);
+    },
+    formCreateFieldValidator(field) {
+      return function () {
+        return validateField(field);
+      };
     },
     formFieldIsInvalid(field) {
       /*
@@ -94,6 +95,9 @@ export default {
        */
       return field.hasOwnProperty("valid") ? !field.valid : false;
     },
+    formFieldIsRequired(field) {
+      return field.validators?.includes(isRequired) ?? false;
+    },
     formParseResponseError(error) {
       /* Parse server side errors (in usual Django Rest Framework format) */
       Object.entries(error).forEach(([field, value]) => {
@@ -101,7 +105,8 @@ export default {
           if (this.form.hasOwnProperty(field)) {
             this.form[field].errors.push(new ValidationError(message));
           } else {
-            this.formNonFieldErrors.push(
+            this.nonFieldErrors = [];
+            this.nonFieldErrors.push(
               new ValidationError(
                 field == "non_field_errors" ? message : `${field}: ${message}`
               )

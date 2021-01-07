@@ -12,10 +12,9 @@
 
       <base-form-validated
         :form="form"
-        :nonFieldErrors="formNonFieldErrors"
         submitLabel="Attach Volume"
         :submitted="submitted"
-        @validate-field="formValidateField"
+        :nonFieldErrors="nonFieldErrors"
         @submit="submitForm"
       />
     </template>
@@ -37,11 +36,6 @@ import { isRequired } from "@/utils/validators";
 import { mapActions, mapGetters } from "vuex";
 
 export default {
-  setup() {
-    const toast = useToast();
-    return { toast };
-  },
-
   mixins: [formValidationMixin],
 
   props: {
@@ -59,6 +53,11 @@ export default {
     VueMarkdownIt,
   },
 
+  setup() {
+    const toast = useToast();
+    return { toast };
+  },
+
   data() {
     return {
       // guidance,
@@ -71,6 +70,7 @@ export default {
           validators: [isRequired],
         },
       },
+      nonFieldErrors: [],
       submitted: false,
     };
   },

@@ -9,6 +9,7 @@ import actions from "./actions";
 import flavors from "./modules/flavors";
 import images from "./modules/images";
 import instances from "./modules/instances";
+import invitations from "./modules/invitations";
 import keyPairs from "./modules/keyPairs";
 import teamMembers from "./modules/teamMembers";
 import volumes from "./modules/volumes";
@@ -27,6 +28,7 @@ const modules = {
   flavors,
   images,
   instances,
+  invitations,
   keyPairs,
   teamMembers,
   volumes,
