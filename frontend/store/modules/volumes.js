@@ -42,6 +42,12 @@ const mutations = {
       Object.assign(target, volume);
     }
   },
+  removeVolumeById(state, id) {
+    state.all.splice(
+      state.all.findIndex((obj) => obj.id === id),
+      1
+    );
+  },
 };
 
 const getters = {
@@ -95,13 +101,12 @@ const actions = {
     return volume;
   },
 
-  async deleteVolume({ dispatch }, volume) {
+  async deleteVolume({ commit }, volume) {
     /* Delete a volume */
     const uri = getVolumeDetailUri(volume);
     await axios.delete(uri);
-    dispatch("pollingAddTarget", {
-      entity: volume,
-    });
+    /* Takes a while to delete, but better user experience to just remove rather than show polling */
+    commit("removeVolumeById", volume.id);
   },
 
   async attachVolume({ dispatch }, { volume, server }) {
