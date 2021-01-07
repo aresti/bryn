@@ -37,7 +37,7 @@
     <instances-table :instances="filteredInstances" />
 
     <div
-      v-if="!instancesForFilterTenant.length"
+      v-if="!(loading || instancesForFilterTenant.length)"
       class="content has-text-centered"
     >
       <h4 class="subtitle">{{ noItemsMessage }}</h4>

@@ -54,7 +54,7 @@
 
     <!-- No volumes message -->
     <div
-      v-if="!volumesForFilterTenant.length"
+      v-if="!(loading || volumesForFilterTenant.length)"
       class="content has-text-centered"
     >
       <h4 class="subtitle">{{ noItemsMessage }}</h4>
