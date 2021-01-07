@@ -8,11 +8,13 @@
       />
     </base-form-field>
 
-    <ul v-if="nonFieldErrors?.length" class="has-text-danger">
-      <template v-for="err in nonFieldErrors" :key="err">
-        <li>{{ err.message }}</li>
-      </template>
-    </ul>
+    <div v-if="nonFieldErrors?.length" class="content">
+      <ul class="has-text-danger">
+        <template v-for="err in nonFieldErrors" :key="err">
+          <li>{{ err.message }}</li>
+        </template>
+      </ul>
+    </div>
 
     <slot name="buttons"
       ><base-button-confirm

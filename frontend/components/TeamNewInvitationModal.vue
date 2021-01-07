@@ -23,7 +23,11 @@ import { useToast } from "vue-toastification";
 
 import formValidationMixin from "@/mixins/formValidationMixin";
 import { mapActions, mapState, mapGetters } from "vuex";
-import { isRequired, isValidEmailSyntax } from "@/utils/validators";
+import {
+  isRequired,
+  isValidEmailSyntax,
+  ValidationError,
+} from "@/utils/validators";
 
 export default {
   setup() {
@@ -43,13 +47,14 @@ export default {
         email: {
           label: "Email",
           value: "",
-          validators: [isRequired, isValidEmailSyntax],
+          validators: [isRequired, isValidEmailSyntax, this.isUniqueEmail],
           iconClasses: ["fa", "fa-envelope"],
         },
         message: {
           label: "Message",
           value: "",
           element: "textarea",
+          validators: [isRequired],
         },
       },
       nonFieldErrors: [],
@@ -59,10 +64,22 @@ export default {
 
   computed: {
     ...mapGetters(["team"]),
+    ...mapGetters("invitations", ["allInvitations"]),
+    invalidEmails() {
+      return this.allInvitations.map((invitation) => invitation.email);
+    },
   },
 
   methods: {
     ...mapActions("invitations", ["createInvitation"]),
+    isUniqueEmail(value) {
+      if (!value || !this.invalidEmails.includes(value)) {
+        return true;
+      }
+      throw new ValidationError(
+        "You've already sent an invite to this email address"
+      );
+    },
     onClose() {
       this.$emit("close-modal");
     },

@@ -108,7 +108,7 @@ export default {
             this.nonFieldErrors = [];
             this.nonFieldErrors.push(
               new ValidationError(
-                field == "non_field_errors" ? message : `${field}: ${message}`
+                field == "non_field_errors" ? message : `${message}`
               )
             );
           }
