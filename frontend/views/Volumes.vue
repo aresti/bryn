@@ -52,6 +52,14 @@
       @detach-volume="onDetachVolume"
     />
 
+    <!-- No volumes message -->
+    <div
+      v-if="!volumesForFilterTenant.length"
+      class="content has-text-centered"
+    >
+      <h4 class="subtitle">{{ noItemsMessage }}</h4>
+    </div>
+
     <!-- New volume modal -->
     <volumes-new-volume-modal
       v-if="showNewVolumeModal"
@@ -127,11 +135,21 @@ export default {
     ...mapState({
       loading: (state) => state.volumes.loading,
     }),
+    ...mapGetters(["filterTenant", "getRegionNameForTenant"]),
     ...mapGetters("volumes", ["volumesForFilterTenant"]),
     filteredVolumes() {
       return this.showBootable
         ? this.volumesForFilterTenant
         : this.volumesForFilterTenant.filter((volume) => !volume.bootable);
+    },
+    noItemsMessage() {
+      if (this.filterTenant != null) {
+        return `You haven't created any volumes at ${this.getRegionNameForTenant(
+          this.filterTenant
+        )} yet`;
+      } else {
+        return "You haven't created any volumes yet";
+      }
     },
   },
 

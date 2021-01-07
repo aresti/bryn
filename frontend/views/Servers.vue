@@ -33,7 +33,15 @@
         </template>
       </base-level>
     </div>
+
     <instances-table :instances="filteredInstances" />
+
+    <div
+      v-if="!instancesForFilterTenant.length"
+      class="content has-text-centered"
+    >
+      <h4 class="subtitle">{{ noItemsMessage }}</h4>
+    </div>
 
     <instances-new-instance-modal
       v-if="showInstancesNewInstanceModal"
@@ -73,6 +81,7 @@ export default {
     ...mapState({
       loading: (state) => state.instances.loading,
     }),
+    ...mapGetters(["filterTenant", "getRegionNameForTenant"]),
     ...mapGetters("instances", [
       "instancesForFilterTenant",
       "notShelvedForFilterTenant",
@@ -87,6 +96,15 @@ export default {
         this.instancesForFilterTenant.length !==
         this.notShelvedForFilterTenant.length
       );
+    },
+    noItemsMessage() {
+      if (this.filterTenant != null) {
+        return `You haven't created any servers at ${this.getRegionNameForTenant(
+          this.filterTenant
+        )} yet`;
+      } else {
+        return "You haven't created any servers yet";
+      }
     },
   },
 };

@@ -21,6 +21,13 @@
       @delete-keypair="onDeleteKeyPair"
     />
 
+    <div
+      v-if="!keyPairsForFilterTenant.length"
+      class="content has-text-centered"
+    >
+      <h4 class="subtitle">{{ noItemsMessage }}</h4>
+    </div>
+
     <key-pairs-new-key-pair-modal
       v-if="showNewKeyPairModal"
       @close-modal="showNewKeyPairModal = false"
@@ -67,7 +74,17 @@ export default {
   },
 
   computed: {
+    ...mapGetters(["filterTenant", "getRegionNameForTenant"]),
     ...mapGetters("keyPairs", ["keyPairsForFilterTenant"]),
+    noItemsMessage() {
+      if (this.filterTenant != null) {
+        return `You haven't created any SSH keys at ${this.getRegionNameForTenant(
+          this.filterTenant
+        )} yet`;
+      } else {
+        return "You haven't created any SSH keys yet";
+      }
+    },
   },
 
   methods: {
