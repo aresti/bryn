@@ -1,11 +1,12 @@
 import { axios, apiRoutes } from "@/api";
 
 const actions = {
-  async initStore({ commit }) {
+  async initStore({ commit, dispatch }) {
     /* Initialise store from embedded Django template json */
     commit("initUser");
     commit("initRegions");
     commit("initTeams");
+    dispatch("keyPairs/getKeyPairs");
   },
   setActiveTeam({ commit }, team) {
     commit("setActiveTeamId", team.id);
@@ -23,7 +24,6 @@ const actions = {
         dispatch("flavors/getTeamFlavors", { tenant }),
         dispatch("images/getTeamImages", { tenant }),
         dispatch("instances/getTeamInstances", { tenant }),
-        dispatch("keyPairs/getTeamKeyPairs", { tenant }),
         dispatch("volumeTypes/getTeamVolumeTypes", { tenant }),
         dispatch("volumes/getTeamVolumes", { tenant }),
       ]);
@@ -54,8 +54,22 @@ const actions = {
     }
   },
 
+  async fetchUserSpecificData({ dispatch }) {
+    /* Fetch all user specific data */
+    try {
+      await dispatch("keyPairs/getKeyPairs");
+    } catch (err) {
+      const msg = `Error fetching user data`;
+      if (err.response && err.response.data.hasOwnProperty("detail")) {
+        throw new Error(`${msg}: ${err.response.data.detail}`);
+      } else {
+        throw new Error(`${msg}: ${err.message}`);
+      }
+    }
+  },
+
   async fetchAll({ commit, dispatch, getters }) {
-    const tenants = getters.tenants; // store value, active team/tenants may have changed by the time function returns
+    const tenants = getters.tenants; // remember, active team/tenants may have changed by the time function returns
     if (!getters.team.initialized) {
       await dispatch("fetchTeamSpecificData"); // Will throw on err
       commit("setTeamInitialized");

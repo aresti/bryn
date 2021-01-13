@@ -1,7 +1,7 @@
 import { axios, apiRoutes } from "@/api";
 import {
   updateTeamCollection,
-  createFilterByIdGetter,
+  createFindByIdGetter,
   createFilterByTenantGetter,
 } from "@/utils/store";
 
@@ -19,7 +19,7 @@ const mutations = {
 
 const getters = {
   getFlavorById(state) {
-    return createFilterByIdGetter(state.all);
+    return createFindByIdGetter(state.all);
   },
   getFlavorsForTenant(state) {
     return createFilterByTenantGetter(state.all);

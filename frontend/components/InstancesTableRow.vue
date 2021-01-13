@@ -59,9 +59,7 @@
 
 <script>
 import { minutesSince } from "@/utils";
-
 import { formatDistanceToNow } from "date-fns";
-import { useToast } from "vue-toastification";
 import { mapActions, mapGetters } from "vuex";
 
 const statusColorMap = {
@@ -119,11 +117,10 @@ const stateTransitions = {
 };
 
 export default {
-  setup() {
-    const toast = useToast();
-    return { toast };
-  },
+  // Composition
+  inject: ["toast"],
 
+  // Interface
   props: {
     instance: {
       type: Object,
@@ -131,6 +128,7 @@ export default {
     },
   },
 
+  // Local state
   data() {
     return {
       confirmAction: null,
@@ -169,12 +167,14 @@ export default {
     },
   },
 
+  // Non-reactive
   methods: {
     ...mapActions("instances", [
       "deleteInstance",
       "fetchInstance",
       "targetInstanceStatus",
     ]),
+
     onActionClick(action) {
       if (action.confirm) {
         this.confirmAction = action;
@@ -182,13 +182,16 @@ export default {
         this.performAction(action);
       }
     },
+
     onCancelAction() {
       this.confirmAction = null;
     },
+
     async onConfirmAction() {
       await this.performAction(this.confirmAction);
       this.confirmAction = null;
     },
+
     async performAction(action) {
       if (this.actionProcessing) {
         return;

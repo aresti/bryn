@@ -38,15 +38,13 @@
 </template>
 
 <script>
-import { useToast } from "vue-toastification";
 import { mapActions, mapGetters } from "vuex";
 
 export default {
-  setup() {
-    const toast = useToast();
-    return { toast };
-  },
+  // Composition
+  inject: ["toast"],
 
+  // Local state
   data() {
     return {
       confirmDeleteInvitation: null,
@@ -59,6 +57,7 @@ export default {
     ...mapGetters("invitations", ["allInvitations"]),
   },
 
+  // Non-reactive
   methods: {
     ...mapActions("invitations", ["deleteInvitation"]),
     onDelete(invitation) {

@@ -28,25 +28,24 @@ import {
 } from "@/utils/validators";
 
 import VueMarkdownIt from "vue3-markdown-it";
-import { useToast } from "vue-toastification";
 import { mapState, mapActions, mapGetters } from "vuex";
 
 export default {
-  setup() {
-    const toast = useToast();
-    return { toast };
-  },
-
-  mixins: [formValidationMixin],
-
-  emits: {
-    "close-modal": null,
-  },
-
+  // Dependencies
   components: {
     VueMarkdownIt,
   },
 
+  // Composition
+  mixins: [formValidationMixin],
+  inject: ["toast"],
+
+  // Interface
+  emits: {
+    "close-modal": null,
+  },
+
+  // Local state
   data() {
     return {
       guidance,
@@ -140,11 +139,38 @@ export default {
     },
   },
 
+  // Events
+  watch: {
+    selectedTenant: {
+      handler(_new, _old) {
+        this.form.flavor.value = "";
+        this.form.flavor.options = this.formMapToOptions(this.flavors);
+        this.form.image.value = "";
+        this.form.image.options = this.formMapToOptions(this.images);
+        this.form.keypair.value = "";
+        this.form.keypair.options = this.formMapToOptions(this.keypairs);
+      },
+      immediate: true,
+    },
+  },
+
+  mounted() {
+    this.form.tenant.options = this.tenantOptions;
+    if (this.filterTenantId) {
+      this.form.tenant.value = this.filterTenantId;
+    } else if (this.tenants.length === 1) {
+      this.form.tenant.value = this.tenants[0].id;
+    }
+  },
+
+  // Non-reactive
   methods: {
     ...mapActions("instances", ["createInstance"]),
+
     closeModal() {
       this.$emit("close-modal");
     },
+
     async submitForm() {
       this.formValidate();
       if (this.submitted || !this.formIsValid) {
@@ -169,35 +195,13 @@ export default {
         this.submitted = false;
       }
     },
+
     isUniqueName(value) {
       if (!value || !this.invalidNames.includes(value)) {
         return true;
       }
       throw new ValidationError("A unique name is required");
     },
-  },
-
-  watch: {
-    selectedTenant: {
-      handler(_new, _old) {
-        this.form.flavor.value = "";
-        this.form.flavor.options = this.formMapToOptions(this.flavors);
-        this.form.image.value = "";
-        this.form.image.options = this.formMapToOptions(this.images);
-        this.form.keypair.value = "";
-        this.form.keypair.options = this.formMapToOptions(this.keypairs);
-      },
-      immediate: true,
-    },
-  },
-
-  mounted() {
-    this.form.tenant.options = this.tenantOptions;
-    if (this.filterTenantId) {
-      this.form.tenant.value = this.filterTenantId;
-    } else if (this.tenants.length === 1) {
-      this.form.tenant.value = this.tenants[0].id;
-    }
   },
 };
 </script>

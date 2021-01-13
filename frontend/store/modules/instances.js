@@ -3,7 +3,7 @@ import {
   pollingUtils,
   updateTeamCollection,
   collectionForTeamId,
-  createFilterByIdGetter,
+  createFindByIdGetter,
   createFilterByTenantGetter,
 } from "@/utils/store";
 
@@ -47,7 +47,7 @@ const mutations = {
 
 const getters = {
   getInstanceById(state) {
-    return createFilterByIdGetter(state.all);
+    return createFindByIdGetter(state.all);
   },
   getInstanceIsPolling(state) {
     return pollingUtils.createEntityIsPollingGetter(state);

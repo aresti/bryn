@@ -22,7 +22,6 @@
 </template>
 
 <script>
-import { useToast } from "vue-toastification";
 import VueMarkdownIt from "vue3-markdown-it";
 
 import formValidationMixin from "@/mixins/formValidationMixin";
@@ -36,11 +35,6 @@ import {
 } from "@/utils/validators";
 
 export default {
-  setup() {
-    const toast = useToast();
-    return { toast };
-  },
-
   components: {
     VueMarkdownIt,
   },
@@ -55,14 +49,6 @@ export default {
     return {
       guidance,
       form: {
-        tenant: {
-          label: "Region",
-          value: "",
-          element: "select",
-          options: [],
-          iconClasses: ["fas", "fa-globe-europe"],
-          validators: [isRequired],
-        },
         publicKey: {
           label: "Public Key",
           value: "",
@@ -81,34 +67,17 @@ export default {
     };
   },
 
+  inject: ["toast"],
+
   computed: {
-    ...mapState(["filterTenantId"]),
-    ...mapGetters(["tenants", "getTenantById", "getRegionNameForTenant"]),
-    ...mapGetters("keyPairs", ["getKeyPairsForTenant"]),
-    selectedTenant() {
-      return this.getTenantById(parseInt(this.form.tenant.value));
-    },
-    tenantOptions() {
-      return this.tenants.map((tenant) => {
-        return {
-          value: tenant.id,
-          label: this.getRegionNameForTenant(tenant),
-        };
-      });
-    },
+    ...mapState("keyPairs", {
+      keyPairs: (state) => state.all,
+    }),
     invalidNames() {
-      return this.selectedTenant
-        ? this.getKeyPairsForTenant(this.selectedTenant).map(
-            (keypair) => keypair.name
-          )
-        : [];
+      return this.keyPairs.map((keypair) => keypair.name);
     },
     invalidPublicKeys() {
-      return this.selectedTenant
-        ? this.getKeyPairsForTenant(this.selectedTenant).map(
-            (keypair) => keypair.publicKey
-          )
-        : [];
+      return this.keyPairs.map((keypair) => keypair.publicKey);
     },
   },
 
@@ -151,22 +120,13 @@ export default {
       if (!value || !this.invalidPublicKeys.includes(value)) {
         return true;
       }
-      const existing = this.getKeyPairsForTenant(this.selectedTenant).find(
+      const existing = this.keyPairs.find(
         (existing) => existing.publicKey === value
       );
       throw new ValidationError(
         `You've already stored this public key as '${existing.name}'`
       );
     },
-  },
-
-  mounted() {
-    this.form.tenant.options = this.tenantOptions;
-    if (this.filterTenantId) {
-      this.form.tenant.value = this.filterTenantId;
-    } else if (this.tenants.length === 1) {
-      this.form.tenant.value = this.tenants[0].id;
-    }
   },
 };
 </script>

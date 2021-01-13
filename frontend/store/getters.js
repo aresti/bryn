@@ -1,4 +1,4 @@
-import { createFilterByIdGetter } from "@/utils/store";
+import { createFindByIdGetter } from "@/utils/store";
 
 export const getters = {
   userFullName(state) {
@@ -24,10 +24,10 @@ export const getters = {
     return getters.tenants.find((tenant) => tenant.id === state.filterTenantId);
   },
   getTenantById(_state, getters) {
-    return createFilterByIdGetter(getters.tenants);
+    return createFindByIdGetter(getters.tenants);
   },
   getRegionById(state) {
-    return createFilterByIdGetter(state.regions);
+    return createFindByIdGetter(state.regions);
   },
   getRegionNameForTenant(_state, getters) {
     return (tenant) => {

@@ -34,7 +34,6 @@
 
 <script>
 import { mapActions, mapGetters, mapState } from "vuex";
-import { useToast } from "vue-toastification";
 
 import TheDashboardContent from "@/components/TheDashboardContent";
 import TheDashboardHeader from "@/components/TheDashboardHeader";
@@ -42,11 +41,7 @@ import TheDashboardMenu from "@/components/TheDashboardMenu";
 import TheFooter from "@/components/TheFooter";
 
 export default {
-  setup() {
-    const toast = useToast();
-    return { toast };
-  },
-
+  // Template dependencies
   components: {
     TheDashboardContent,
     TheDashboardHeader,
@@ -54,6 +49,10 @@ export default {
     TheFooter,
   },
 
+  // Composition
+  inject: ["toast"],
+
+  // Local state
   data() {
     return {
       erroredOnGet: false,
@@ -71,6 +70,7 @@ export default {
     ]),
   },
 
+  // Events
   watch: {
     async team(_newTeam, _oldTeam) {
       this.getTeamData();
@@ -89,8 +89,10 @@ export default {
     }
   },
 
+  // Non-reactive
   methods: {
     ...mapActions(["setActiveTeam", "fetchAll"]),
+
     setTeamForRoute(route) {
       /* Set the activeTeamId state from route params */
       const toTeam = this.teams.find(
@@ -104,24 +106,34 @@ export default {
       }
       this.setActiveTeam(toTeam);
     },
+
     async getTeamData() {
       /* Fetch data for the active team */
       this.erroredOnGet = false;
 
-      // Result is as per Promise.allSettled
-      const results = await this.fetchAll();
+      try {
+        const results = await this.fetchAll();
+        /*
+         * Result is per-tenant, from Promise.allSettled
+         * Trigger toasts for errors
+         */
+        results
+          .filter((result) => result.status == "rejected")
+          .map((result) => {
+            this.toast.error(result.reason.message);
+          });
 
-      // Trigger toasts for errored tenants
-      results
-        .filter((result) => result.status == "rejected")
-        .map((result) => {
-          this.toast.error(result.reason.message);
-        });
-
-      // Set dashboard state
-      this.erroredOnGet = results.every(
-        (result) => result.status == "rejected"
-      );
+        // Set dashboard state
+        this.erroredOnGet = results.every(
+          (result) => result.status == "rejected"
+        );
+      } catch (err) {
+        // Error raised by fetchTeamSpecificData
+        this.erroredOnGet = true;
+        this.toast.error(
+          `Failed to fetch team data: ${err.response?.data.detail ?? err}`
+        );
+      }
     },
   },
 };

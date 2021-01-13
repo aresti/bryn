@@ -19,8 +19,6 @@
 </template>
 
 <script>
-import { useToast } from "vue-toastification";
-
 import formValidationMixin from "@/mixins/formValidationMixin";
 import { mapActions, mapState, mapGetters } from "vuex";
 import {
@@ -30,17 +28,16 @@ import {
 } from "@/utils/validators";
 
 export default {
-  setup() {
-    const toast = useToast();
-    return { toast };
-  },
-
+  // Composition
+  inject: ["toast"],
   mixins: [formValidationMixin],
 
+  // Interface
   emits: {
     "close-modal": null,
   },
 
+  // Local state
   data() {
     return {
       form: {
@@ -70,6 +67,7 @@ export default {
     },
   },
 
+  // Non-reactive
   methods: {
     ...mapActions("invitations", ["createInvitation"]),
     isUniqueEmail(value) {

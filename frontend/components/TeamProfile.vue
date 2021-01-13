@@ -13,17 +13,14 @@
 <script>
 import { mapActions, mapGetters } from "vuex";
 import { isRequired } from "@/utils/validators";
-import { useToast } from "vue-toastification";
 import formValidationMixin from "@/mixins/formValidationMixin";
 
 export default {
-  setup() {
-    const toast = useToast();
-    return { toast };
-  },
-
+  // Composition
+  inject: ["toast"],
   mixins: [formValidationMixin],
 
+  // Local state
   data() {
     return {
       form: {
@@ -52,6 +49,19 @@ export default {
     ...mapGetters(["team", "userIsAdmin"]),
   },
 
+  // Events
+  watch: {
+    team: {
+      handler(_new, _old) {
+        this.form.institution.value = this.team.institution;
+        this.form.department.value = this.team.department;
+        this.form.phoneNumber.value = this.team.phoneNumber;
+      },
+      immediate: true,
+    },
+  },
+
+  // Non-reactive
   methods: {
     ...mapActions(["updateTeam"]),
     async onSubmit() {
@@ -77,17 +87,6 @@ export default {
       } finally {
         this.submitted = false;
       }
-    },
-  },
-
-  watch: {
-    team: {
-      handler(_new, _old) {
-        this.form.institution.value = this.team.institution;
-        this.form.department.value = this.team.department;
-        this.form.phoneNumber.value = this.team.phoneNumber;
-      },
-      immediate: true,
     },
   },
 };

@@ -29,7 +29,7 @@ function collectionForTenantId(collection, id) {
   return collection.filter((item) => item.tenant === id);
 }
 
-function createFilterByIdGetter(collection) {
+function createFindByIdGetter(collection) {
   return (id) => {
     return collection.find((item) => item.id === id);
   };
@@ -155,7 +155,7 @@ const pollingUtils = {
 
 export {
   pollingUtils,
-  createFilterByIdGetter,
+  createFindByIdGetter,
   createFilterByTenantGetter,
   collectionForTeamId,
   collectionForTenantId,

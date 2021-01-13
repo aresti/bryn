@@ -2,11 +2,6 @@
   <div>
     <div class="block mb-3">
       <base-level>
-        <template v-slot:left>
-          <base-level-item>
-            <tenant-filter-tabs />
-          </base-level-item>
-        </template>
         <template v-slot:right>
           <base-level-item>
             <base-button-create @click="showNewKeyPairModal = true">
@@ -16,16 +11,10 @@
         </template>
       </base-level>
     </div>
-    <key-pairs-table
-      :keyPairs="keyPairsForFilterTenant"
-      @delete-keypair="onDeleteKeyPair"
-    />
+    <key-pairs-table :keyPairs="keyPairs" @delete-keypair="onDeleteKeyPair" />
 
-    <div
-      v-if="!keyPairsForFilterTenant.length"
-      class="content has-text-centered"
-    >
-      <h4 class="subtitle">{{ noItemsMessage }}</h4>
+    <div v-if="!keyPairs.length" class="content has-text-centered">
+      <h4 class="subtitle">You haven't created any SSH keys yet</h4>
     </div>
 
     <key-pairs-new-key-pair-modal
@@ -46,25 +35,22 @@
 </template>
 
 <script>
-import { useToast } from "vue-toastification";
-import { mapActions, mapGetters, mapState } from "vuex";
+import { mapActions, mapState } from "vuex";
 
 import KeyPairsNewKeyPairModal from "@/components/KeyPairsNewKeyPairModal";
 import KeyPairsTable from "@/components/KeyPairsTable";
-import TenantFilterTabs from "@/components/TenantFilterTabs";
 
 export default {
-  setup() {
-    const toast = useToast();
-    return { toast };
-  },
-
+  // Template dependencies
   components: {
     KeyPairsNewKeyPairModal,
     KeyPairsTable,
-    TenantFilterTabs,
   },
 
+  // Composition
+  inject: ["toast"],
+
+  // Local state
   data() {
     return {
       showNewKeyPairModal: false,
@@ -73,20 +59,11 @@ export default {
     };
   },
 
-  computed: {
-    ...mapGetters(["filterTenant", "getRegionNameForTenant"]),
-    ...mapGetters("keyPairs", ["keyPairsForFilterTenant"]),
-    noItemsMessage() {
-      if (this.filterTenant != null) {
-        return `You haven't created any SSH keys at ${this.getRegionNameForTenant(
-          this.filterTenant
-        )} yet`;
-      } else {
-        return "You haven't created any SSH keys yet";
-      }
-    },
-  },
+  computed: mapState("keyPairs", {
+    keyPairs: (state) => state.all,
+  }),
 
+  // Non-reactive
   methods: {
     ...mapActions("keyPairs", ["deleteKeyPair"]),
     onDeleteKeyPair(keyPair) {

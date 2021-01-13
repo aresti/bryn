@@ -10,11 +10,7 @@
     <template v-slot:body>
       <tr v-for="(keyPair, index) in keyPairs" :key="index">
         <td>
-          <span class="has-text-weight-semibold">{{ keyPair.name }}</span
-          ><br />
-          <span class="is-size-7">
-            {{ getRegionNameForTenant(getTenantById(keyPair.tenant)) }}</span
-          >
+          <span class="has-text-weight-semibold">{{ keyPair.name }}</span>
         </td>
         <td class="is-family-monospace">{{ keyPair.fingerprint }}</td>
         <td>
@@ -63,10 +59,6 @@ export default {
     return {
       headings: ["Name", "Fingerprint", ""],
     };
-  },
-
-  computed: {
-    ...mapGetters(["getRegionNameForTenant", "getTenantById"]),
   },
 };
 </script>

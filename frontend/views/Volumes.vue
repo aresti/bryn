@@ -98,7 +98,6 @@
 </template>
 
 <script>
-import { useToast } from "vue-toastification";
 import { mapActions, mapGetters, mapState } from "vuex";
 
 import VolumesAttachModal from "@/components/VolumesAttachModal";
@@ -107,11 +106,7 @@ import VolumesTable from "@/components/VolumesTable";
 import TenantFilterTabs from "@/components/TenantFilterTabs";
 
 export default {
-  setup() {
-    const toast = useToast();
-    return { toast };
-  },
-
+  // Template dependencies
   components: {
     VolumesAttachModal,
     VolumesNewVolumeModal,
@@ -119,6 +114,10 @@ export default {
     TenantFilterTabs,
   },
 
+  // Composition
+  inject: ["toast"],
+
+  // Local state
   data() {
     return {
       attachVolume: null,
@@ -137,6 +136,7 @@ export default {
     }),
     ...mapGetters(["filterTenant", "getRegionNameForTenant"]),
     ...mapGetters("volumes", ["volumesForFilterTenant"]),
+
     filteredVolumes() {
       return this.showBootable
         ? this.volumesForFilterTenant
@@ -153,6 +153,7 @@ export default {
     },
   },
 
+  // Non-reactive
   methods: {
     ...mapActions("volumes", ["deleteVolume", "detachVolume"]),
 
@@ -165,9 +166,11 @@ export default {
     onDeleteVolume(volume) {
       this.confirmDeleteVolume = volume;
     },
+
     onCancelDelete() {
       this.confirmDeleteVolume = null;
     },
+
     async onConfirmDelete() {
       if (this.deleteProcessing) {
         return;
@@ -193,9 +196,11 @@ export default {
     onDetachVolume(volume) {
       this.confirmDetachVolume = volume;
     },
+
     onCancelDetach() {
       this.confirmDetachVolume = null;
     },
+
     async onConfirmDetach() {
       if (this.detachProcessing) {
         return;

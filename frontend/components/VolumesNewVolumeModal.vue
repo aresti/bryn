@@ -33,27 +33,25 @@ import {
   ValidationError,
 } from "@/utils/validators";
 import guidance from "@/content/volumes/newVolumeGuidance.md";
-
 import VueMarkdownIt from "vue3-markdown-it";
-import { useToast } from "vue-toastification";
 import { mapState, mapActions, mapGetters } from "vuex";
 
 export default {
-  setup() {
-    const toast = useToast();
-    return { toast };
-  },
-
-  mixins: [formValidationMixin],
-
-  emits: {
-    "close-modal": null,
-  },
-
+  // Template dependencies
   components: {
     VueMarkdownIt,
   },
 
+  // Composition
+  inject: ["toast"],
+  mixins: [formValidationMixin],
+
+  // Interface
+  emits: {
+    "close-modal": null,
+  },
+
+  // Local state
   data() {
     return {
       guidance,
@@ -99,11 +97,13 @@ export default {
     ...mapGetters(["tenants", "getTenantById", "getRegionNameForTenant"]),
     ...mapGetters("volumes", ["getVolumesForTenant"]),
     ...mapGetters("volumeTypes", ["getVolumeTypesForTenant"]),
+
     selectedTenant() {
       return this.form.tenant.value
         ? this.getTenantById(parseInt(this.form.tenant.value))
         : null;
     },
+
     sizeOptions() {
       return [250, 500, 1000, 2000, 5000, 10000, 20000].map((size) => {
         return {
@@ -112,6 +112,7 @@ export default {
         };
       });
     },
+
     tenantOptions() {
       return this.tenants.map((tenant) => {
         return {
@@ -120,14 +121,17 @@ export default {
         };
       });
     },
+
     volumeTypes() {
       return this.selectedTenant
         ? this.getVolumeTypesForTenant(this.selectedTenant)
         : [];
     },
+
     defaultVolumeTypeId() {
       return this.volumeTypes.find((vt) => vt.isDefault === true)?.id;
     },
+
     invalidNames() {
       return this.selectedTenant
         ? this.getVolumesForTenant(this.selectedTenant).map(
@@ -137,11 +141,35 @@ export default {
     },
   },
 
+  // Events
+  watch: {
+    selectedTenant: {
+      handler(_new, _old) {
+        this.form.volumeType.value = this.defaultVolumeTypeId;
+        this.form.volumeType.options = this.formMapToOptions(this.volumeTypes);
+      },
+      immediate: true,
+    },
+  },
+
+  mounted() {
+    this.form.tenant.options = this.tenantOptions;
+    if (this.filterTenantId) {
+      this.form.tenant.value = this.filterTenantId;
+    } else if (this.tenants.length === 1) {
+      this.form.tenant.value = this.tenants[0].id;
+    }
+    this.form.size.options = this.sizeOptions;
+  },
+
+  // Non-reactive
   methods: {
     ...mapActions("volumes", ["createVolume"]),
+
     closeModal() {
       this.$emit("close-modal");
     },
+
     async submitForm() {
       this.formValidate();
       if (this.submitted || !this.formIsValid) {
@@ -166,32 +194,13 @@ export default {
         this.submitted = false;
       }
     },
+
     isUniqueName(value) {
       if (!value || !this.invalidNames.includes(value)) {
         return true;
       }
       throw new ValidationError("A unique name is required");
     },
-  },
-
-  watch: {
-    selectedTenant: {
-      handler(_new, _old) {
-        this.form.volumeType.value = this.defaultVolumeTypeId;
-        this.form.volumeType.options = this.formMapToOptions(this.volumeTypes);
-      },
-      immediate: true,
-    },
-  },
-
-  mounted() {
-    this.form.tenant.options = this.tenantOptions;
-    if (this.filterTenantId) {
-      this.form.tenant.value = this.filterTenantId;
-    } else if (this.tenants.length === 1) {
-      this.form.tenant.value = this.tenants[0].id;
-    }
-    this.form.size.options = this.sizeOptions;
   },
 };
 </script>

@@ -31,13 +31,20 @@ import formValidationMixin from "@/mixins/formValidationMixin";
 import guidance from "@/content/volumes/newVolumeGuidance.md";
 
 import VueMarkdownIt from "vue3-markdown-it";
-import { useToast } from "vue-toastification";
 import { isRequired } from "@/utils/validators";
 import { mapActions, mapGetters } from "vuex";
 
 export default {
+  // Template dependencies
+  components: {
+    VueMarkdownIt,
+  },
+
+  // Composition
+  inject: ["toast"],
   mixins: [formValidationMixin],
 
+  // Interface
   props: {
     volume: {
       type: Object,
@@ -49,15 +56,7 @@ export default {
     "close-modal": null,
   },
 
-  components: {
-    VueMarkdownIt,
-  },
-
-  setup() {
-    const toast = useToast();
-    return { toast };
-  },
-
+  // Local state
   data() {
     return {
       guidance,
@@ -88,6 +87,12 @@ export default {
     },
   },
 
+  // Events
+  mounted() {
+    this.form.server.options = this.serverOptions;
+  },
+
+  // Non-reactive
   methods: {
     ...mapActions("volumes", ["attachVolume"]),
     closeModal() {
@@ -121,10 +126,6 @@ export default {
         this.submitted = false;
       }
     },
-  },
-
-  mounted() {
-    this.form.server.options = this.serverOptions;
   },
 };
 </script>

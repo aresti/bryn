@@ -51,7 +51,6 @@
 </template>
 
 <script>
-import { useToast } from "vue-toastification";
 import { mapGetters, mapState } from "vuex";
 
 import InstancesNewInstanceModal from "@/components/InstancesNewInstanceModal";
@@ -59,17 +58,17 @@ import InstancesTable from "@/components/InstancesTable";
 import TenantFilterTabs from "@/components/TenantFilterTabs";
 
 export default {
-  setup() {
-    const toast = useToast();
-    return { toast };
-  },
-
+  // Template dependencies
   components: {
     TenantFilterTabs,
     InstancesTable,
     InstancesNewInstanceModal,
   },
 
+  // Composition
+  inject: ["toast"],
+
+  // Local state
   data() {
     return {
       showShelved: false,

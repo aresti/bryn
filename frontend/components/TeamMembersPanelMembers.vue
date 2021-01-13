@@ -37,15 +37,13 @@
 </template>
 
 <script>
-import { useToast } from "vue-toastification";
 import { mapActions, mapGetters } from "vuex";
 
 export default {
-  setup() {
-    const toast = useToast();
-    return { toast };
-  },
+  // Composition
+  inject: ["toast"],
 
+  // Local state
   data() {
     return {
       confirmDeleteTeamMember: null,
@@ -58,6 +56,7 @@ export default {
     ...mapGetters("teamMembers", ["allTeamMembers"]),
   },
 
+  // Non-reactive
   methods: {
     ...mapActions("teamMembers", ["deleteTeamMember"]),
     fullName(teamMember) {
