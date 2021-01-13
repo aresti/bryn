@@ -6,7 +6,7 @@ from rest_framework import exceptions as drf_exceptions
 from rest_framework.response import Response
 
 from .service import OpenstackService, ServiceUnavailable, OpenstackException
-from .models import Tenant
+from .models import Tenant, KeyPair
 from .serializers import (
     AttachmentSerializer,
     FlavorSerializer,
@@ -295,22 +295,27 @@ class ImageListView(OpenstackListView):
     service = OpenstackService.Services.IMAGES
 
 
-class KeyPairDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
-    """
-    SSH key pair detail view.
-    """
-
-    serializer_class = KeyPairSerializer
-    service = OpenstackService.Services.KEYPAIRS
-
-
-class KeyPairListView(OpenstackListView, OpenstackCreateMixin):
+class KeyPairListView(generics.ListCreateAPIView):
     """
     SSH key pair list view.
     """
 
     serializer_class = KeyPairSerializer
-    service = OpenstackService.Services.KEYPAIRS
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return user.keypairs.all()
+
+
+class KeyPairDetailView(generics.RetrieveDestroyAPIView):
+    """
+    SSH key pair detail view.
+    """
+
+    serializer_class = KeyPairSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = KeyPair.objects.all()
 
 
 def get_volume_transform_func(self, tenant):

@@ -16,7 +16,7 @@ urlpatterns = [
     path("images/", views.ImageListView.as_view(), name="api-image-list",),
     path("keypairs/", views.KeyPairListView.as_view(), name="api-keypair-list",),
     path(
-        "keypairs/<int:tenant_id>/<str:entity_id>",
+        "keypairs/<uuid:pk>",
         views.KeyPairDetailView.as_view(),
         name="api-keypair-detail",
     ),

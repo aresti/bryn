@@ -1,10 +1,8 @@
-import sshpubkeys
-
 from rest_framework import serializers
 
-from userdb.models import Region
 from . import INSTANCE_STATUS_VALUES
-from .models import Tenant
+from .models import Tenant, KeyPair
+from userdb.models import Region
 
 
 class RegionSerializer(serializers.ModelSerializer):
@@ -45,18 +43,12 @@ class FlavorSerializer(OpenstackBaseSerializer):
     name = serializers.CharField()
 
 
-class KeyPairSerializer(OpenstackBaseSerializer):
-    id = serializers.CharField(read_only=True)
-    name = serializers.CharField()
-    fingerprint = serializers.CharField(read_only=True)
-    public_key = serializers.CharField()
+class KeyPairSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
-    def validate_public_key(self, value):
-        try:
-            sshpubkeys.SSHKey(value).parse()
-        except sshpubkeys.InvalidKeyException:
-            raise serializers.ValidationError("Invalid SSH key")
-        return value
+    class Meta:
+        model = KeyPair
+        fields = "__all__"
 
 
 class AttachmentSerializer(serializers.Serializer):

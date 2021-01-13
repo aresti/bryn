@@ -1,8 +1,14 @@
-from django.db import models
+import uuid
+
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
 from django_slack import slack_message
+from sshpubkeys import SSHKey
 
+from .validators import validate_public_key
 from userdb.models import Team, Region
 
 
@@ -29,7 +35,32 @@ class Tenant(models.Model):
             return self.region.regionsettings.public_network_id
 
     def __str__(self):
-        return "%s" % (self.get_tenant_name())
+        return self.get_tenant_name()
+
+
+class KeyPair(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="keypairs",
+        related_query_name="keypair",
+        on_delete=models.CASCADE,
+    )
+    name = models.CharField(_("Keypair name"), max_length=50, unique=True)
+    public_key = models.TextField(
+        _("SSH public key"), unique=True, validators=[validate_public_key]
+    )
+    fingerprint = models.CharField(max_length=47, editable=False)
+
+    def save(self, *args, **kwargs):
+        # Set fingerprint
+        ssh = SSHKey(self.public_key)
+        ssh.parse()
+        self.fingerprint = ssh.hash_md5()[4:]
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
 
 
 class ActionLog(models.Model):
