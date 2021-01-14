@@ -96,11 +96,14 @@ export default {
 
   computed: {
     ...mapState(["filterTenantId"]),
+    ...mapState("keyPairs", {
+      keyPairs: (state) => state.all,
+    }),
     ...mapGetters(["tenants", "getTenantById", "getRegionNameForTenant"]),
     ...mapGetters("flavors", ["getFlavorsForTenant"]),
     ...mapGetters("images", ["getImagesForTenant"]),
     ...mapGetters("instances", ["getInstancesForTenant"]),
-    ...mapGetters("keyPairs", ["getKeyPairsForTenant"]),
+    ...mapGetters("keyPairs", ["defaultKeyPair"]),
 
     selectedTenant() {
       return this.form.tenant.value
@@ -125,11 +128,6 @@ export default {
         ? this.getFlavorsForTenant(this.selectedTenant)
         : [];
     },
-    keypairs() {
-      return this.selectedTenant
-        ? this.getKeyPairsForTenant(this.selectedTenant)
-        : [];
-    },
     invalidNames() {
       return this.selectedTenant
         ? this.getInstancesForTenant(this.selectedTenant).map(
@@ -147,8 +145,6 @@ export default {
         this.form.flavor.options = this.formMapToOptions(this.flavors);
         this.form.image.value = "";
         this.form.image.options = this.formMapToOptions(this.images);
-        this.form.keypair.value = "";
-        this.form.keypair.options = this.formMapToOptions(this.keypairs);
       },
       immediate: true,
     },
@@ -160,6 +156,11 @@ export default {
       this.form.tenant.value = this.filterTenantId;
     } else if (this.tenants.length === 1) {
       this.form.tenant.value = this.tenants[0].id;
+    }
+
+    this.form.keypair.options = this.formMapToOptions(this.keyPairs);
+    if (this.defaultKeyPair != null) {
+      this.form.keypair.value = this.defaultKeyPair.id;
     }
   },
 

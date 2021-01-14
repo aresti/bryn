@@ -29,6 +29,14 @@ const getters = {
   getKeyPairIsDefault(_state, _getters, rootState) {
     return ({ id }) => id === rootState.user.profile.defaultKeypair;
   },
+  defaultKeyPair(_state, getters, rootState) {
+    const defaultKeyPairId = rootState.user.profile.defaultKeypair;
+    if (defaultKeyPairId == null) {
+      return null;
+    } else {
+      return getters.getKeyPairById(defaultKeyPairId);
+    }
+  },
 };
 
 const actions = {
