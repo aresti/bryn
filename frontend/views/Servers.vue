@@ -26,7 +26,7 @@
             </base-button>
           </base-level-item>
           <base-level-item>
-            <base-button-create @click="showInstancesNewInstanceModal = true">
+            <base-button-create @click="onNewServerClick">
               New server
             </base-button-create>
           </base-level-item>
@@ -45,7 +45,13 @@
 
     <instances-new-instance-modal
       v-if="showInstancesNewInstanceModal"
-      @closeModal="showInstancesNewInstanceModal = false"
+      @close-modal="showInstancesNewInstanceModal = false"
+    />
+
+    <key-pairs-new-key-pair-modal
+      v-if="showKeyPairsNewKeyPairModal"
+      submit-button-text="Add Key and Continue"
+      @close-modal="onKeyPairModalClose"
     />
   </div>
 </template>
@@ -55,14 +61,16 @@ import { mapGetters, mapState } from "vuex";
 
 import InstancesNewInstanceModal from "@/components/InstancesNewInstanceModal";
 import InstancesTable from "@/components/InstancesTable";
+import KeyPairsNewKeyPairModal from "@/components/KeyPairsNewKeyPairModal";
 import TenantFilterTabs from "@/components/TenantFilterTabs";
 
 export default {
   // Template dependencies
   components: {
-    TenantFilterTabs,
     InstancesTable,
     InstancesNewInstanceModal,
+    KeyPairsNewKeyPairModal,
+    TenantFilterTabs,
   },
 
   // Composition
@@ -72,6 +80,7 @@ export default {
   data() {
     return {
       showShelved: false,
+      showKeyPairsNewKeyPairModal: false,
       showInstancesNewInstanceModal: false,
     };
   },
@@ -79,6 +88,7 @@ export default {
   computed: {
     ...mapState({
       loading: (state) => state.instances.loading,
+      keyPairs: (state) => state.keyPairs.all,
     }),
     ...mapGetters(["filterTenant", "getRegionNameForTenant"]),
     ...mapGetters("instances", [
@@ -103,6 +113,25 @@ export default {
         )} yet`;
       } else {
         return "You haven't created any servers yet";
+      }
+    },
+  },
+
+  // Non-reactive
+  methods: {
+    onNewServerClick() {
+      // Handle no-keys for user
+      if (this.keyPairs.length) {
+        this.showInstancesNewInstanceModal = true;
+      } else {
+        this.showKeyPairsNewKeyPairModal = true;
+      }
+    },
+    onKeyPairModalClose() {
+      this.showKeyPairsNewKeyPairModal = false;
+      if (this.keyPairs.length) {
+        // User created a keypair, continue to server modal
+        this.showInstancesNewInstanceModal = true;
       }
     },
   },

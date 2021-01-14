@@ -148,6 +148,20 @@ export default {
       },
       immediate: true,
     },
+
+    kayPairs: {
+      handler(_new, _old) {
+        this.form.keypair.options = this.formMapToOptions(this.keyPairs);
+      },
+      immediate: true,
+    },
+
+    defaultKeyPair: {
+      handler(_new, _old) {
+        this.form.keypair.value = this.defaultKeyPair?.id ?? "";
+      },
+      immediate: true,
+    },
   },
 
   mounted() {
@@ -156,11 +170,6 @@ export default {
       this.form.tenant.value = this.filterTenantId;
     } else if (this.tenants.length === 1) {
       this.form.tenant.value = this.tenants[0].id;
-    }
-
-    this.form.keypair.options = this.formMapToOptions(this.keyPairs);
-    if (this.defaultKeyPair != null) {
-      this.form.keypair.value = this.defaultKeyPair.id;
     }
   },
 

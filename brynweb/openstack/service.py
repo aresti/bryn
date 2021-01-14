@@ -10,6 +10,7 @@ from enum import Enum
 from rest_framework import exceptions as drf_exceptions
 from rest_framework import status
 
+from .models import KeyPair
 from . import auth_settings
 
 
@@ -101,6 +102,17 @@ class KeypairsService:
         return self.nova.keypairs.create(
             name=data.get("name"), public_key=data.get("public_key")
         )
+
+    def find_or_create_from_instance(self, instance):
+        """
+        Create an openstack KeyPair for the tenant, from the local instance,
+        unless it already exists.
+        Use instance id (UUID) for the openstack name.
+        """
+        for existing in self.get_list():
+            if existing.name == str(instance.id):
+                return existing
+        return self.create({"name": instance.id, "public_key": instance.public_key})
 
     def get(self, keypair_id):
         return self.nova.keypairs.get(keypair_id)
@@ -232,6 +244,10 @@ class ServersService:
         image = data["image"]
         keypair = data["keypair"]
         name = data["name"]
+
+        # Create keypair if it doesn't yet exist for this tenant
+        keypair_local = KeyPair.objects.get(pk=data["keypair"])
+        self.openstack.keypairs.find_or_create_from_instance(keypair_local)
 
         # Create boot volume
         volume = self.cinder.volumes.create(

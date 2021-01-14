@@ -9,7 +9,7 @@
       </p>
       <base-form-validated
         :form="form"
-        submitLabel="Add Key"
+        :submitLabel="submitButtonText"
         :submitted="submitted"
         :nonFieldErrors="nonFieldErrors"
         @submit="onSubmit"
@@ -35,11 +35,21 @@ import {
 } from "@/utils/validators";
 
 export default {
+  // Template dependencies
   components: {
     VueMarkdownIt,
   },
 
+  // Composition
   mixins: [formValidationMixin],
+
+  // Interface
+  props: {
+    submitButtonText: {
+      type: String,
+      default: "Add Key",
+    },
+  },
 
   emits: {
     "close-modal": null,
