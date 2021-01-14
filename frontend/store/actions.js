@@ -88,6 +88,20 @@ const actions = {
     const team = response.data;
     commit("updateTeam", team);
   },
+
+  async getUser({ commit }) {
+    const uri = apiRoutes.userProfile;
+    const response = await axios.get(uri);
+    const user = response.data;
+    commit("updateUser", user);
+  },
+
+  async updateUser({ commit }, userData) {
+    const uri = apiRoutes.userProfile;
+    const response = await axios.patch(uri, userData);
+    const user = response.data;
+    commit("updateUser", user);
+  },
 };
 
 export default actions;

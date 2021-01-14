@@ -8,7 +8,6 @@ import Volumes from "@/views/Volumes";
 import KeyPairs from "@/views/KeyPairs";
 import Team from "@/views/Team";
 import UserProfile from "@/views/UserProfile";
-import Licence from "@/views/Licence";
 
 const routes = [
   {
@@ -54,12 +53,6 @@ const routes = [
         component: UserProfile,
         meta: { displayName: "User Profile", menuSection: "admin" },
       },
-      // {
-      //   path: "licence",
-      //   name: "licence",
-      //   component: Licence,
-      //   meta: { displayName: "Licence", menuSection: "admin" },
-      // },
     ],
   },
   { path: "/:pathMatch(.*)*", name: "notfound", component: NotFound },

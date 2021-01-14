@@ -26,6 +26,9 @@ const getters = {
   getKeyPairById(state) {
     return createFindByIdGetter(state.all);
   },
+  getKeyPairIsDefault(_state, _getters, rootState) {
+    return ({ id }) => id === rootState.user.profile.defaultKeypair;
+  },
 };
 
 const actions = {
@@ -34,17 +37,30 @@ const actions = {
     const keyPairs = response.data;
     commit("setKeyPairs", keyPairs);
   },
-  async createKeyPair({ commit }, { name, publicKey }) {
+  async createKeyPair({ commit, dispatch, state }, { name, publicKey }) {
     const payload = { name, publicKey };
     const response = await axios.post(apiRoutes.keyPairs, payload);
     const keypair = response.data;
     commit("addKeyPair", keypair);
+    if (state.all.length == 1) {
+      // First is auto-set to default, update user data on frontend
+      dispatch("getUser", null, { root: true });
+    }
     return keypair;
   },
-  async deleteKeyPair({ commit }, { id }) {
-    const uri = `${apiRoutes.keyPairs}${id}`;
+  async deleteKeyPair({ commit, dispatch, getters }, keyPair) {
+    const uri = `${apiRoutes.keyPairs}${keyPair.id}`;
+    const wasDefault = getters.getKeyPairIsDefault(keyPair);
     await axios.delete(uri);
-    commit("removeKeyPairById", id);
+    commit("removeKeyPairById", keyPair.id);
+    if (wasDefault) {
+      // User default will have changed
+      dispatch("getUser", null, { root: true });
+    }
+  },
+  async setDefaultKeyPair({ dispatch }, { id }) {
+    const userData = { profile: { default_keypair: id } };
+    await dispatch("updateUser", userData, { root: true });
   },
 };
 

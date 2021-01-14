@@ -11,10 +11,27 @@
       <tr v-for="(keyPair, index) in keyPairs" :key="index">
         <td>
           <span class="has-text-weight-semibold">{{ keyPair.name }}</span>
+          <base-tag
+            v-if="getKeyPairIsDefault(keyPair)"
+            class="ml-3"
+            color="info"
+            rounded
+            >Default</base-tag
+          >
         </td>
         <td class="is-family-monospace">{{ keyPair.fingerprint }}</td>
         <td>
           <div class="buttons is-right">
+            <base-button
+              v-if="!getKeyPairIsDefault(keyPair)"
+              color="info"
+              outlined
+              rounded
+              size="small"
+              @click="$emit('set-default-keypair', keyPair)"
+            >
+              Set default
+            </base-button>
             <base-button
               rounded
               size="small"
@@ -38,6 +55,7 @@
 import { mapGetters } from "vuex";
 
 export default {
+  // Interface
   props: {
     keyPairs: {
       type: Array,
@@ -53,13 +71,23 @@ export default {
       console.warn("Invalid delete-keypair event payload");
       return false;
     },
+    "set-default-keypair": ({ id, name }) => {
+      if (id && name) {
+        return true;
+      }
+      console.warn("Invalid set-default-keypair event payload");
+      return false;
+    },
   },
 
+  // Local state
   data() {
     return {
       headings: ["Name", "Fingerprint", ""],
     };
   },
+
+  computed: mapGetters("keyPairs", ["getKeyPairIsDefault"]),
 };
 </script>
 

@@ -11,7 +11,11 @@
         </template>
       </base-level>
     </div>
-    <key-pairs-table :keyPairs="keyPairs" @delete-keypair="onDeleteKeyPair" />
+    <key-pairs-table
+      :keyPairs="keyPairs"
+      @delete-keypair="onDeleteKeyPair"
+      @set-default-keypair="onSetDefault"
+    />
 
     <div v-if="!keyPairs.length" class="content has-text-centered">
       <h4 class="subtitle">You haven't created any SSH keys yet</h4>
@@ -65,13 +69,16 @@ export default {
 
   // Non-reactive
   methods: {
-    ...mapActions("keyPairs", ["deleteKeyPair"]),
+    ...mapActions("keyPairs", ["deleteKeyPair", "setDefaultKeyPair"]),
+
     onDeleteKeyPair(keyPair) {
       this.confirmDeleteKeyPair = keyPair;
     },
+
     onCancelDelete() {
       this.confirmDeleteKeyPair = null;
     },
+
     async onConfirmDelete() {
       if (this.deleteProcessing) {
         return;
@@ -83,13 +90,22 @@ export default {
         this.toast(`Deleted SSH key: ${keyPair.name}`);
       } catch (err) {
         this.toast.error(
-          `Failed to delete SSH key: ${
-            err.response?.data.detail ?? "unexpected error"
-          }`
+          `Failed to delete SSH key: ${err.response?.data.detail ?? err}`
         );
       } finally {
         this.confirmDeleteKeyPair = null;
         this.deleteProcessing = false;
+      }
+    },
+
+    async onSetDefault(keyPair) {
+      try {
+        await this.setDefaultKeyPair(keyPair);
+        this.toast(`Set default SSH key: ${keyPair.name}`);
+      } catch (err) {
+        this.toast.error(
+          `Failed to set default SSH key: ${err.response?.data.detail ?? err}`
+        );
       }
     },
   },

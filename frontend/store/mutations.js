@@ -31,6 +31,10 @@ const mutations = {
     const team = state.teams.find((team) => team.id === state.activeTeamId);
     Object.assign(team, teamData);
   },
+
+  updateUser(state, user) {
+    state.user = user;
+  },
 };
 
 export default mutations;

@@ -1,10 +1,7 @@
-from __future__ import unicode_literals
-
 import uuid
 
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.urls import reverse
 from django.template.loader import render_to_string
@@ -31,7 +28,9 @@ class Team(models.Model):
         verbose_name="Group or team name",
         help_text="e.g. Bacterial pathogenomics group",
     )
-    creator = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    creator = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     position = models.CharField(max_length=50, verbose_name="Position (e.g. Professor)")
     department = models.CharField(max_length=50, verbose_name="Department or Institute")
@@ -58,7 +57,9 @@ class Team(models.Model):
         Region, null=True, blank=True, on_delete=models.SET_NULL
     )
     tenants_available = models.BooleanField(default=False)
-    users = models.ManyToManyField(User, through="TeamMember", related_name="teams")
+    users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, through="TeamMember", related_name="teams"
+    )
 
     @property
     def admin_users(self):
@@ -127,7 +128,7 @@ class Team(models.Model):
 
 class TeamMember(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     is_admin = models.BooleanField(default=False)
 
     def __str__(self):
@@ -142,7 +143,7 @@ class Invitation(models.Model):
         verbose_name="Team to invite user to",
         related_name="invitations",
     )
-    made_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    made_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     email = models.EmailField()
     message = models.TextField()
     accepted = models.BooleanField(default=False)
@@ -159,13 +160,73 @@ class Invitation(models.Model):
         return "%s to %s" % (self.email, self.to_team)
 
 
+class Profile(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name="profile",
+        related_query_name="profile",
+    )
+    validation_link = models.UUIDField(default=uuid.uuid4, editable=False)
+    email_validated = models.BooleanField(default=False)
+    default_keypair = models.ForeignKey(
+        "openstack.KeyPair", on_delete=models.SET_NULL, blank=True, null=True
+    )
+
+    def send_validation_link(self, user):
+        self.user = user
+        self.email_validated = False
+        self.save()
+
+        context = {
+            "user": user,
+            "validation_link": reverse(
+                "user:validate-email", args=[self.validation_link]
+            ),
+        }
+        subject = render_to_string(
+            "userdb/email/user_verification_subject.txt", context
+        )
+        text_content = render_to_string(
+            "userdb/email/user_verification_email.txt", context
+        )
+        html_content = render_to_string(
+            "userdb/email/user_verification_email.html", context
+        )
+
+        send_mail(
+            subject,
+            text_content,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            html_message=html_content,
+            fail_silently=False,
+        )
+
+    def __str__(self):
+        return f"{str(self.user)} profile"
+
+
+# Legacy user profile (uneditable due complex migration issues after 3.1 upgrade)
+# TODO: delete model after data copied over
 class UserProfile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,)
     validation_link = models.UUIDField(
         default=uuid.uuid4, editable=False, primary_key=True
     )
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
     email_validated = models.BooleanField(default=False)
     current_region = models.ForeignKey(Region, on_delete=models.CASCADE)
+
+    def copy_to_new_profile(self):
+        # Check for existing Profile row
+        if len(Profile.objects.filter(user=self.user)) == 1:
+            return
+        Profile.objects.create(
+            user=self.user,
+            validation_link=self.validation_link,
+            email_validated=self.email_validated,
+        )
 
     def send_validation_link(self, user):
         self.user = user

@@ -1,7 +1,6 @@
 import uuid
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -65,7 +64,9 @@ class KeyPair(models.Model):
 
 class ActionLog(models.Model):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, default=None, null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, default=None, null=True, on_delete=models.CASCADE
+    )
     date = models.DateTimeField(auto_now_add=True)
     message = models.TextField()
     error = models.BooleanField()

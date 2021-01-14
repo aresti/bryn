@@ -1,5 +1,6 @@
 from django.urls import reverse
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, get_object_or_404
@@ -7,8 +8,13 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework import generics, permissions
 
 from .forms import CustomUserCreationForm, TeamForm, InvitationForm
-from .models import Institution, Team, TeamMember, Invitation, UserProfile, Region
-from .serializers import TeamSerializer, TeamMemberSerializer, InvitationSerializer
+from .models import Institution, Team, TeamMember, Invitation, Profile, Region
+from .serializers import (
+    InvitationSerializer,
+    TeamSerializer,
+    TeamMemberSerializer,
+    UserSerializer,
+)
 
 
 def register(request):
@@ -19,7 +25,7 @@ def register(request):
         if userform.is_valid() and teamform.is_valid():
             user = userform.save()
 
-            profile = UserProfile()
+            profile = Profile()
             profile.current_region = Region.objects.get(name="warwick")
             profile.send_validation_link(user)
 
@@ -96,7 +102,7 @@ def accept_invite(request, uuid):
             user = userform.save()
 
             # add user profile
-            profile = UserProfile()
+            profile = Profile()
             profile.user = user
             profile.current_region = Region.objects.get(name="warwick")
             profile.email_validated = True
@@ -133,7 +139,7 @@ def accept_invite(request, uuid):
 
 
 def validate_email(request, uuid):
-    profile = get_object_or_404(UserProfile, validation_link=uuid)
+    profile = get_object_or_404(Profile, validation_link=uuid)
     profile.email_validated = True
     profile.save()
     messages.success(
@@ -246,3 +252,16 @@ class InvitationDetailView(generics.RetrieveDestroyAPIView):
     serializer_class = InvitationSerializer
     permission_classes = [permissions.IsAuthenticated, IsTeamAdmin]
     queryset = Invitation.objects.all()
+
+
+class OwnUserDetailView(generics.RetrieveUpdateAPIView):
+    """
+    API detail endpoint for authenticated/own User.
+    """
+
+    serializer_class = UserSerializer
+    permissions = [permissions.IsAuthenticated]
+    queryset = get_user_model().objects.all()
+
+    def get_object(self):
+        return self.request.user

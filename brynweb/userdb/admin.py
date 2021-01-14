@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
 from django.http import HttpResponseRedirect
 
-from userdb.models import Team, Invitation, TeamMember, UserProfile, Region
+from userdb.models import Team, Invitation, TeamMember, Profile, Region, UserProfile
 
 from scripts.setup_team import setup_tenant
 
@@ -74,21 +74,44 @@ class InvitationAdmin(admin.ModelAdmin):
         self.message_user(request, "%s invitations resent" % (n,))
 
 
+class ProfileInline(admin.StackedInline):
+    model = Profile
+    can_delete = False
+
+
+class CustomUserAdmin(UserAdmin):
+    list_filter = ("profile__email_validated",)
+
+    actions = ["resend_email_activation_link", "copy_to_new_profile_table"]
+
+    inlines = (ProfileInline,)
+
+    def resend_email_activation_link(self, request, queryset):
+        for u in queryset:
+            u.profile.send_validation_link(u)
+        self.message_user(request, "Validation links resent.")
+
+
+# TODO delete legacy UserProfile admin after data transfer
 class UserProfileInline(admin.StackedInline):
     model = UserProfile
     can_delete = False
 
 
-class CustomUserAdmin(UserAdmin):
+class LegacyCustomUserAdmin(UserAdmin):
     list_filter = ("userprofile__email_validated",)
 
-    actions = ["resend_email_activation_link"]
+    actions = ["copy_to_new_profile_table"]
 
     inlines = (UserProfileInline,)
 
+    def copy_to_new_profile_table(modeladmin, request, queryset):
+        for user in queryset:
+            user.userprofile.copy_to_new_profile()
+
     def resend_email_activation_link(self, request, queryset):
         for u in queryset:
-            u.userprofile.send_validation_link(u)
+            u.profile.send_validation_link(u)
         self.message_user(request, "Validation links resent.")
 
 
@@ -97,4 +120,4 @@ admin.site.register(TeamMember)
 admin.site.register(Invitation, InvitationAdmin)
 admin.site.register(Region)
 admin.site.unregister(User)
-admin.site.register(User, CustomUserAdmin)
+admin.site.register(User, LegacyCustomUserAdmin)

@@ -15,6 +15,7 @@ const apiRoutes = {
   keyPairs: baseUrl + "/keypairs/",
   team: baseUrlUser + "/teams/",
   teamMembers: baseUrlUser + "/teammembers/",
+  userProfile: baseUrlUser + "/userprofile/",
   volumes: baseUrl + "/volumes/",
   volumeTypes: baseUrl + "/volumetypes",
 };

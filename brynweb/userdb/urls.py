@@ -75,4 +75,9 @@ urlpatterns = [
         views.InvitationListView.as_view(),
         name="api-invitation-list",
     ),
+    path(
+        "api/userprofile/",
+        views.OwnUserDetailView.as_view(),
+        name="api-ownuser-detail",
+    ),
 ]
