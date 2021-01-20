@@ -1,0 +1,14 @@
+{% load widget_tweaks %}
+
+<div class="field">
+  <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+  <div class="control {% if fa_class %}has-icons-left{% endif %}">
+    {{ field|add_class:"input" }}
+    {% if fa_class %}
+      <span class="icon is-small is-left">
+        <i class="{{ fa_class }}"></i>
+      </span>
+    {% endif %}
+  </div>
+  {% include 'includes/form_field_errors.html' with errors=field.errors only %}
+</div>

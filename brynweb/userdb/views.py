@@ -1,14 +1,21 @@
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
+from django.views import View
+from django.views.generic import TemplateView
+from django.views.generic.edit import FormView
 
 from rest_framework import generics, permissions
 
-from .forms import CustomUserCreationForm, TeamForm, InvitationForm
-from .models import Institution, Team, TeamMember, Invitation, Profile, Region
+from .forms import (
+    CustomUserCreationForm,
+    PrimaryUserCreationForm,
+    RegistrationScreeningForm,
+    TeamForm,
+)
+from .models import Team, TeamMember, Invitation, Profile, Region
 from .serializers import (
     InvitationSerializer,
     TeamSerializer,
@@ -17,81 +24,69 @@ from .serializers import (
 )
 
 
-def register(request):
+class RegistrationScreeningView(FormView):
+    """Registration screening view"""
+
+    template_name = "userdb/register.html"
+    form_class = RegistrationScreeningForm
+    success_url = reverse_lazy("user:register_team")
+
+
+def team_registration_view(request):
+    """Team registration form view"""
+
     if request.method == "POST":
-        userform = CustomUserCreationForm(request.POST)
-        teamform = TeamForm(request.POST)
+        user_form = PrimaryUserCreationForm(request.POST)
+        team_form = TeamForm(request.POST)
 
-        if userform.is_valid() and teamform.is_valid():
-            user = userform.save()
+        if user_form.is_valid() and team_form.is_valid():
+            user = user_form.save()  # profile instance is created via. signal
 
-            profile = Profile()
-            profile.current_region = Region.objects.get(name="warwick")
-            profile.send_validation_link(user)
-
-            # add team
-            team = teamform.save(commit=False)
+            # create team
+            team = team_form.save(commit=False)
             team.creator = user
-            team.verified = False
-            team.default_region = Region.objects.get(name="warwick")
             team.save()
 
-            # add team member
-            member = TeamMember()
-            member.team = team
-            member.user = user
-            member.is_admin = True
+            # create team member
+            member = TeamMember(team=team, user=user, is_admin=True)
             member.save()
 
-            messages.success(
-                request,
-                "Thank you for registering. Your request will be approved by "
-                "an administrator and you will receive an email with further "
-                "instructions",
-            )
-
-            # notify admins
-            team.new_registration_admin_email()
-
-            return HttpResponseRedirect(reverse("home:home"))
+            return HttpResponseRedirect(reverse("user:register_team_done"))
     else:
-        userform = CustomUserCreationForm()
-        teamform = TeamForm()
+        user_form = CustomUserCreationForm()
+        team_form = TeamForm()
 
     return render(
-        request, "userdb/register.html", {"userform": userform, "teamform": teamform}
+        request,
+        "userdb/register_team.html",
+        {"user_form": user_form, "team_form": team_form},
     )
 
 
-@login_required
-def invite(request):
-    if request.method == "POST":
-        form = InvitationForm(request.user, request.POST)
-        if form.is_valid():
-            if Invitation.objects.filter(
-                email=form.cleaned_data["email"], to_team=form.cleaned_data["to_team"]
-            ):
-                messages.error(request, "User has already been invited to this team.")
-            else:
-                invitation = form.save(commit=False)
-                invitation.send_invitation(request.user)
+class TeamRegistrationDoneView(TemplateView):
+    """Team registration done view"""
 
-                messages.success(request, "Invitation sent.")
-    else:
-        messages.error(request, "No information supplied for invitation")
-    return HttpResponseRedirect(reverse("home:home"))
+    template_name = "userdb/register_team_done.html"
 
 
-def institution_typeahead(request):
-    q = request.GET.get("q", "")
-    if q:
-        matches = Institution.objects.filter(name__icontains=q).values_list(
-            "name", flat=True
-        )[:10]
-    else:
-        matches = Institution.objects.all().values_list("name", flat=True)
-    data = list(matches)
-    return JsonResponse(data, safe=False)
+class UserEmailValidationPendingView(TemplateView):
+    """User email validation pending view"""
+
+    template_name = "userdb/user_email_validation_pending.html"
+
+
+class UserEmailValidationSendView(View):
+    """User email validation send view"""
+
+    def get(self, request):
+        request.user.profile.send_validation_link()
+        return HttpResponseRedirect(reverse("user:user_email_validation_sent"))
+
+
+class UserEmailValidationSentView(TemplateView):
+    """User email validation sent view"""
+
+    template_name = "userdb/user_email_validation_sent.html"
 
 
 def accept_invite(request, uuid):

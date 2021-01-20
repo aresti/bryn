@@ -28,14 +28,14 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_extensions",
-    "bootstrap4",
+    "django_slack",
+    "rest_framework",
+    "widget_tweaks",
     "reporting",
     "userdb",
     "home",
     "discourse",
     "openstack",
-    "django_slack",
-    "rest_framework",
 ]
 
 MIDDLEWARE = [
@@ -70,7 +70,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "brynweb.wsgi.application"
 
 # Custom message tags
-MESSAGE_TAGS = {messages.INFO: "primary", messages.ERROR: "danger"}
+MESSAGE_TAGS = {messages.ERROR: "danger"}
 
 
 # Database

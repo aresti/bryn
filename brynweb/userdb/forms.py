@@ -1,13 +1,23 @@
+from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from django.forms import ModelForm
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
-from .models import Team, Invitation
+from .models import Team
+
+
+class RegistrationScreeningForm(forms.Form):
+    agree_terms = forms.BooleanField(
+        label="I have read and agree to the above terms and conditions", required=True
+    )
+    is_primary_user = forms.BooleanField(
+        label="I confirm that I am the primary user for my team", required=True
+    )
 
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
+        model = User
         fields = (
             "username",
             "first_name",
@@ -16,30 +26,64 @@ class CustomUserCreationForm(UserCreationForm):
             "password1",
             "password2",
         )
-        model = User
+
+    def __init__(self, *args, **kwargs):
+        """Require name and email fields, without redefining fields"""
+        super().__init__(*args, **kwargs)
+        self.fields["first_name"].required = True
+        self.fields["last_name"].required = True
+        self.fields["email"].required = True
+
+    def clean_email(self):
+        """
+        Confirm email is unique.
+        Can't enforce on a database level, since this was not set initially and several duplicates already exist.
+        """
+        existing = User.objects.filter(email=self.cleaned_data["email"])
+        if existing.count():
+            raise forms.ValidationError("A user with this email already exists.")
+        else:
+            return self.cleaned_data["email"]
 
 
-class TeamForm(ModelForm):
+class PrimaryUserCreationForm(CustomUserCreationForm):
+    allowed_domains = ["ac.uk", "gov.uk", "nhs.uk"]
+
+    def clean_email(self):
+        """
+        Confirm email is unique and part of an allowed domain.
+        """
+        email = self.cleaned_data["email"]
+
+        # Check unique
+        existing = User.objects.filter(email=email)
+        if existing.count():
+            raise forms.ValidationError("A user with this email already exists.")
+
+        # Check domain
+        domain_part = email.split("@")[-1]
+        if not any(domain in domain_part for domain in self.allowed_domains):
+            raise forms.ValidationError(
+                f"You must use an email ending in one of: {', '.join(self.allowed_domains)}"
+            )
+
+        # Valid
+        return email
+
+
+class TeamForm(forms.ModelForm):
     class Meta:
         model = Team
-        exclude = (
-            "creator",
-            "created_at",
-            "verified",
-            "default_region",
-            "tenants_available",
+        fields = (
+            "name",
+            "institution",
+            "department",
+            "position",
+            "phone_number",
+            "research_interests",
+            "intended_climb_use",
+            "held_mrc_grants",
         )
-        widgets = {"phone_number": PhoneNumberInternationalFallbackWidget}
-
-
-class InvitationForm(ModelForm):
-    def __init__(self, user, *args, **kwargs):
-        super(InvitationForm, self).__init__(*args, **kwargs)
-        self.fields["to_team"].queryset = Team.objects.filter(
-            teammember__user=user, teammember__is_admin=True
-        )
-        self.fields["to_team"].empty_label = None
-
-    class Meta:
-        model = Invitation
-        fields = ("to_team", "email", "message")
+        widgets = {
+            "phone_number": PhoneNumberInternationalFallbackWidget,
+        }

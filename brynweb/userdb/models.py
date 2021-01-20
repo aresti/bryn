@@ -27,17 +27,20 @@ class Team(models.Model):
         max_length=50,
         verbose_name="Group or team name",
         help_text="e.g. Bacterial pathogenomics group",
+        unique=True,
     )
     creator = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    position = models.CharField(max_length=50, verbose_name="Position (e.g. Professor)")
-    department = models.CharField(max_length=50, verbose_name="Department or Institute")
-    institution = models.CharField(
-        max_length=100, verbose_name="Institution (e.g. University of St. Elsewhere)"
-    )
-    phone_number = PhoneNumberField(max_length=20, verbose_name="Phone number")
+    position = models.CharField(
+        max_length=50, verbose_name="Position (e.g. Professor)"
+    )  # TODO: should be on user model
+    department = models.CharField(max_length=50, verbose_name="Department")
+    institution = models.CharField(max_length=100, verbose_name="Institution")
+    phone_number = PhoneNumberField(
+        max_length=20, verbose_name="Phone number"
+    )  # TODO: should be on user model
     research_interests = models.TextField(
         verbose_name="Research interests",
         help_text="Please supply a brief synopsis of your research programme",
@@ -75,30 +78,8 @@ class Team(models.Model):
         """
         return self.users.filter(teammember__is_admin=False)
 
-    def new_registration_admin_email(self):
-        if not settings.NEW_REGISTRATION_ADMIN_EMAILS:
-            return
-        context = {"user": self.creator, "team": self}
-        subject = render_to_string(
-            "userdb/email/new_registration_admin_subject.txt", context
-        )
-        text_content = render_to_string(
-            "userdb/email/new_registration_admin_email.txt", context
-        )
-        html_content = render_to_string(
-            "userdb/email/new_registration_admin_email.html", context
-        )
-
-        send_mail(
-            subject,
-            text_content,
-            settings.DEFAULT_FROM_EMAIL,
-            settings.NEW_REGISTRATION_ADMIN_EMAILS,
-            html_message=html_content,
-            fail_silently=True,
-        )
-
     def verify_and_send_notification_email(self):
+        """Admin script: mark team as verified and notify the primary user"""
         context = {"user": self.creator, "team": self}
         subject = render_to_string(
             "userdb/email/notify_team_verified_subject.txt", context
@@ -174,15 +155,11 @@ class Profile(models.Model):
         "openstack.KeyPair", on_delete=models.SET_NULL, blank=True, null=True
     )
 
-    def send_validation_link(self, user):
-        self.user = user
-        self.email_validated = False
-        self.save()
-
+    def send_validation_link(self):
         context = {
-            "user": user,
+            "user": self.user,
             "validation_link": reverse(
-                "user:validate-email", args=[self.validation_link]
+                "user:validate_email", args=[self.validation_link]
             ),
         }
         subject = render_to_string(
@@ -199,7 +176,7 @@ class Profile(models.Model):
             subject,
             text_content,
             settings.DEFAULT_FROM_EMAIL,
-            [user.email],
+            [self.user.email],
             html_message=html_content,
             fail_silently=False,
         )
@@ -236,7 +213,7 @@ class UserProfile(models.Model):
         context = {
             "user": user,
             "validation_link": reverse(
-                "user:validate-email", args=[self.validation_link]
+                "user:validate_email", args=[self.validation_link]
             ),
         }
         subject = render_to_string(

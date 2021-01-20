@@ -88,7 +88,7 @@ class CustomUserAdmin(UserAdmin):
 
     def resend_email_activation_link(self, request, queryset):
         for u in queryset:
-            u.profile.send_validation_link(u)
+            u.profile.send_validation_link()
         self.message_user(request, "Validation links resent.")
 
 
