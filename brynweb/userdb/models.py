@@ -136,6 +136,11 @@ class TeamMember(models.Model):
     def __str__(self):
         return "%s belongs to %s" % (self.user, self.team)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["team", "user"], name="unique_teammember")
+        ]
+
 
 class Invitation(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
