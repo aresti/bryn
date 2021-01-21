@@ -28,11 +28,15 @@ class CustomUserCreationForm(UserCreationForm):
         )
 
     def __init__(self, *args, **kwargs):
-        """Require name and email fields, without redefining fields"""
+        """Modify fields without redefinition"""
         super().__init__(*args, **kwargs)
         self.fields["first_name"].required = True
         self.fields["last_name"].required = True
         self.fields["email"].required = True
+        self.fields["username"].help_text = None
+        self.fields[
+            "password1"
+        ].help_text = "8 characters or more, not too common and not entirely numeric."
 
     def clean_email(self):
         """

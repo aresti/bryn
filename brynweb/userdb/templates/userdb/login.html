@@ -1,5 +1,7 @@
 {% extends "userdb/base_primary_card.html" %}
 
+{% load widget_tweaks %}
+
 {% block above_card %}
   <h1 class="title logo-header">Bryn</h1>
   <h2 class="subtitle">The CLIMB management web interface</h2>
@@ -9,41 +11,11 @@
   <form method="post">
     {% csrf_token %}
 
+    {% include 'includes/messages.html' %}
     {% include 'includes/form_non_field_errors.html' with errors=form.non_field_errors %}
 
-    <div class="field">
-      <label for="username" class="is-sr-only">Username</label>
-      <div class="control has-icons-left">
-        <input
-          name="{{ form.username.html_name }}"
-          id="username"
-          class="input is-medium"
-          type="text"
-          placeholder="Username"
-          required
-        >
-        <span class="icon is-small is-left">
-          <i class="fas fa-user"></i>
-        </span>
-      </div>
-    </div>
-
-    <div class="field">
-      <label for="password" class="is-sr-only">Password</label>
-      <div class="control has-icons-left">
-        <input
-          name="{{ form.password.html_name }}"
-          id="password"
-          class="input is-medium"
-          type="password"
-          placeholder="Password"
-          required
-        >
-        <span class="icon is-small is-left">
-          <i class="fas fa-lock"></i>
-        </span>
-      </div>
-    </div>
+    {% include 'includes/form_field.html' with field=form.username|attr:'placeholder:Username'|add_class:'is-medium' fa_class="fas fa-user" hide_label="True" only %}
+    {% include 'includes/form_field.html' with field=form.password|attr:'placeholder:Password'|add_class:'is-medium' fa_class="fas fa-lock" hide_label="True" only %}
     
     <div class="field">
       <div class="control">

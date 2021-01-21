@@ -82,7 +82,7 @@ class ProfileInline(admin.StackedInline):
 class CustomUserAdmin(UserAdmin):
     list_filter = ("profile__email_validated",)
 
-    actions = ["resend_email_activation_link", "copy_to_new_profile_table"]
+    actions = ["resend_email_activation_link"]
 
     inlines = (ProfileInline,)
 
@@ -120,4 +120,4 @@ admin.site.register(TeamMember)
 admin.site.register(Invitation, InvitationAdmin)
 admin.site.register(Region)
 admin.site.unregister(User)
-admin.site.register(User, LegacyCustomUserAdmin)
+admin.site.register(User, CustomUserAdmin)

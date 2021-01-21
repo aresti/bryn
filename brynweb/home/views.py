@@ -10,29 +10,43 @@ from openstack.serializers import RegionSerializer
 from userdb.serializers import TeamSerializer, UserSerializer
 
 
-class TeamDashboard(LoginRequiredMixin, TemplateView):
+class ValidatedEmailRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.profile.email_validated:
+            return HttpResponseRedirect(reverse("user:email_validation_pending"))
+        return super().dispatch(request, *args, **kwargs)
+
+
+class ActiveTeamRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        teams = request.user.teams.all()
+        if len(teams.filter(verified=True)):
+            return super().dispatch(request, *args, **kwargs)
+
+        # No active teams
+        if not len(teams):
+            # No teams whatsoever
+            messages.error(request, "You have no current team memberships.")
+        else:
+            # No active teams
+            messages.info(
+                request,
+                "Your team is pending approval by our team. We'll be in touch soon.",
+            )
+        return HttpResponseRedirect(reverse("user:login"))
+
+
+class TeamDashboard(
+    LoginRequiredMixin,
+    ValidatedEmailRequiredMixin,
+    ActiveTeamRequiredMixin,
+    TemplateView,
+):
     """
     Team dashboard (home)
     """
 
     template_name = "home/dashboard.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        """Email validation guard"""
-        if not request.user.profile.email_validated:
-            return HttpResponseRedirect(reverse("user:user_email_validation_pending"))
-
-        """Active team guard"""
-        teams = request.user.teams.all()
-        if not len(teams):
-            messages.error(request, "You have no current team memberships.")
-        if not len(teams.filter(verified=True)):
-            messages.info(
-                request,
-                "Your team is pending approval by our team. Please check back soon.",
-            )
-
-        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, *args, **kwargs):
         user = self.request.user

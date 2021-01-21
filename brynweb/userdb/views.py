@@ -1,10 +1,11 @@
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth import views as auth_views
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.views import View
-from django.views.generic import TemplateView
+from django.views.generic import RedirectView, TemplateView
 from django.views.generic.edit import FormView
 
 from rest_framework import generics, permissions
@@ -22,6 +23,32 @@ from .serializers import (
     TeamMemberSerializer,
     UserSerializer,
 )
+
+
+# Auth views
+class LoginView(auth_views.LoginView):
+    template_name = "userdb/login.html"
+
+
+class PasswordResetView(auth_views.PasswordResetView):
+    template_name = "userdb/password_reset_form.html"
+    email_template_name = "userdb/email/password_reset_email.txt"
+    html_email_template_name = "userdb/email/password_reset_email.html"
+    subject_template_name = "userdb/email/password_reset_subject.txt"
+    success_url = reverse_lazy("user:password_reset_done")
+
+
+class PasswordResetDoneView(auth_views.PasswordResetDoneView):
+    template_name = "userdb/password_reset_done.html"
+
+
+class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
+    template_name = "userdb/password_reset_confirm.html"
+    success_url = reverse_lazy("user:password_reset_complete")
+
+
+class PasswordResetCompleteView(auth_views.PasswordResetCompleteView):
+    template_name = "userdb/password_reset_complete.html"
 
 
 class RegistrationScreeningView(FormView):
@@ -69,24 +96,36 @@ class TeamRegistrationDoneView(TemplateView):
     template_name = "userdb/register_team_done.html"
 
 
-class UserEmailValidationPendingView(TemplateView):
+class EmailValidationPendingView(TemplateView):
     """User email validation pending view"""
 
-    template_name = "userdb/user_email_validation_pending.html"
+    template_name = "userdb/email_validation_pending.html"
 
 
-class UserEmailValidationSendView(View):
+class EmailValidationSendView(View):
     """User email validation send view"""
 
     def get(self, request):
         request.user.profile.send_validation_link()
-        return HttpResponseRedirect(reverse("user:user_email_validation_sent"))
+        return HttpResponseRedirect(reverse("user:email_validation_sent"))
 
 
-class UserEmailValidationSentView(TemplateView):
+class EmailValidationSentView(TemplateView):
     """User email validation sent view"""
 
-    template_name = "userdb/user_email_validation_sent.html"
+    template_name = "userdb/email_validation_sent.html"
+
+
+class EmailValidationConfirmView(RedirectView):
+    """Mark user profile as email validated and redirect to login"""
+
+    pattern_name = "home:home"
+
+    def get_redirect_url(self, *args, **kwargs):
+        profile = get_object_or_404(Profile, validation_link=kwargs.pop("uuid"))
+        profile.mark_email_validated()
+        messages.success(self.request, "Thank you for confirming your email address.")
+        return super().get_redirect_url(*args, **kwargs)
 
 
 def accept_invite(request, uuid):
@@ -131,18 +170,6 @@ def accept_invite(request, uuid):
         userform.initial["email"] = i.email
 
     return render(request, "userdb/user-register.html", {"form": userform})
-
-
-def validate_email(request, uuid):
-    profile = get_object_or_404(Profile, validation_link=uuid)
-    profile.email_validated = True
-    profile.save()
-    messages.success(
-        request,
-        "Thank you for confirming your email address, "
-        "you can now log-in to get started.",
-    )
-    return HttpResponseRedirect(reverse("home:home"))
 
 
 def get_teams_for_user(user, team=None):

@@ -1,47 +1,28 @@
 from django.contrib.auth.models import User
-from django.conf import settings
-from django.core.mail import send_mail
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from django.template.loader import render_to_string
-from django.urls import reverse
 
 from openstack.models import KeyPair
 from .models import Invitation, Profile, Team
 
 
 @receiver(post_save, sender=Invitation)
-def send_invitation(sender, invitation, created, **kwargs):
+def send_invitation(sender, instance, created, **kwargs):
     """Send an invitation email after an Invitation instance is created"""
-    if not created:
-        return
-
-    context = {
-        "invitation": invitation,
-        "url": reverse("user:accept-invite", args=[invitation.uuid]),
-    }
-    subject = render_to_string("userdb/email/user_invite_subject.txt", context)
-    text_content = render_to_string("userdb/email/user_invite_email.txt", context)
-    html_content = render_to_string("userdb/email/user_invite_email.html", context)
-
-    send_mail(
-        subject,
-        text_content,
-        settings.DEFAULT_FROM_EMAIL,
-        [invitation.email],
-        html_message=html_content,
-        fail_silently=False,
-    )
+    if created:
+        instance.send_invitation_email()
 
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
-    profile = Profile(user=instance)
-    profile.save()
+    """Create a Profile on User creation"""
+    if created:
+        Profile.objects.create(user=instance)
 
 
 @receiver(post_save, sender=User)
 def save_profile(sender, instance, **kwargs):
+    """Auto-save Profile on User save"""
     instance.profile.save()
 
 
@@ -55,29 +36,8 @@ def send_email_validation_link(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Team)
 def send_new_registration_admin_email(sender, instance, created, **kwargs):
     """Send email to notify admin of new registration"""
-    if not (created and settings.NEW_REGISTRATION_ADMIN_EMAILS):
-        return
-
-    team = instance
-    context = {"user": team.creator, "team": team}
-    subject = render_to_string(
-        "userdb/email/new_registration_admin_subject.txt", context
-    )
-    text_content = render_to_string(
-        "userdb/email/new_registration_admin_email.txt", context
-    )
-    html_content = render_to_string(
-        "userdb/email/new_registration_admin_email.html", context
-    )
-
-    send_mail(
-        subject,
-        text_content,
-        settings.DEFAULT_FROM_EMAIL,
-        settings.NEW_REGISTRATION_ADMIN_EMAILS,
-        html_message=html_content,
-        fail_silently=True,
-    )
+    if created:
+        instance.send_new_team_admin_email()
 
 
 @receiver(post_save, sender=KeyPair)

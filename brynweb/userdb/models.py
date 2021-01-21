@@ -24,10 +24,7 @@ class Institution(models.Model):
 
 class Team(models.Model):
     name = models.CharField(
-        max_length=50,
-        verbose_name="Group or team name",
-        help_text="e.g. Bacterial pathogenomics group",
-        unique=True,
+        max_length=50, verbose_name="Group or team name", unique=True,
     )
     creator = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL
@@ -77,6 +74,30 @@ class Team(models.Model):
         Return users with regular privileges for this team (queryset)
         """
         return self.users.filter(teammember__is_admin=False)
+
+    def send_new_team_admin_email(self):
+        if not settings.NEW_REGISTRATION_ADMIN_EMAILS:
+            return
+
+        context = {"user": self.creator, "team": self}
+        subject = render_to_string(
+            "userdb/email/new_registration_admin_subject.txt", context
+        )
+        text_content = render_to_string(
+            "userdb/email/new_registration_admin_email.txt", context
+        )
+        html_content = render_to_string(
+            "userdb/email/new_registration_admin_email.html", context
+        )
+
+        send_mail(
+            subject,
+            text_content,
+            settings.DEFAULT_FROM_EMAIL,
+            settings.NEW_REGISTRATION_ADMIN_EMAILS,
+            html_message=html_content,
+            fail_silently=True,
+        )
 
     def verify_and_send_notification_email(self):
         """Admin script: mark team as verified and notify the primary user"""
@@ -137,6 +158,24 @@ class Invitation(models.Model):
             )
         ]
 
+    def send_invitation_email(self):
+        context = {
+            "invitation": self,
+            "url": reverse("user:accept-invite", args=[self.uuid]),
+        }
+        subject = render_to_string("userdb/email/user_invite_subject.txt", context)
+        text_content = render_to_string("userdb/email/user_invite_email.txt", context)
+        html_content = render_to_string("userdb/email/user_invite_email.html", context)
+
+        send_mail(
+            subject,
+            text_content,
+            settings.DEFAULT_FROM_EMAIL,
+            [self.email],
+            html_message=html_content,
+            fail_silently=False,
+        )
+
     def __str__(self):
         return "%s to %s" % (self.email, self.to_team)
 
@@ -180,6 +219,10 @@ class Profile(models.Model):
             html_message=html_content,
             fail_silently=False,
         )
+
+    def mark_email_validated(self):
+        self.email_validated = True
+        self.save()
 
     def __str__(self):
         return f"{str(self.user)} profile"

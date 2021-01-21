@@ -70,7 +70,11 @@ TEMPLATES = [
 WSGI_APPLICATION = "brynweb.wsgi.application"
 
 # Custom message tags
-MESSAGE_TAGS = {messages.ERROR: "danger"}
+MESSAGE_TAGS = {
+    messages.ERROR: "is-danger",
+    messages.INFO: "is-info",
+    messages.SUCCESS: "is-success",
+}
 
 
 # Database

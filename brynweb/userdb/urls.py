@@ -1,4 +1,4 @@
-from django.urls import reverse_lazy, path
+from django.urls import path
 from django.contrib.auth import views as auth_views
 
 from . import views
@@ -6,45 +6,26 @@ from . import views
 app_name = "user"
 
 urlpatterns = [
-    path(
-        "login/",
-        auth_views.LoginView.as_view(template_name="userdb/login.html",),
-        name="login",
-    ),
+    # Auth routes
+    path("login/", views.LoginView.as_view(), name="login"),
     path("logout/", auth_views.logout_then_login, name="logout"),
-    path(
-        "password_reset/",
-        auth_views.PasswordResetView.as_view(
-            template_name="userdb/password_reset_form.html",
-            email_template_name="userdb/email/password_reset_email.txt",
-            html_email_template_name="userdb/email/password_reset_email.html",
-            subject_template_name="userdb/email/password_reset_subject.txt",
-            success_url=reverse_lazy("user:password_reset_done"),
-        ),
-        name="password_reset",
-    ),
+    path("password_reset/", views.PasswordResetView.as_view(), name="password_reset"),
     path(
         "password_reset/done/",
-        auth_views.PasswordResetDoneView.as_view(
-            template_name="userdb/password_reset_done.html"
-        ),
+        views.PasswordResetDoneView.as_view(),
         name="password_reset_done",
     ),
     path(
         r"reset/<uidb64>/<token>/",
-        auth_views.PasswordResetConfirmView.as_view(
-            template_name="userdb/password_reset_confirm.html",
-            success_url=reverse_lazy("user:password_reset_complete"),
-        ),
+        views.PasswordResetConfirmView.as_view(),
         name="password_reset_confirm",
     ),
     path(
         "reset/done/",
-        auth_views.PasswordResetCompleteView.as_view(
-            template_name="userdb/password_reset_complete.html"
-        ),
+        views.PasswordResetCompleteView.as_view(),
         name="password_reset_complete",
     ),
+    # Registration
     path("register/", views.RegistrationScreeningView.as_view(), name="register",),
     path("register/team/", views.team_registration_view, name="register_team"),
     path(
@@ -53,22 +34,27 @@ urlpatterns = [
         name="register_team_done",
     ),
     path(
-        "user/email-validation-pending",
-        views.UserEmailValidationPendingView.as_view(),
-        name="user_email_validation_pending",
+        "email-validation-pending",
+        views.EmailValidationPendingView.as_view(),
+        name="email_validation_pending",
     ),
     path(
-        "user/email-validation-send",
-        views.UserEmailValidationSendView.as_view(),
-        name="user_email_validation_send",
+        "email-validation-send",
+        views.EmailValidationSendView.as_view(),
+        name="email_validation_send",
     ),
     path(
-        "user/email-validation-sent",
-        views.UserEmailValidationSentView.as_view(),
-        name="user_email_validation_sent",
+        "email-validation-sent",
+        views.EmailValidationSentView.as_view(),
+        name="email_validation_sent",
     ),
     path("accept-invite/<uuid:uuid>", views.accept_invite, name="accept-invite"),
-    path("validate-email/<uuid:uuid>", views.validate_email, name="validate_email"),
+    path(
+        "validate-email/<uuid:uuid>",
+        views.EmailValidationConfirmView.as_view(),
+        name="validate_email",
+    ),
+    # API
     path("api/teams/<int:pk>", views.TeamDetailView.as_view(), name="api-team-detail",),
     path(
         "api/teammembers/<int:pk>",
