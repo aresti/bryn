@@ -117,6 +117,19 @@ export default {
     },
   },
 
+  // Events
+  // Note, this wont work as a mixin due https://github.com/vuejs/vue-router-next/issues/454
+  beforeRouteEnter(to, _from, next) {
+    next((vm) => {
+      const hasTenants = vm.$store.getters.tenants.length;
+      const hasLicense = true; // TODO: after licensing
+      if (!(hasTenants && hasLicense)) {
+        // No tenants or no license, redirect to team admin view
+        vm.$router.push({ name: "team", params: { teamId: to.params.teamId } });
+      }
+    });
+  },
+
   // Non-reactive
   methods: {
     onNewServerClick() {

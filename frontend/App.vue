@@ -26,7 +26,7 @@ export default {
   // Events
   async beforeMount() {
     try {
-      const keypair = await this.initStore();
+      await this.initStore(); // Initialises global & user data (non-team sepecifc)
     } catch (err) {
       this.toast.error(
         `Failed to initialise dashboard: ${err.response?.data.detail ?? err}`

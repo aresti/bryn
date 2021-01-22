@@ -6,7 +6,7 @@ const actions = {
     commit("initUser");
     commit("initRegions");
     commit("initTeams");
-    dispatch("keyPairs/getKeyPairs");
+    await dispatch("keyPairs/getKeyPairs");
   },
   setActiveTeam({ commit }, team) {
     commit("setActiveTeamId", team.id);
@@ -39,41 +39,31 @@ const actions = {
     }
   },
 
-  async fetchTeamSpecificData({ dispatch }) {
+  async fetchTeamSpecificData({ commit, dispatch, getters }) {
     /* Fetch all team specific data (for the active team) */
-    try {
-      await dispatch("teamMembers/getTeamMembers");
-      await dispatch("invitations/getInvitations");
-    } catch (err) {
-      const msg = `Error fetching team data for ${getters.team.name}`;
-      if (err.response && err.response.data.hasOwnProperty("detail")) {
-        throw new Error(`${msg}: ${err.response.data.detail}`);
-      } else {
-        throw new Error(`${msg}: ${err.message}`);
-      }
-    }
-  },
-
-  async fetchUserSpecificData({ dispatch }) {
-    /* Fetch all user specific data */
-    try {
-      await dispatch("keyPairs/getKeyPairs");
-    } catch (err) {
-      const msg = `Error fetching user data`;
-      if (err.response && err.response.data.hasOwnProperty("detail")) {
-        throw new Error(`${msg}: ${err.response.data.detail}`);
-      } else {
-        throw new Error(`${msg}: ${err.message}`);
-      }
-    }
-  },
-
-  async fetchAll({ commit, dispatch, getters }) {
-    const tenants = getters.tenants; // remember, active team/tenants may have changed by the time function returns
     if (!getters.team.initialized) {
-      await dispatch("fetchTeamSpecificData"); // Will throw on err
-      commit("setTeamInitialized");
+      try {
+        await dispatch("teamMembers/getTeamMembers");
+        await dispatch("invitations/getInvitations");
+        commit("setTeamInitialized");
+      } catch (err) {
+        const msg = `Error fetching team data for ${getters.team.name}`;
+        if (err.response && err.response.data.hasOwnProperty("detail")) {
+          throw new Error(`${msg}: ${err.response.data.detail}`);
+        } else {
+          throw new Error(`${msg}: ${err.message}`);
+        }
+      }
     }
+  },
+
+  async fetchAllTenantData({ dispatch, getters }) {
+    const tenants = getters.tenants; // remember, active team/tenants may have changed by the time function returns
+
+    if (!tenants.length) {
+      throw new Error(`The current team has no tenants.`);
+    }
+
     const results = await Promise.allSettled(
       tenants.map((tenant) => dispatch("fetchTenantSpecificData", { tenant }))
     );

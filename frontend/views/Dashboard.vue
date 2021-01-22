@@ -5,7 +5,14 @@
     <the-dashboard-header />
 
     <section class="section is-flex is-flex-grow-1">
-      <base-flex-centered v-if="erroredOnGet">
+      <base-flex-centered v-if="teamErroredOnGet">
+        <base-message color="danger" light>
+          We couldn't fetch your team data. There may be a temporary issue on
+          our end. Please try again shortly.
+        </base-message>
+      </base-flex-centered>
+
+      <base-flex-centered v-if="allTenantsErroredOnGet">
         <base-message color="danger" light>
           All of your tenants were unreachable, there may be a temporary issue
           on our end. Please try again shortly.
@@ -55,7 +62,8 @@ export default {
   // Local state
   data() {
     return {
-      erroredOnGet: false,
+      teamErroredOnGet: false,
+      allTenantsErroredOnGet: false,
     };
   },
 
@@ -74,6 +82,9 @@ export default {
   watch: {
     async team(_newTeam, _oldTeam) {
       this.getTeamData();
+      if (this.tenants.length) {
+        this.getTenantData();
+      }
     },
   },
 
@@ -91,7 +102,11 @@ export default {
 
   // Non-reactive
   methods: {
-    ...mapActions(["setActiveTeam", "fetchAll"]),
+    ...mapActions([
+      "setActiveTeam",
+      "fetchTeamSpecificData",
+      "fetchAllTenantData",
+    ]),
 
     setTeamForRoute(route) {
       /* Set the activeTeamId state from route params */
@@ -109,10 +124,20 @@ export default {
 
     async getTeamData() {
       /* Fetch data for the active team */
-      this.erroredOnGet = false;
-
+      this.teamErroredOnGet = false;
       try {
-        const results = await this.fetchAll();
+        await this.fetchTeamSpecificData();
+      } catch (err) {
+        this.teamErroredOnGet = true;
+        this.toast.error(err.toString());
+      }
+    },
+
+    async getTenantData() {
+      /* Fetch data for all of the active team's tenants */
+      this.allTenantsErroredOnGet = false;
+      try {
+        const results = await this.fetchAllTenantData();
         /*
          * Result is per-tenant, from Promise.allSettled
          * Trigger toasts for errors
@@ -124,15 +149,13 @@ export default {
           });
 
         // Set dashboard state
-        this.erroredOnGet = results.every(
+        this.allTenantsErroredOnGet = results.every(
           (result) => result.status == "rejected"
         );
       } catch (err) {
-        // Error raised by fetchTeamSpecificData
-        this.erroredOnGet = true;
-        this.toast.error(
-          `Failed to fetch team data: ${err.response?.data.detail ?? err}`
-        );
+        // Unexpected error
+        this.allTenantsErroredOnGet = true;
+        this.toast.error(err.toString());
       }
     },
   },
