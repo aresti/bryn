@@ -1,11 +1,16 @@
 import uuid
 
-from django.db import models
 from django.conf import settings
 from django.core.mail import send_mail
+from django.db import models
 from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.template.loader import render_to_string
+
 from phonenumber_field.modelfields import PhoneNumberField
+
+from .tokens import account_activation_token
 
 
 class Region(models.Model):
@@ -193,17 +198,21 @@ class Profile(models.Model):
         related_name="profile",
         related_query_name="profile",
     )
-    validation_link = models.UUIDField(default=uuid.uuid4, editable=False)
     email_validated = models.BooleanField(default=False)
     default_keypair = models.ForeignKey(
         "openstack.KeyPair", on_delete=models.SET_NULL, blank=True, null=True
     )
 
     def send_validation_link(self):
+        user = self.user
         context = {
-            "user": self.user,
+            "user": user,
             "validation_link": reverse(
-                "user:validate_email", args=[self.validation_link]
+                "user:validate_email",
+                kwargs={
+                    "uidb64": urlsafe_base64_encode(force_bytes(user.id)),
+                    "token": account_activation_token.make_token(user),
+                },
             ),
         }
         subject = render_to_string(
@@ -227,7 +236,8 @@ class Profile(models.Model):
 
     def mark_email_validated(self):
         self.email_validated = True
-        self.save()
+        self.user.is_active = True
+        self.user.save()  # Profile saves via signal
 
     def __str__(self):
         return f"{str(self.user)} profile"

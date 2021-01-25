@@ -69,22 +69,35 @@
 
 {% block extra_js %}
   <script>
-    function setContinueBtnStatus() {
-      const termsChecked = document.getElementById("id_agree_terms").checked;
-      const primaryUserChecked = document.getElementById("id_is_primary_user").checked;
-      const btn = document.getElementById("continue_btn");
-      
-      if (termsChecked && primaryUserChecked) {
-        btn.removeAttribute("disabled");
-      } else {
-        btn.setAttribute("disabled", true);
-        btn.focus();
+    class RegistrationFormGuard {
+      constructor(checkboxIds, buttonId) {
+        this.inputs = checkboxIds.map(checkboxId => {
+          return document.getElementById(checkboxId);
+        });
+        this.button = document.getElementById(buttonId);
+        this.setupEventListeners();
+      }
+
+      setupEventListeners() {
+        const boundCallback = this.setButtonStatus.bind(this);
+        this.inputs.forEach(() => {
+          document.addEventListener("click", boundCallback);
+        });
+        window.addEventListener("load", boundCallback);  // Handle back button
+      }
+
+      setButtonStatus() {
+        if (this.inputs.every(input => input.checked)) {
+          this.button.removeAttribute("disabled")
+          this.button.focus()
+        } else {
+          this.button.setAttribute("disabled", true);
+        }
       }
     }
 
     document.addEventListener("DOMContentLoaded", function(){
-      document.getElementById("id_agree_terms").addEventListener("click", setContinueBtnStatus);
-      document.getElementById("id_is_primary_user").addEventListener("click", setContinueBtnStatus);
+      new RegistrationFormGuard(["id_agree_terms", "id_is_primary_user"], "continue_btn");
     });
   </script>
 {% endblock %}

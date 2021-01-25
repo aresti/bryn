@@ -2,15 +2,17 @@ from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth import views as auth_views
-from django.http import HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
-from django.views import View
+from django.utils.http import urlsafe_base64_decode
 from django.views.generic import RedirectView, TemplateView
 from django.views.generic.edit import FormView
 
 from rest_framework import generics, permissions
 
 from .forms import (
+    CustomAuthenticationForm,
+    CustomSetPasswordForm,
     CustomUserCreationForm,
     PrimaryUserCreationForm,
     RegistrationScreeningForm,
@@ -23,11 +25,15 @@ from .serializers import (
     TeamMemberSerializer,
     UserSerializer,
 )
+from .tokens import account_activation_token
+
+User = get_user_model()
 
 
 # Auth views
 class LoginView(auth_views.LoginView):
     template_name = "userdb/login.html"
+    form_class = CustomAuthenticationForm
 
 
 class PasswordResetView(auth_views.PasswordResetView):
@@ -45,6 +51,7 @@ class PasswordResetDoneView(auth_views.PasswordResetDoneView):
 class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
     template_name = "userdb/password_reset_confirm.html"
     success_url = reverse_lazy("user:password_reset_complete")
+    form_class = CustomSetPasswordForm
 
 
 class PasswordResetCompleteView(auth_views.PasswordResetCompleteView):
@@ -67,7 +74,11 @@ def team_registration_view(request):
         team_form = TeamForm(request.POST)
 
         if user_form.is_valid() and team_form.is_valid():
-            user = user_form.save()  # profile instance is created via. signal
+            user = user_form.save(
+                commit=False
+            )  # profile instance is created via. signal
+            user.is_active = False  # pending email validation
+            user.save()
 
             # create team
             team = team_form.save(commit=False)
@@ -96,20 +107,6 @@ class TeamRegistrationDoneView(TemplateView):
     template_name = "userdb/register_team_done.html"
 
 
-class EmailValidationPendingView(TemplateView):
-    """User email validation pending view"""
-
-    template_name = "userdb/email_validation_pending.html"
-
-
-class EmailValidationSendView(View):
-    """User email validation send view"""
-
-    def get(self, request):
-        request.user.profile.send_validation_link()
-        return HttpResponseRedirect(reverse("user:email_validation_sent"))
-
-
 class EmailValidationSentView(TemplateView):
     """User email validation sent view"""
 
@@ -122,9 +119,24 @@ class EmailValidationConfirmView(RedirectView):
     pattern_name = "home:home"
 
     def get_redirect_url(self, *args, **kwargs):
-        profile = get_object_or_404(Profile, validation_link=kwargs.pop("uuid"))
-        profile.mark_email_validated()
-        messages.success(self.request, "Thank you for confirming your email address.")
+        """Check activation token"""
+        try:
+            user_id = urlsafe_base64_decode(kwargs.pop("uidb64"))
+            user = User.objects.get(pk=user_id)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            raise Http404
+
+        if account_activation_token.check_token(user, kwargs.pop("token")):
+            user.profile.mark_email_validated()
+            messages.success(
+                self.request, "Thank you for confirming your email address."
+            )
+        else:
+            messages.error(
+                "Account activation link has expired. We've sent you a new one!"
+            )
+            user.profile.send_validation_link()
+
         return super().get_redirect_url(*args, **kwargs)
 
 
@@ -283,7 +295,7 @@ class OwnUserDetailView(generics.RetrieveUpdateAPIView):
 
     serializer_class = UserSerializer
     permissions = [permissions.IsAuthenticated]
-    queryset = get_user_model().objects.all()
+    queryset = User.objects.all()
 
     def get_object(self):
         return self.request.user

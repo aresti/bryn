@@ -1,7 +1,4 @@
-from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseRedirect
-from django.urls import reverse
 from django.views.generic import TemplateView
 from humps import camelize
 
@@ -10,38 +7,7 @@ from openstack.serializers import RegionSerializer
 from userdb.serializers import TeamSerializer, UserSerializer
 
 
-class ValidatedEmailRequiredMixin:
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.profile.email_validated:
-            return HttpResponseRedirect(reverse("user:email_validation_pending"))
-        return super().dispatch(request, *args, **kwargs)
-
-
-class ActiveTeamRequiredMixin:
-    def dispatch(self, request, *args, **kwargs):
-        teams = request.user.teams.all()
-        if len(teams.filter(verified=True)):
-            return super().dispatch(request, *args, **kwargs)
-
-        # No active teams
-        if not len(teams):
-            # No teams whatsoever
-            messages.error(request, "You have no current team memberships.")
-        else:
-            # No active teams
-            messages.info(
-                request,
-                "Your team is pending approval by our team. We'll be in touch soon.",
-            )
-        return HttpResponseRedirect(reverse("user:login"))
-
-
-class TeamDashboard(
-    LoginRequiredMixin,
-    ValidatedEmailRequiredMixin,
-    ActiveTeamRequiredMixin,
-    TemplateView,
-):
+class TeamDashboard(LoginRequiredMixin, TemplateView):
     """
     Team dashboard (home)
     """

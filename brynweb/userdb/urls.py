@@ -34,23 +34,13 @@ urlpatterns = [
         name="register_team_done",
     ),
     path(
-        "email-validation-pending",
-        views.EmailValidationPendingView.as_view(),
-        name="email_validation_pending",
-    ),
-    path(
-        "email-validation-send",
-        views.EmailValidationSendView.as_view(),
-        name="email_validation_send",
-    ),
-    path(
         "email-validation-sent",
         views.EmailValidationSentView.as_view(),
         name="email_validation_sent",
     ),
     path("accept-invite/<uuid:uuid>", views.accept_invite, name="accept-invite"),
     path(
-        "validate-email/<uuid:uuid>",
+        "validate-email/<uidb64>/<token>/",
         views.EmailValidationConfirmView.as_view(),
         name="validate_email",
     ),

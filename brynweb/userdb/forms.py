@@ -1,9 +1,57 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.conf import settings
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    SetPasswordForm,
+    UserCreationForm,
+)
 from django.contrib.auth.models import User
+from django.utils.translation import gettext as _
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from .models import Team
+
+
+class CustomAuthenticationForm(AuthenticationForm):
+    def confirm_login_allowed(self, user):
+        """
+        Combined with AllowAllUsersModelBackend,
+        allows for more specific login form errors
+        """
+
+        # New user, pending email activation
+        if not (user.is_active or user.profile.email_validated):
+            # Not active, and pending email validation
+            raise forms.ValidationError(
+                _(
+                    "Please follow the account activation link sent to your email address."
+                ),
+                code="email_not_validated",
+            )
+
+        # Previously active user that has been disabled by admin
+        if not user.is_active:
+            raise forms.ValidationError(
+                _(
+                    f"This account has been disabled. Please contact {settings.ADMIN_EMAIL} for further assistance."
+                ),
+                code="inactive",
+            )
+
+        # No active teams
+        teams = user.teams.all()
+        if not len(teams.filter(verified=True)):
+            if not len(teams):
+                # No teams whatsoever
+                raise forms.ValidationError(_("You have no current team memberships."))
+            else:
+                # No active teams
+                raise forms.ValidationError(
+                    _(
+                        "Your team is pending approval by our admin team. We'll be in touch soon."
+                    ),
+                    code="no_teams",
+                )
 
 
 class RegistrationScreeningForm(forms.Form):
@@ -13,6 +61,14 @@ class RegistrationScreeningForm(forms.Form):
     is_primary_user = forms.BooleanField(
         label="I confirm that I am the primary user for my team", required=True
     )
+
+
+class CustomSetPasswordForm(SetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields[
+            "new_password1"
+        ].help_text = "Minimum 8 characters & not entirely numeric."
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -36,7 +92,7 @@ class CustomUserCreationForm(UserCreationForm):
         self.fields["username"].help_text = None
         self.fields[
             "password1"
-        ].help_text = "8 characters or more, not too common and not entirely numeric."
+        ].help_text = "Minimum 8 characters & not entirely numeric."
 
     def clean_email(self):
         """

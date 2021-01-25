@@ -15,6 +15,7 @@ ALLOWED_HOSTS = []
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 ADMINS = [("Nick", "n.j.loman.bham.ac.uk")]
+ADMIN_EMAIL = "Lisa.Marchioretto@quadram.ac.uk"
 SERVER_EMAIL = "noreply@discourse.climb.ac.uk"
 DEFAULT_FROM_EMAIL = "noreply@discourse.climb.ac.uk"
 
@@ -104,6 +105,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LOGIN_URL = "user:login"
 LOGIN_REDIRECT_URL = "home:home"
+
+# Don't reject auth where User.is_active is False; allows for custom error on email not-validated
+AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.AllowAllUsersModelBackend"]
 
 
 # Internationalization

@@ -14,15 +14,13 @@ def send_invitation(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    """Create a Profile on User creation"""
+def update_user_profile(sender, instance, created, **kwargs):
+    """
+    Create a Profile on User creation.
+    Auto-save Profile on User save
+    """
     if created:
         Profile.objects.create(user=instance)
-
-
-@receiver(post_save, sender=User)
-def save_profile(sender, instance, **kwargs):
-    """Auto-save Profile on User save"""
     instance.profile.save()
 
 
