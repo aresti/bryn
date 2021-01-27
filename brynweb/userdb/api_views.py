@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import generics, permissions
 
 from .models import Team, TeamMember, Invitation
+from .permissions import IsTeamAdminPermission
 from .serializers import (
     InvitationSerializer,
     TeamSerializer,
@@ -13,12 +14,18 @@ from .serializers import (
 User = get_user_model()
 
 
-def get_teams_for_user(user, team=None):
+def get_teams_for_user(user, team=None, admin=None):
     """
     Return queryset for all teams that an authenticated user is a member of.
     If team is specified, returns a queryset with only that team, if the user is a member.
+    If team & admin are specified, returns a query set with only that team, if the user is an admin.
     """
-    return user.teams.filter(pk=team) if team else user.teams.all()
+    if team:
+        if admin:
+            return user.teams.filter(teammember__is_admin=True)
+        return user.teams.filter(pk=team)
+    else:
+        return user.teams.all()
 
 
 class IsTeamAdmin(permissions.BasePermission):
@@ -99,11 +106,11 @@ class InvitationListView(generics.ListCreateAPIView):
     """
 
     serializer_class = InvitationSerializer
-    permission_classes = [permissions.IsAuthenticated, IsTeamAdmin]
+    permission_classes = [permissions.IsAuthenticated, IsTeamAdminPermission]
 
     def get_queryset(self):
-        query_team = self.request.query_params.get("team")
-        teams = get_teams_for_user(self.request.user, team=query_team)
+        team_id = self.kwargs.get("team_id")
+        teams = get_teams_for_user(self.request.user, team=team_id, admin=True)
         return Invitation.objects.filter(to_team__in=teams, accepted=False)
 
 

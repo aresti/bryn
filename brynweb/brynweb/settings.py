@@ -191,10 +191,16 @@ LOGGING = {
 SLACK_FAIL_SILENTLY = True
 SLACK_BACKEND = "django_slack.backends.UrllibBackend"
 
+# Local secrets
+
 try:
     from .locals import *  # noqa: F401,F403
 except ImportError:
     pass
+
+# Hashids
+
+HASHIDS = {"SALT": HASHIDS_SALT, "MIN_LENGTH": 11}  # noqa: F405
 
 if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

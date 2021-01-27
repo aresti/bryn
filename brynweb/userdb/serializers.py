@@ -1,6 +1,7 @@
 from rest_framework import serializers, validators
 from django.contrib.auth import get_user_model
 
+from core.serializers import HashidsIntegerField
 from openstack.serializers import TenantSerializer
 from .models import Invitation, TeamMember, Team, Profile
 
@@ -13,6 +14,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    id = HashidsIntegerField()
     profile = ProfileSerializer(many=False, read_only=False)
 
     class Meta:
@@ -38,6 +40,10 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class TeamMemberSerializer(serializers.ModelSerializer):
+    id = HashidsIntegerField()
+    team = serializers.PrimaryKeyRelatedField(
+        pk_field=HashidsIntegerField(), read_only=True
+    )
     user = UserSerializer()
 
     class Meta:
@@ -46,6 +52,9 @@ class TeamMemberSerializer(serializers.ModelSerializer):
 
 
 class InvitationSerializer(serializers.ModelSerializer):
+    to_team = serializers.PrimaryKeyRelatedField(
+        queryset=Team.objects.all(), pk_field=HashidsIntegerField()
+    )
     made_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:

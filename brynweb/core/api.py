@@ -42,10 +42,12 @@ urlpatterns = [
         "teammembers/", userdb_views.TeamMemberListView.as_view(), name="team_members",
     ),
     path(
-        "invitations/", userdb_views.InvitationListView.as_view(), name="invitations",
+        "team/<hashids:team_id>/invitations/",
+        userdb_views.InvitationListView.as_view(),
+        name="invitations",
     ),
     path(
-        "invitations/<uuid:pk>",
+        "team/<hashids:team_id>/invitations/<uuid:pk>",
         userdb_views.InvitationDetailView.as_view(),
         name="invitations",
     ),

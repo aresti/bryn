@@ -1,5 +1,9 @@
-from django.urls import path, include
+from django.urls import include, path, register_converter
 from django.contrib import admin
+
+from core.converters import HashidsConverter
+
+register_converter(HashidsConverter, "hashids")
 
 urlpatterns = [
     path("", include("home.urls")),

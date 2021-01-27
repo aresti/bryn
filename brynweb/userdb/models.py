@@ -10,6 +10,7 @@ from django.template.loader import render_to_string
 
 from phonenumber_field.modelfields import PhoneNumberField
 
+from core import hashids
 from .tokens import account_activation_token
 
 
@@ -65,6 +66,10 @@ class Team(models.Model):
     users = models.ManyToManyField(
         settings.AUTH_USER_MODEL, through="TeamMember", related_name="teams"
     )
+
+    @property
+    def hashid(self):
+        return hashids.encode(self.id)
 
     @property
     def admin_users(self):
@@ -171,7 +176,7 @@ class Invitation(models.Model):
     def send_invitation_email(self):
         context = {
             "invitation": self,
-            "url": reverse("user:accept-invite", args=[self.uuid]),
+            "url": reverse("user:accept_invite", args=[self.uuid]),
         }
         subject = render_to_string("userdb/email/user_invite_subject.txt", context)
         text_content = render_to_string("userdb/email/user_invite_email.txt", context)
