@@ -1,6 +1,6 @@
 from openstack.client import OpenstackClient
-from openstack.models import Tenant
-from userdb.models import Team, Region
+from openstack.models import Region, Tenant
+from userdb.models import Team
 from dateutil.parser import parse as dateutilparse
 from dateutil.tz import *  # noqa: F401,F403
 

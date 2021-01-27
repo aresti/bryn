@@ -1,6 +1,6 @@
 from openstack.client import OpenstackClient, get_admin_credentials
-from openstack.models import get_tenant_for_team
-from userdb.models import Team, Region
+from openstack.models import get_tenant_for_team, Region
+from userdb.models import Team
 
 
 def set_quota(tenant):

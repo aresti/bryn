@@ -5,17 +5,16 @@ axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
 axios.defaults.timeout = 20000;
 
 const baseUrl = "/api";
-const baseUrlUser = "/user/api";
 
 const apiRoutes = {
   images: baseUrl + "/images/",
   instances: baseUrl + "/instances/",
-  invitations: baseUrlUser + "/invitations/",
+  invitations: baseUrl + "/invitations/",
   flavors: baseUrl + "/flavors/",
   keyPairs: baseUrl + "/keypairs/",
-  team: baseUrlUser + "/teams/",
-  teamMembers: baseUrlUser + "/teammembers/",
-  userProfile: baseUrlUser + "/userprofile/",
+  team: baseUrl + "/teams/",
+  teamMembers: baseUrl + "/teammembers/",
+  userProfile: baseUrl + "/userprofile/",
   volumes: baseUrl + "/volumes/",
   volumeTypes: baseUrl + "/volumetypes",
 };

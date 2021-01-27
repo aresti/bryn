@@ -1,5 +1,5 @@
-from openstack.models import Tenant
-from userdb.models import Team, Region
+from openstack.models import Region, Tenant
+from userdb.models import Team
 
 
 def run():

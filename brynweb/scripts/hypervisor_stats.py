@@ -1,6 +1,5 @@
 from openstack.client import OpenstackClient, get_admin_credentials
-from openstack.models import HypervisorStats
-from userdb.models import Region
+from openstack.models import HypervisorStats, Region
 
 
 def run():

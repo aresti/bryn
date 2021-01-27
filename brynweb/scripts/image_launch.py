@@ -1,6 +1,6 @@
 from openstack.client import OpenstackClient
-from openstack.models import Tenant
-from userdb.models import Team, Region
+from openstack.models import Tenant, Region
+from userdb.models import Team
 from openstack.utils import add_keypair
 import time
 
@@ -24,11 +24,7 @@ def launch_image(
 
     volume = cinder.volumes.create(
         imageRef=image_id,
-        name="%s %s boot volume"
-        % (
-            tenant.get_tenant_name(),
-            server_name,
-        ),
+        name="%s %s boot volume" % (tenant.get_tenant_name(), server_name,),
         size=120,
     )
     cinder.volumes.set_bootable(volume, True)

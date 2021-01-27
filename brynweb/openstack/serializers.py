@@ -1,8 +1,7 @@
 from rest_framework import serializers
 
 from . import INSTANCE_STATUS_VALUES
-from .models import Tenant, KeyPair
-from userdb.models import Region
+from .models import KeyPair, Tenant, Region
 
 
 class RegionSerializer(serializers.ModelSerializer):

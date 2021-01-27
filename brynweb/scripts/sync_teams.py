@@ -1,5 +1,5 @@
-from userdb.models import Team, Region
-from openstack.models import get_tenant_for_team
+from userdb.models import Team
+from openstack.models import get_tenant_for_team, Region
 from scripts.setup_team import setup_tenant
 
 

@@ -38,37 +38,10 @@ urlpatterns = [
         views.EmailValidationSentView.as_view(),
         name="email_validation_sent",
     ),
-    path("accept-invite/<uuid:uuid>", views.accept_invite, name="accept-invite"),
+    path("accept-invite/<uuid:uuid>", views.accept_invite, name="accept_invite"),
     path(
         "validate-email/<uidb64>/<token>/",
         views.EmailValidationConfirmView.as_view(),
         name="validate_email",
-    ),
-    # API
-    path("api/teams/<int:pk>", views.TeamDetailView.as_view(), name="api-team-detail",),
-    path(
-        "api/teammembers/<int:pk>",
-        views.TeamMemberDetailView.as_view(),
-        name="api-teammember-detail",
-    ),
-    path(
-        "api/teammembers/",
-        views.TeamMemberListView.as_view(),
-        name="api-teammember-list",
-    ),
-    path(
-        "api/invitations/<uuid:pk>",
-        views.InvitationDetailView.as_view(),
-        name="api-invitation-detail",
-    ),
-    path(
-        "api/invitations/",
-        views.InvitationListView.as_view(),
-        name="api-invitation-list",
-    ),
-    path(
-        "api/userprofile/",
-        views.OwnUserDetailView.as_view(),
-        name="api-ownuser-detail",
     ),
 ]

@@ -1,6 +1,5 @@
-from userdb.models import Region
 from openstack.client import OpenstackClient, get_admin_credentials
-from openstack.models import Tenant
+from openstack.models import Region, Tenant
 
 
 def delete_tenant(tenant):

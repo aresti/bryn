@@ -30,13 +30,15 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_extensions",
     "django_slack",
+    "coverage",
     "rest_framework",
     "widget_tweaks",
-    "reporting",
+    "core",
     "userdb",
     "home",
-    "discourse",
     "openstack",
+    "reporting",
+    "discourse",
 ]
 
 MIDDLEWARE = [
@@ -147,6 +149,12 @@ STATICFILES_DIRS = [
 PHONENUMBER_DEFAULT_REGION = "GB"
 
 REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_THROTTLE_CLASSES": (
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ),
+    "DEFAULT_THROTTLE_RATES": {"anon": "100/day", "user": "1000/day"},
     "DEFAULT_RENDERER_CLASSES": (
         "djangorestframework_camel_case.render.CamelCaseJSONRenderer",
         "djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer",
@@ -156,6 +164,7 @@ REST_FRAMEWORK = {
         "djangorestframework_camel_case.parser.CamelCaseMultiPartParser",
         "djangorestframework_camel_case.parser.CamelCaseJSONParser",
     ),
+    "TEST_REQUEST_DEFAULT_FORMAT": "json",
 }
 
 LOGGING = {

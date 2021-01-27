@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Tenant, RegionSettings, ActionLog, HypervisorStats
+from .models import ActionLog, HypervisorStats, Tenant, Region, RegionSettings
 
 
 class TenantAdmin(admin.ModelAdmin):
@@ -11,6 +11,7 @@ class ActionLogAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Tenant, TenantAdmin)
+admin.site.register(Region)
 admin.site.register(RegionSettings)
 admin.site.register(ActionLog, ActionLogAdmin)
 admin.site.register(HypervisorStats)

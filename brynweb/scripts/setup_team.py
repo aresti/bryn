@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
-from userdb.models import Team, Region
+from userdb.models import Team
 from openstack.client import OpenstackClient, get_admin_credentials
-from openstack.models import Tenant
+from openstack.models import Region, Tenant
 from scripts.set_quotas import set_quota
 
 

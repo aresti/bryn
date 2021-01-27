@@ -11,6 +11,9 @@ from .validators import validate_public_key
 from userdb.models import Team, Region
 
 
+# Region model would ideally be in this app, but to avoid legacy migration issues it remains in userdb
+
+
 class Tenant(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="tenants")
     region = models.ForeignKey(Region, on_delete=models.CASCADE)

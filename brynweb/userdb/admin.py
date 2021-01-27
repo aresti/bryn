@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
 from django.http import HttpResponseRedirect
 
-from userdb.models import Team, Invitation, TeamMember, Profile, Region, UserProfile
+from openstack.models import Region
+from .models import Team, Invitation, TeamMember, Profile, UserProfile
 
 from scripts.setup_team import setup_tenant
 
@@ -118,6 +119,5 @@ class LegacyCustomUserAdmin(UserAdmin):
 admin.site.register(Team, TeamAdmin)
 admin.site.register(TeamMember)
 admin.site.register(Invitation, InvitationAdmin)
-admin.site.register(Region)
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)

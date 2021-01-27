@@ -1,6 +1,6 @@
-from userdb.models import Team, Region
+from userdb.models import Team
 from openstack.client import OpenstackClient, get_admin_credentials
-from openstack.models import Tenant
+from openstack.models import Region, Tenant
 
 
 def show_tenant_info(tenant):
