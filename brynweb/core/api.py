@@ -32,29 +32,31 @@ urlpatterns = [
         "volumetypes/", openstack_views.VolumeTypeListView.as_view(), name="volumetypes"
     ),
     # Userdb routes
-    # {% url "api:team" team.pk %}
-    path("teams/<hashids:pk>", userdb_views.TeamDetailView.as_view(), name="teams",),
-    # {% url "api:team_members" team.hashid %}
+    # {% url "api:team" team_id=team.id %}
     path(
-        "team/<hashids:team_id>/members/",
+        "teams/<hashids:team_id>", userdb_views.TeamDetailView.as_view(), name="teams",
+    ),
+    # {% url "api:team_members" team_id=team.id%}
+    path(
+        "teams/<hashids:team_id>/members/",
         userdb_views.TeamMemberListView.as_view(),
         name="team_members",
     ),
-    # {% url "api:team_members" team.id teammember.pk %}
+    # {% url "api:team_members" team_id=team.id pk=teammember.pk %}
     path(
-        "team/<hashids:team_id>/members/<hashids:pk>",
+        "teams/<hashids:team_id>/members/<hashids:pk>",
         userdb_views.TeamMemberDetailView.as_view(),
         name="team_members",
     ),
-    # {% url "api:invitations" team.id %}
+    # {% url "api:invitations" team_id=team.id %}
     path(
-        "team/<hashids:team_id>/invitations/",
+        "teams/<hashids:team_id>/invitations/",
         userdb_views.InvitationListView.as_view(),
         name="invitations",
     ),
-    # {% url "api:invitations" team.id invitation.pk %}
+    # {% url "api:invitations" team_id=team.id pk=invitation.pk %}
     path(
-        "team/<hashids:team_id>/invitations/<uuid:pk>",
+        "teams/<hashids:team_id>/invitations/<uuid:pk>",
         userdb_views.InvitationDetailView.as_view(),
         name="invitations",
     ),

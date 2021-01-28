@@ -44,6 +44,9 @@ class TeamDetailView(generics.RetrieveUpdateAPIView):
         IsTeamAdminForUnsafePermission,
     ]
     serializer_class = TeamSerializer
+    lookup_url_kwarg = (
+        "team_id"  # using team_id keeps view compatible with team permission classes
+    )
 
     def get_queryset(self):
         return get_teams_for_user(self.request.user)

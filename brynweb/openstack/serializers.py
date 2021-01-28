@@ -1,24 +1,35 @@
 from rest_framework import serializers
 
+from core.serializers import HashidsIntegerField
 from . import INSTANCE_STATUS_VALUES
 from .models import KeyPair, Tenant, Region
 
 
 class RegionSerializer(serializers.ModelSerializer):
+    id = HashidsIntegerField()
+
     class Meta:
         model = Region
         fields = ["id", "name", "description", "disabled", "disable_new_instances"]
 
 
 class TenantSerializer(serializers.ModelSerializer):
+    id = HashidsIntegerField()
+    team = serializers.PrimaryKeyRelatedField(
+        pk_field=HashidsIntegerField(), read_only=True
+    )
+    region = serializers.PrimaryKeyRelatedField(
+        pk_field=HashidsIntegerField(), read_only=True
+    )
+
     class Meta:
         model = Tenant
         fields = ["id", "region", "team"]
 
 
 class OpenstackBaseSerializer(serializers.Serializer):
-    team = serializers.IntegerField(read_only=True)
-    tenant = serializers.IntegerField(read_only=True)
+    team = HashidsIntegerField(read_only=True)
+    tenant = HashidsIntegerField(read_only=True)
 
 
 class InstanceSerializer(OpenstackBaseSerializer):
@@ -47,7 +58,7 @@ class KeyPairSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = KeyPair
-        fields = "__all__"
+        fields = ["id", "user", "name", "public_key", "fingerprint"]
 
 
 class AttachmentSerializer(serializers.Serializer):

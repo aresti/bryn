@@ -27,7 +27,7 @@ class TestInvitationAPI(APITestCase):
         TeamMember.objects.create(team=cls.team_b, user=cls.team_b_admin, is_admin=True)
 
     def test_invitation_list_allows_retrieve_create(self):
-        self.client.force_login(user=self.team_b_admin)
+        self.client.force_login(user=self.team_a_admin)
         response = self.client.head(
             reverse(self.path_name, kwargs={"team_id": self.team_a.pk})
         )
@@ -234,7 +234,7 @@ class TestTeamMemberAPI(APITestCase):
         TeamMember.objects.create(team=cls.team_b, user=cls.team_b_admin, is_admin=True)
 
     def test_team_members_list_allows_retrieve_only(self):
-        self.client.force_login(user=self.team_b_admin)
+        self.client.force_login(user=self.team_a_admin)
         response = self.client.head(
             reverse(self.path_name, kwargs={"team_id": self.team_a.pk})
         )
@@ -262,6 +262,16 @@ class TestTeamMemberAPI(APITestCase):
         self.client.force_login(user=self.team_b_admin)
         response = self.client.get(
             reverse(self.path_name, kwargs={"team_id": self.team_a.pk})
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_anon_user_cannot_view_team_member_detail(self):
+        """Are non-authenticated users forbidden from viewing team member detail?"""
+        teammember = TeamMember.objects.get(user=self.team_a_admin, team=self.team_a)
+        response = self.client.get(
+            reverse(
+                self.path_name, kwargs={"team_id": self.team_a.pk, "pk": teammember.pk},
+            )
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
@@ -314,3 +324,59 @@ class TestTeamMemberAPI(APITestCase):
             )
         )
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class TestTeamAPI(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # Shared setup
+        cls.path_name = "api:teams"
+
+        cls.team_a = TeamFactory()
+        cls.team_a_admin = UserFactory()
+        cls.team_a_member1 = UserFactory()
+        TeamMember.objects.create(team=cls.team_a, user=cls.team_a_admin, is_admin=True)
+        TeamMember.objects.create(team=cls.team_a, user=cls.team_a_member1)
+
+        cls.team_b = TeamFactory()
+        cls.team_b_admin = UserFactory()
+        TeamMember.objects.create(team=cls.team_b, user=cls.team_b_admin, is_admin=True)
+
+    def test_anon_user_cannot_view_team_detail(self):
+        """Are non-authenticated users forbidden from viewing team detail?"""
+        response = self.client.get(
+            reverse(self.path_name, kwargs={"team_id": self.team_a.pk})
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_team_detail_allows_retrieve_update_methods(self):
+        self.client.force_login(user=self.team_a_admin)
+        response = self.client.head(
+            reverse(self.path_name, kwargs={"team_id": self.team_a.pk})
+        )
+        allow = response["Allow"]
+        self.assertEqual(allow, "GET, PUT, PATCH, HEAD, OPTIONS")
+
+    def test_member_can_view_team_detail(self):
+        self.client.force_login(user=self.team_a_member1)
+        response = self.client.get(
+            reverse(self.path_name, kwargs={"team_id": self.team_a.pk})
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("name"), self.team_a.name)
+
+    def test_non_member_cannot_view_team_detail(self):
+        self.client.force_login(user=self.team_a_member1)
+        response = self.client.get(
+            reverse(self.path_name, kwargs={"team_id": self.team_b.pk})
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_team_admin_can_patch_team_detail(self):
+        self.client.force_login(user=self.team_a_admin)
+        response = self.client.patch(
+            reverse(self.path_name, kwargs={"team_id": self.team_a.pk}),
+            data={"department": "Changed my department"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("department"), "Changed my department")

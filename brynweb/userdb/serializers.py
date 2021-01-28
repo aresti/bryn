@@ -79,6 +79,7 @@ class InvitationSerializer(serializers.ModelSerializer):
 
 
 class TeamSerializer(serializers.ModelSerializer):
+    id = HashidsIntegerField()
     tenants = TenantSerializer(many=True, read_only=True)
 
     class Meta:
