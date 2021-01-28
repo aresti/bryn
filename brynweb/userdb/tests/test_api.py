@@ -26,9 +26,13 @@ class TestInvitationAPI(APITestCase):
         cls.team_b_admin = UserFactory()
         TeamMember.objects.create(team=cls.team_b, user=cls.team_b_admin, is_admin=True)
 
-    def setUp(self):
-        # Per method setup
-        pass
+    def test_invitation_list_allows_retrieve_create(self):
+        self.client.force_login(user=self.team_b_admin)
+        response = self.client.head(
+            reverse(self.path_name, kwargs={"team_id": self.team_a.pk})
+        )
+        allow = response["Allow"]
+        self.assertEqual(allow, "GET, POST, HEAD, OPTIONS")
 
     def test_anon_user_cannot_get_invitation_list(self):
         """Are non-authenticated users forbidden from list endpoint?"""
@@ -164,7 +168,43 @@ class TestInvitationAPI(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
         self.assertEqual(Invitation.objects.count(), 1)
-        print(response.content)
         self.assertContains(
             response, "Accepted invitations cannot be deleted", status_code=405
         )
+
+
+class TestUserProfileAPI(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # Shared setup
+        cls.path_name = "api:user_profile"
+
+        cls.user_a = UserFactory()
+        cls.user_b = UserFactory()
+
+    def test_anon_user_cannot_view_user_profile(self):
+        """Are non-authenticated users forbidden from user profile endpoint?"""
+        response = self.client.get(reverse(self.path_name))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_user_profile_endpoint_returns_logged_in_user(self):
+        """Does the user profile return the logged in user?"""
+        self.client.force_login(user=self.user_a)
+        response = self.client.get(reverse(self.path_name))
+        self.assertEqual(response.data.get("username"), self.user_a.username)
+
+    def test_user_can_update_profile(self):
+        """Can the logged in user update his profile?"""
+        self.client.force_login(user=self.user_a)
+        response = self.client.patch(
+            reverse(self.path_name), data={"first_name": "Jim"}
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(User.objects.get(pk=self.user_a.pk).first_name, "Jim")
+
+    def test_updating_email_sets_email_validated_false(self):
+        self.user_a.profile.email_validated = True
+        self.client.force_login(user=self.user_a)
+        self.client.patch(reverse(self.path_name), data={"email": "something@new.com"})
+        updated_user = User.objects.get(pk=self.user_a.pk)
+        self.assertEqual(updated_user.profile.email_validated, False)

@@ -23,6 +23,8 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "username"]
 
     def update(self, instance, validated_data):
+        is_new_email = instance != validated_data.get("email")
+
         instance.first_name = validated_data.get("first_name", instance.first_name)
         instance.last_name = validated_data.get("last_name", instance.last_name)
         instance.email = validated_data.get("email", instance.email)
@@ -35,6 +37,13 @@ class UserSerializer(serializers.ModelSerializer):
                 "default_keypair", profile.default_keypair
             )
             profile.save()
+
+        if is_new_email:
+            # Not ideal having this logic here, but since project was started without custom User model,
+            # we can't just override model save()
+            instance.profile.email_validated = False
+            instance.profile.save()
+            instance.profile.send_validation_link()
 
         return instance
 
