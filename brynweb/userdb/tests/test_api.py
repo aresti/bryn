@@ -150,3 +150,21 @@ class TestInvitationAPI(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Invitation.objects.count(), 0)
+
+    def test_cannot_delete_an_accepted_invitation(self):
+        """Is delete prevented for accepted invitations"""
+        invitation = InvitationFactory(
+            to_team=self.team_a, made_by=self.team_a_admin, accepted=True
+        )
+        self.client.force_login(user=self.team_a_admin)
+        response = self.client.delete(
+            reverse(
+                self.path_name, kwargs={"team_id": self.team_a.pk, "pk": invitation.pk},
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(Invitation.objects.count(), 1)
+        print(response.content)
+        self.assertContains(
+            response, "Accepted invitations cannot be deleted", status_code=405
+        )

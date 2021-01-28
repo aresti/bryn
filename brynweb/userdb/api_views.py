@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 
-from rest_framework import generics, permissions
+from rest_framework import exceptions, generics, permissions
 
 from .models import Team, TeamMember, Invitation
 from .permissions import IsTeamAdminPermission
@@ -120,8 +121,16 @@ class InvitationDetailView(generics.RetrieveDestroyAPIView):
     """
 
     serializer_class = InvitationSerializer
-    permission_classes = [permissions.IsAuthenticated, IsTeamAdmin]
+    permission_classes = [permissions.IsAuthenticated, IsTeamAdminPermission]
     queryset = Invitation.objects.all()
+
+    def get_object(self):
+        obj = get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])
+        self.check_object_permissions(self.request, obj)
+        if self.request.method == "DELETE" and obj.accepted:
+            # Don't allow accepted invitations to be deleted
+            raise exceptions.MethodNotAllowed("Accepted invitations cannot be deleted.")
+        return obj
 
 
 class OwnUserDetailView(generics.RetrieveUpdateAPIView):
