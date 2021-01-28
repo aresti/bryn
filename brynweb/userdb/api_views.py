@@ -3,8 +3,12 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import exceptions, generics, permissions
 
-from .models import Team, TeamMember, Invitation
-from .permissions import IsTeamAdminPermission
+from .models import TeamMember, Invitation
+from .permissions import (
+    IsTeamAdminPermission,
+    IsTeamAdminForUnsafePermission,
+    IsTeamMemberPermission,
+)
 from .serializers import (
     InvitationSerializer,
     TeamSerializer,
@@ -29,45 +33,16 @@ def get_teams_for_user(user, team=None, admin=None):
         return user.teams.all()
 
 
-class IsTeamAdmin(permissions.BasePermission):
-    """
-    Object level permission to only allow team admins.
-    Assumes the model instance is a Team object, or otherwise has a
-    'team' or 'to_team' attribute.
-    """
-
-    def has_object_permission(self, request, view, obj):
-        if isinstance(obj, Team):
-            team = obj
-        elif hasattr(obj, "to_team"):
-            team = obj.to_team
-        else:
-            team = obj.team
-        return (
-            len(TeamMember.objects.filter(team=team, user=request.user, is_admin=True))
-            == 1
-        )
-
-
-class IsTeamAdminOrReadOnly(IsTeamAdmin):
-    """
-    Object level permission to only allow team admins to edit/destroy.
-    Assumes the model instance is a Team object, or otherwise has
-    a 'team' or 'to_team' attribute.
-    """
-
-    def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return super().has_object_permission(request, view, obj)
-
-
 class TeamDetailView(generics.RetrieveUpdateAPIView):
     """
     API detail endpoint for Team.
     """
 
-    permission_classes = [permissions.IsAuthenticated, IsTeamAdminOrReadOnly]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsTeamMemberPermission,
+        IsTeamAdminForUnsafePermission,
+    ]
     serializer_class = TeamSerializer
 
     def get_queryset(self):
@@ -80,11 +55,15 @@ class TeamMemberListView(generics.ListAPIView):
     """
 
     serializer_class = TeamMemberSerializer
-    permission_classes = [permissions.IsAuthenticated, IsTeamAdminOrReadOnly]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsTeamMemberPermission,
+        IsTeamAdminForUnsafePermission,
+    ]
 
     def get_queryset(self):
-        query_team = self.request.query_params.get("team")
-        teams = get_teams_for_user(self.request.user, team=query_team)
+        team_id = self.kwargs.get("team_id")
+        teams = get_teams_for_user(self.request.user, team=team_id)
         return TeamMember.objects.filter(team__in=teams)
 
 
@@ -94,11 +73,21 @@ class TeamMemberDetailView(generics.RetrieveDestroyAPIView):
     """
 
     serializer_class = TeamMemberSerializer
-    permission_classes = [permissions.IsAuthenticated, IsTeamAdmin]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsTeamMemberPermission,
+        IsTeamAdminForUnsafePermission,
+    ]
 
     def get_queryset(self):
         teams = get_teams_for_user(self.request.user)
         return TeamMember.objects.filter(team__in=teams)
+
+    def delete(self, request, team_id, pk):
+        if get_object_or_404(TeamMember, pk=pk).user == request.user:
+            # Don't allow a team member to delete themselves
+            raise exceptions.MethodNotAllowed("Own team membership cannot be deleted.")
+        return super().delete(self, request, team_id, pk)
 
 
 class InvitationListView(generics.ListCreateAPIView):

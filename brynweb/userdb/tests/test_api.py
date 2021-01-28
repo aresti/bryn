@@ -203,8 +203,114 @@ class TestUserProfileAPI(APITestCase):
         self.assertEqual(User.objects.get(pk=self.user_a.pk).first_name, "Jim")
 
     def test_updating_email_sets_email_validated_false(self):
+        """Does updating user email (previously validated) set the validation status to false?"""
         self.user_a.profile.email_validated = True
         self.client.force_login(user=self.user_a)
         self.client.patch(reverse(self.path_name), data={"email": "something@new.com"})
         updated_user = User.objects.get(pk=self.user_a.pk)
         self.assertEqual(updated_user.profile.email_validated, False)
+
+    def test_user_profile_cannot_be_deleted(self):
+        """Is user profile deletion not allowed?"""
+        self.client.force_login(user=self.user_a)
+        response = self.client.delete(reverse(self.path_name))
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class TestTeamMemberAPI(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # Shared setup
+        cls.path_name = "api:team_members"
+
+        cls.team_a = TeamFactory()
+        cls.team_a_admin = UserFactory()
+        cls.team_a_member1 = UserFactory()
+        TeamMember.objects.create(team=cls.team_a, user=cls.team_a_admin, is_admin=True)
+        TeamMember.objects.create(team=cls.team_a, user=cls.team_a_member1)
+
+        cls.team_b = TeamFactory()
+        cls.team_b_admin = UserFactory()
+        TeamMember.objects.create(team=cls.team_b, user=cls.team_b_admin, is_admin=True)
+
+    def test_team_members_list_allows_retrieve_only(self):
+        self.client.force_login(user=self.team_b_admin)
+        response = self.client.head(
+            reverse(self.path_name, kwargs={"team_id": self.team_a.pk})
+        )
+        allow = response["Allow"]
+        self.assertEqual(allow, "GET, HEAD, OPTIONS")
+
+    def test_anon_user_cannot_get_team_members(self):
+        """Are non-authenticated users forbidden from viewing team members?"""
+        response = self.client.get(
+            reverse(self.path_name, kwargs={"team_id": self.team_a.pk})
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_team_member_can_view_team_members(self):
+        """Is a team member able to see team members?"""
+        self.client.force_login(user=self.team_a_member1)
+        response = self.client.get(
+            reverse(self.path_name, kwargs={"team_id": self.team_a.pk})
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+
+    def test_user_from_different_team_cannot_view_team_members(self):
+        """Is a user from a different team forbidden from viewing team members?"""
+        self.client.force_login(user=self.team_b_admin)
+        response = self.client.get(
+            reverse(self.path_name, kwargs={"team_id": self.team_a.pk})
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_team_member_can_view_team_member_detail(self):
+        """Is a team member able to view individual team member objects?"""
+        self.client.force_login(user=self.team_a_member1)
+        teammember = TeamMember.objects.get(user=self.team_a_admin, team=self.team_a)
+        response = self.client.get(
+            reverse(
+                self.path_name, kwargs={"team_id": self.team_a.pk, "pk": teammember.pk},
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_team_admin_can_delete_team_member(self):
+        """Can a team admin delete a team membership?"""
+        self.client.force_login(user=self.team_a_admin)
+        user = UserFactory()
+        member = TeamMember.objects.create(team=self.team_a, user=user)
+        response = self.client.delete(
+            reverse(
+                self.path_name, kwargs={"team_id": self.team_a.pk, "pk": member.pk},
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        with self.assertRaises(
+            TeamMember.DoesNotExist, msg="TeamMember should have been deleted"
+        ):
+            TeamMember.objects.get(user=user, team=self.team_a)
+
+    def test_non_admin_member_cannot_delete_team_member(self):
+        """Are non-admin team members forbidden from deleting team members?"""
+        self.client.force_login(user=self.team_a_member1)
+        user = UserFactory()
+        member = TeamMember.objects.create(team=self.team_a, user=user)
+        response = self.client.delete(
+            reverse(
+                self.path_name, kwargs={"team_id": self.team_a.pk, "pk": member.pk},
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_team_admin_cannot_delete_own_membership(self):
+        user = UserFactory()
+        member = TeamMember.objects.create(team=self.team_a, user=user, is_admin=True)
+        self.client.force_login(user=user)
+        response = self.client.delete(
+            reverse(
+                self.path_name, kwargs={"team_id": self.team_a.pk, "pk": member.pk},
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)

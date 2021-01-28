@@ -143,6 +143,10 @@ class TeamMember(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     is_admin = models.BooleanField(default=False)
 
+    @property
+    def hashid(self):
+        return hashids.encode(self.id)
+
     def __str__(self):
         return "%s belongs to %s" % (self.user, self.team)
 

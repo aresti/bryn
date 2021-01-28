@@ -23,6 +23,17 @@ class IsTeamAdminPermission(permissions.BasePermission):
         return team_member.is_admin
 
 
+class IsTeamAdminForUnsafePermission(IsTeamAdminPermission):
+    """
+    Only allow team admins to perform usafe methods.
+    """
+
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return super().has_permission(request, view)
+
+
 class IsTeamMemberPermission(permissions.BasePermission):
     """
     Only allow team members.
@@ -41,17 +52,3 @@ class IsTeamMemberPermission(permissions.BasePermission):
             raise exceptions.NotFound  # No team
         except TeamMember.DoesNotExist:
             return False  # Team exists, but user is not a member
-
-
-class IsNotOwnTeamMembershipDeletePermission(permissions.BasePermission):
-    """
-    Forbid action to delete own team membership.
-    """
-
-    def has_object_permission(self, request, view, obj):
-        """
-        Reject if the TeamMembership user is also the request user.
-        """
-        if request.method != "DELETE":
-            return True
-        return request.user != obj.user

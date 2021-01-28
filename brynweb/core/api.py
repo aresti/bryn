@@ -31,26 +31,34 @@ urlpatterns = [
     path(
         "volumetypes/", openstack_views.VolumeTypeListView.as_view(), name="volumetypes"
     ),
-    # Userdb
-    path("teams/<int:pk>", userdb_views.TeamDetailView.as_view(), name="teams",),
+    # Userdb routes
+    # {% url "api:team" team.pk %}
+    path("teams/<hashids:pk>", userdb_views.TeamDetailView.as_view(), name="teams",),
+    # {% url "api:team_members" team.hashid %}
     path(
-        "teammembers/<int:pk>",
+        "team/<hashids:team_id>/members/",
+        userdb_views.TeamMemberListView.as_view(),
+        name="team_members",
+    ),
+    # {% url "api:team_members" team.id teammember.pk %}
+    path(
+        "team/<hashids:team_id>/members/<hashids:pk>",
         userdb_views.TeamMemberDetailView.as_view(),
         name="team_members",
     ),
-    path(
-        "teammembers/", userdb_views.TeamMemberListView.as_view(), name="team_members",
-    ),
+    # {% url "api:invitations" team.id %}
     path(
         "team/<hashids:team_id>/invitations/",
         userdb_views.InvitationListView.as_view(),
         name="invitations",
     ),
+    # {% url "api:invitations" team.id invitation.pk %}
     path(
         "team/<hashids:team_id>/invitations/<uuid:pk>",
         userdb_views.InvitationDetailView.as_view(),
         name="invitations",
     ),
+    # {% url "api:userprofile" %}
     path(
         "userprofile/", userdb_views.OwnUserDetailView.as_view(), name="user_profile",
     ),
