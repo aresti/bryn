@@ -1,4 +1,4 @@
-import { axios, apiRoutes } from "@/api";
+import { axios, getAPIRoute } from "@/api";
 import { collectionForTeamId } from "@/utils/store";
 
 const state = () => {
@@ -29,15 +29,18 @@ const getters = {
 };
 
 const actions = {
-  async getTeamMembers({ commit }) {
-    const response = await axios.get(apiRoutes.teamMembers);
+  async getTeamMembers({ commit, rootState }) {
+    const url = getAPIRoute("teamMembers", rootState.activeTeamId);
+    const response = await axios.get(url);
     const members = response.data;
     commit("setTeamMembers", members);
   },
   async deleteTeamMember({ commit }, teamMember) {
     /* Delete a team member */
-    const uri = `${apiRoutes.teamMembers}${teamMember.id}`;
-    await axios.delete(uri);
+    const url = `${getAPIRoute("teamMembers", teamMember.team)}${
+      teamMember.id
+    }`;
+    await axios.delete(url);
     commit("removeTeamMemberById", teamMember.id);
   },
 };

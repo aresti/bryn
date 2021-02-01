@@ -1,4 +1,4 @@
-import { axios, apiRoutes } from "@/api";
+import { axios, getAPIRoute } from "@/api";
 import {
   updateTeamCollection,
   createFilterByTenantGetter,
@@ -23,11 +23,10 @@ const getters = {
 };
 
 const actions = {
-  async getTeamVolumeTypes({ commit, rootGetters }, { tenant } = {}) {
+  async getTenantVolumeTypes({ commit, rootGetters }, tenant) {
     const team = rootGetters.team;
-    const response = await axios.get(apiRoutes.volumeTypes, {
-      params: { team: team.id, tenant: tenant?.id },
-    });
+    const url = getAPIRoute("volumeTypes", team.id, tenant.id);
+    const response = await axios.get(url);
     const volumeTypes = response.data;
     commit("setVolumeTypes", { volumeTypes, team, tenant });
   },

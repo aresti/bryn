@@ -110,9 +110,7 @@ export default {
 
     setTeamForRoute(route) {
       /* Set the activeTeamId state from route params */
-      const toTeam = this.teams.find(
-        (team) => team.id === parseInt(route.params.teamId)
-      );
+      const toTeam = this.teams.find((team) => team.id === route.params.teamId);
       if (toTeam === undefined) {
         this.$router.push({
           name: "notfound",

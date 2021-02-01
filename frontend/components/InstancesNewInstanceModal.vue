@@ -107,7 +107,7 @@ export default {
 
     selectedTenant() {
       return this.form.tenant.value
-        ? this.getTenantById(parseInt(this.form.tenant.value))
+        ? this.getTenantById(this.form.tenant.value)
         : null;
     },
     tenantOptions() {

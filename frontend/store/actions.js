@@ -1,4 +1,4 @@
-import { axios, apiRoutes } from "@/api";
+import { axios, getAPIRoute } from "@/api";
 
 const actions = {
   async initStore({ commit, dispatch }) {
@@ -17,15 +17,15 @@ const actions = {
     commit("setFilterTenantId", tenant?.id);
   },
 
-  async fetchTenantSpecificData({ _commit, dispatch, getters }, { tenant }) {
+  async fetchTenantSpecificData({ _commit, dispatch, getters }, tenant) {
     /* Fetch all tenant-specific data */
     try {
       await Promise.all([
-        dispatch("flavors/getTeamFlavors", { tenant }),
-        dispatch("images/getTeamImages", { tenant }),
-        dispatch("instances/getTeamInstances", { tenant }),
-        dispatch("volumeTypes/getTeamVolumeTypes", { tenant }),
-        dispatch("volumes/getTeamVolumes", { tenant }),
+        dispatch("flavors/getTenantFlavors", tenant),
+        dispatch("images/getTenantImages", tenant),
+        dispatch("instances/getTenantInstances", tenant),
+        dispatch("volumeTypes/getTenantVolumeTypes", tenant),
+        dispatch("volumes/getTenantVolumes", tenant),
       ]);
     } catch (err) {
       const msg = `Error fetching data from ${getters.getRegionNameForTenant(
@@ -65,7 +65,7 @@ const actions = {
     }
 
     const results = await Promise.allSettled(
-      tenants.map((tenant) => dispatch("fetchTenantSpecificData", { tenant }))
+      tenants.map((tenant) => dispatch("fetchTenantSpecificData", tenant))
     );
     return results.map(({ status, value, reason }, index) => {
       return { status, value, reason, tenant: tenants[index].id };
@@ -73,22 +73,22 @@ const actions = {
   },
 
   async updateTeam({ commit, getters }, teamData) {
-    const uri = `${apiRoutes.team}${getters.team.id}`;
-    const response = await axios.patch(uri, teamData);
+    const url = `${getAPIRoute("teams")}${getters.team.id}`;
+    const response = await axios.patch(url, teamData);
     const team = response.data;
     commit("updateTeam", team);
   },
 
   async getUser({ commit }) {
-    const uri = apiRoutes.userProfile;
-    const response = await axios.get(uri);
+    const url = getAPIRoute("userProfile");
+    const response = await axios.get(url);
     const user = response.data;
     commit("updateUser", user);
   },
 
   async updateUser({ commit }, userData) {
-    const uri = apiRoutes.userProfile;
-    const response = await axios.patch(uri, userData);
+    const url = getAPIRoute("userProfile");
+    const response = await axios.patch(url, userData);
     const user = response.data;
     commit("updateUser", user);
   },

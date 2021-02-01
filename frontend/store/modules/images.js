@@ -1,4 +1,4 @@
-import { axios, apiRoutes } from "@/api";
+import { axios, getAPIRoute } from "@/api";
 import {
   updateTeamCollection,
   createFindByIdGetter,
@@ -27,11 +27,10 @@ const getters = {
 };
 
 const actions = {
-  async getTeamImages({ commit, rootGetters }, { tenant } = {}) {
+  async getTenantImages({ commit, rootGetters }, tenant) {
     const team = rootGetters.team;
-    const response = await axios.get(apiRoutes.images, {
-      params: { team: team.id, tenant: tenant?.id },
-    });
+    const url = getAPIRoute("images", team.id, tenant.id);
+    const response = await axios.get(url);
     const images = response.data;
     commit("setImages", { images, team, tenant });
   },

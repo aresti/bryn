@@ -1,5 +1,8 @@
 from operator import methodcaller
 
+from django.contrib.auth import get_user_model
+from django.db.models import QuerySet
+
 from rest_framework.views import APIView
 from rest_framework import permissions, generics, status
 from rest_framework import exceptions as drf_exceptions
@@ -18,6 +21,8 @@ from .serializers import (
     VolumeTypeSerializer,
 )
 
+User = get_user_model()
+
 
 class InvalidTenant(drf_exceptions.PermissionDenied):
     default_detail = (
@@ -25,22 +30,25 @@ class InvalidTenant(drf_exceptions.PermissionDenied):
     )
 
 
-def get_tenants_for_user(user, team=None, tenant=None):
+def get_tenants_for_user(
+    user: User, team_id: int = None, tenant_id: int = None
+) -> QuerySet:
     """
     Return queryset for all tenant(s) owned by teams that the authenticated user is a member of.
-    If tenant is specified, returns a single member queryset only if the user belongs to its team.
-    If team is specified, returns tenants owned by this team, if the user is a member.
+    If tenant_id is specified: returns a single member queryset (only if the user is a team member).
+    If team_id is specified: returns tenants belonging to this team (only if the user is a team member)
     """
-    teams = user.teams.filter(pk=team) if team else user.teams.all()
+    teams = user.teams.filter(pk=team_id) if team_id else user.teams.all()
     all_tenants = Tenant.objects.filter(team__in=teams).all()
-    return all_tenants.filter(pk=tenant) if tenant else all_tenants
+    return all_tenants.filter(pk=tenant_id) if tenant_id else all_tenants
 
 
-def get_tenant_for_user(user, tenant_id):
+def get_tenant_for_user(user: User, tenant_id: int, team_id: int = None) -> Tenant:
     """
     Return a tenant for a given user, only if that user is a team member.
+    If team_id is specified: will raise if the specified tenant does not belong to this team.
     """
-    tenant = get_tenants_for_user(user, tenant=tenant_id).first()
+    tenant = get_tenants_for_user(user, tenant_id=tenant_id, team_id=team_id).first()
 
     if not tenant:
         raise InvalidTenant
@@ -83,17 +91,15 @@ class OpenstackRetrieveView(OpenstackAPIView):
     Base class for simple openstack detail views.
     """
 
-    def get(self, request, tenant_id, entity_id):
-        tenant = get_tenant_for_user(request.user, tenant_id)  # may raise
-        if not entity_id:
-            raise drf_exceptions.NotFound
+    def get(self, request, team_id, tenant_id, pk):
+        tenant = get_tenant_for_user(
+            request.user, tenant_id=tenant_id, team_id=team_id
+        )  # may raise
 
         openstack = OpenstackService(tenant)
+        transform_func = self.get_transform_func(tenant)
         try:
-            response = methodcaller("get", entity_id)(
-                getattr(openstack, self.service.value)
-            )
-            transform_func = self.get_transform_func(tenant)
+            response = methodcaller("get", pk)(getattr(openstack, self.service.value))
             data = transform_func(response)
             serialized = self.serializer_class(data)
         except Exception as e:
@@ -109,37 +115,21 @@ class OpenstackListView(OpenstackAPIView):
     Base class for simple openstack collection views.
     """
 
-    def get(self, request):
-        query_tenant = request.query_params.get("tenant")
-        query_team = request.query_params.get("team")
-        tenants = get_tenants_for_user(
-            request.user, tenant=query_tenant, team=query_team
-        )
-        if not tenants:
-            # no tenants for user, or no team membership for specified tenant
-            return Response([])
+    def get(self, request, team_id, tenant_id):
+        tenant = get_tenant_for_user(
+            request.user, team_id=team_id, tenant_id=tenant_id
+        )  # may raise
 
-        # query openstack api for each tenant, transform response as required
-        collection = []
-        for tenant in tenants:
-            if tenant.region.disabled:
-                continue
-            openstack = OpenstackService(tenant)
-            transform_func = self.get_transform_func(tenant)
-            try:
-                response = methodcaller("get_list")(
-                    getattr(openstack, self.service.value)
-                )
-                data = map(transform_func, response)
-                collection.extend(data)
-            except Exception as e:
-                raise OpenstackException(detail=str(e))
+        openstack = OpenstackService(tenant)
+        transform_func = self.get_transform_func(tenant)
+        try:
+            response = methodcaller("get_list")(getattr(openstack, self.service.value))
+            data = map(transform_func, response)
+            serialized = self.serializer_class(data, many=True)
+        except Exception as e:
+            raise OpenstackException(detail=str(e))
 
-        if collection:
-            serialized = self.serializer_class(collection, many=True)
-            return Response(serialized.data)
-        else:
-            return Response([])
+        return Response(serialized.data)
 
 
 class OpenstackCreateMixin(OpenstackAPIView):
@@ -147,9 +137,9 @@ class OpenstackCreateMixin(OpenstackAPIView):
     Mixin to add create/post method to openstack api views.
     """
 
-    def post(self, request):
+    def post(self, request, team_id, tenant_id):
         tenant = get_tenant_for_user(
-            request.user, request.data.get("tenant")
+            request.user, team_id=team_id, tenant_id=tenant_id
         )  # may raise
         openstack = OpenstackService(tenant)
         transform_func = self.get_transform_func(tenant)
@@ -172,14 +162,14 @@ class OpenstackDeleteMixin(OpenstackAPIView):
     Mixin to add delete method to openstack api views.
     """
 
-    def delete(self, request, tenant_id, entity_id):
-        tenant = get_tenant_for_user(request.user, tenant_id)  # may raise
-        if not entity_id:
-            raise drf_exceptions.NotFound
+    def delete(self, request, team_id, tenant_id, pk):
+        tenant = get_tenant_for_user(
+            request.user, team_id=team_id, tenant_id=tenant_id
+        )  # may raise
 
         openstack = OpenstackService(tenant)
         try:
-            methodcaller("delete", entity_id)(getattr(openstack, self.service.value))
+            methodcaller("delete", pk)(getattr(openstack, self.service.value))
         except Exception as e:
             if getattr(e, "code", None) == 404:
                 raise drf_exceptions.NotFound
@@ -200,7 +190,7 @@ class TenantListView(generics.ListAPIView):
 
     def get_queryset(self):
         return get_tenants_for_user(
-            self.request.user, team=self.request.query_params.get("team")
+            self.request.user, team_id=self.kwargs.get("team_id")
         )
 
 
@@ -252,10 +242,10 @@ class InstanceDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
         "SHELVED": {"SHUTOFF": "unshelve"},
     }
 
-    def patch(self, request, tenant_id, entity_id):
-        tenant = get_tenant_for_user(request.user, tenant_id)  # may raise
-        if not entity_id:
-            raise drf_exceptions.NotFound
+    def patch(self, request, team_id, tenant_id, pk):
+        tenant = get_tenant_for_user(
+            request.user, team_id=team_id, tenant_id=tenant_id
+        )  # may raise
 
         openstack = OpenstackService(tenant)
         service = getattr(openstack, self.service.value)
@@ -265,7 +255,7 @@ class InstanceDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
             raise drf_exceptions.BadRequest
 
         try:
-            server = service.get(entity_id)
+            server = service.get(pk)
             current_status = server.status
             method_name = self.state_transitions[current_status][target_status]
             methodcaller(method_name, server)(service)
@@ -301,7 +291,6 @@ class KeyPairListView(generics.ListCreateAPIView):
     """
 
     serializer_class = KeyPairSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
@@ -314,7 +303,6 @@ class KeyPairDetailView(generics.RetrieveDestroyAPIView):
     """
 
     serializer_class = KeyPairSerializer
-    permission_classes = [permissions.IsAuthenticated]
     queryset = KeyPair.objects.all()
 
 
@@ -344,10 +332,10 @@ class VolumeDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
     service = OpenstackService.Services.VOLUMES
     get_transform_func = get_volume_transform_func
 
-    def patch(self, request, tenant_id, entity_id):
-        tenant = get_tenant_for_user(request.user, tenant_id)  # may raise
-        if not entity_id:
-            raise drf_exceptions.NotFound
+    def patch(self, request, team_id, tenant_id, pk):
+        tenant = get_tenant_for_user(
+            request.user, team_id=team_id, tenant_id=tenant_id
+        )  # may raise
 
         openstack = OpenstackService(tenant)
         service = getattr(openstack, self.service.value)
@@ -355,13 +343,13 @@ class VolumeDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
         try:
             if attachments is not None and len(attachments) == 0:
                 # Detach
-                methodcaller("detach", entity_id)(service)
+                methodcaller("detach", pk)(service)
             elif attachments:
                 # Create attachment
                 serialized_attachment = AttachmentSerializer(attachments[0])
-                methodcaller(
-                    "attach", entity_id, serialized_attachment.data["server_id"]
-                )(service)
+                methodcaller("attach", pk, serialized_attachment.data["server_id"])(
+                    service
+                )
         except Exception as e:
             if getattr(e, "code", None) == 404:
                 raise drf_exceptions.NotFound

@@ -92,7 +92,6 @@ export default {
         this.toast.success(`Team invitation sent to ${invitation.email}`);
         this.onClose();
       } catch (err) {
-        console.log(err);
         if (err.response?.status === 400) {
           this.formParseResponseError(err.response.data);
         } else {

@@ -80,6 +80,9 @@ class InvitationSerializer(serializers.ModelSerializer):
 
 class TeamSerializer(serializers.ModelSerializer):
     id = HashidsIntegerField()
+    default_region = serializers.PrimaryKeyRelatedField(
+        read_only=True, pk_field=HashidsIntegerField()
+    )
     tenants = TenantSerializer(many=True, read_only=True)
 
     class Meta:

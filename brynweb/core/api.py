@@ -5,33 +5,61 @@ from userdb import api_views as userdb_views
 
 app_name = "api"
 
+# Note: serial/int internal keys are not exposed externally, to avoid exposing implementation details
+# & possible attack surfaces.
+# Hashids are used for these objects (although these purely obfuscate, they are no substitute for properly
+# secured endpoints)
+# Models using uuid as primary keys are exposed directly, since these offer the same benefits.
+
 urlpatterns = [
-    #  Openstack
-    path("tenants/", openstack_views.TenantListView.as_view(), name="tenants",),
-    path("instances/", openstack_views.InstanceListView.as_view(), name="instances",),
-    path(
-        "instances/<int:tenant_id>/<str:entity_id>",
-        openstack_views.InstanceDetailView.as_view(),
-        name="instances",
-    ),
-    path("flavors/", openstack_views.FlavorListView.as_view(), name="flavors",),
-    path("images/", openstack_views.ImageListView.as_view(), name="images",),
-    path("keypairs/", openstack_views.KeyPairListView.as_view(), name="keypairs",),
+    # {% url "api:keypairs" %}
+    path("keypairs/", openstack_views.KeyPairListView.as_view(), name="key_pairs"),
+    # {% url "api:keypairs" pk=keypair.id %}
     path(
         "keypairs/<uuid:pk>",
         openstack_views.KeyPairDetailView.as_view(),
-        name="keypairs",
+        name="key_pairs",
     ),
-    path("volumes/", openstack_views.VolumeListView.as_view(), name="volumes"),
     path(
-        "volumes/<int:tenant_id>/<str:entity_id>",
+        "teams/<hashids:team_id>/tenants/",
+        openstack_views.TenantListView.as_view(),
+        name="tenants",
+    ),
+    path(
+        "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/instances/",
+        openstack_views.InstanceListView.as_view(),
+        name="instances",
+    ),
+    path(
+        "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/instances/<str:pk>",
+        openstack_views.InstanceDetailView.as_view(),
+        name="instances",
+    ),
+    path(
+        "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/flavors/",
+        openstack_views.FlavorListView.as_view(),
+        name="flavors",
+    ),
+    path(
+        "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/images/",
+        openstack_views.ImageListView.as_view(),
+        name="images",
+    ),
+    path(
+        "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/volumes/",
+        openstack_views.VolumeListView.as_view(),
+        name="volumes",
+    ),
+    path(
+        "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/volumes/<str:pk>",
         openstack_views.VolumeDetailView.as_view(),
         name="volumes",
     ),
     path(
-        "volumetypes/", openstack_views.VolumeTypeListView.as_view(), name="volumetypes"
+        "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/volumetypes/",
+        openstack_views.VolumeTypeListView.as_view(),
+        name="volume_types",
     ),
-    # Userdb routes
     # {% url "api:team" team_id=team.id %}
     path(
         "teams/<hashids:team_id>", userdb_views.TeamDetailView.as_view(), name="teams",

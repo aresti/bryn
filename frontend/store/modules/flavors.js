@@ -1,4 +1,4 @@
-import { axios, apiRoutes } from "@/api";
+import { axios, getAPIRoute } from "@/api";
 import {
   updateTeamCollection,
   createFindByIdGetter,
@@ -27,11 +27,10 @@ const getters = {
 };
 
 const actions = {
-  async getTeamFlavors({ commit, rootGetters }, { tenant } = {}) {
+  async getTenantFlavors({ commit, rootGetters }, tenant) {
     const team = rootGetters.team;
-    const response = await axios.get(apiRoutes.flavors, {
-      params: { team: team.id, tenant: tenant?.id },
-    });
+    const url = getAPIRoute("flavors", team.id, tenant.id);
+    const response = await axios.get(url);
     const flavors = response.data;
     commit("setFlavors", { flavors, team, tenant });
   },

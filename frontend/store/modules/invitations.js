@@ -1,4 +1,4 @@
-import { axios, apiRoutes } from "@/api";
+import { axios, getAPIRoute } from "@/api";
 import { collectionForTeamId } from "@/utils/store";
 
 const state = () => {
@@ -31,8 +31,9 @@ const getters = {
 };
 
 const actions = {
-  async getInvitations({ commit }) {
-    const response = await axios.get(apiRoutes.invitations);
+  async getInvitations({ commit, rootState }) {
+    const url = getAPIRoute("invitations", rootState.activeTeamId);
+    const response = await axios.get(url);
     const invitations = response.data;
     commit("setInvitations", invitations);
   },
@@ -46,16 +47,16 @@ const actions = {
       user: rootState.user.id,
       to_team: rootGetters.team.id,
     };
-    const uri = `${apiRoutes.invitations}`;
-    const response = await axios.post(uri, payload);
+    const url = getAPIRoute("invitations", rootState.activeTeamId);
+    const response = await axios.post(url, payload);
     const invitation = response.data;
     commit("addInvitation", invitation);
     return invitation;
   },
   async deleteInvitation({ commit }, invitation) {
     /* Delete an invitation */
-    const uri = `${apiRoutes.invitations}${invitation.uuid}`;
-    await axios.delete(uri);
+    const url = getAPIRoute("invitations", invitation.toTeam) + invitation.uuid;
+    await axios.delete(url);
     commit("removeInvitationById", invitation.uuid);
   },
 };

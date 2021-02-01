@@ -1,4 +1,4 @@
-import { axios, apiRoutes } from "@/api";
+import { axios, getAPIRoute } from "@/api";
 import {
   updateTeamCollection,
   collectionForTeamId,
@@ -6,9 +6,6 @@ import {
   createFindByIdGetter,
   createFilterByTenantGetter,
 } from "@/utils/store";
-
-const getVolumeDetailUri = (volume) =>
-  `${apiRoutes.volumes}${volume.tenant}/${volume.id}`;
 
 const state = () => {
   return {
@@ -82,16 +79,20 @@ const actions = {
 
   async fetchVolume({ commit }, volume) {
     /* Fetch and update an individual volume */
-    const uri = getVolumeDetailUri(volume);
-    const response = await axios.get(uri);
+    const url = getAPIRoute("volumes", volume.team, volume.tenant) + volume.id;
+    const response = await axios.get(url);
     volume = response.data;
     commit("updateVolume", volume);
     return volume;
   },
 
-  async createVolume({ commit, dispatch }, { tenant, volumeType, size, name }) {
+  async createVolume(
+    { commit, dispatch, rootState },
+    { tenant, volumeType, size, name }
+  ) {
     const payload = { tenant, volumeType, size, name };
-    const response = await axios.post(apiRoutes.volumes, payload);
+    const url = getAPIRoute("volumes", rootState.activeTeamId, tenant);
+    const response = await axios.post(url, payload);
     const volume = response.data;
     commit("addVolume", volume);
     dispatch("pollingAddTarget", {
@@ -103,16 +104,16 @@ const actions = {
 
   async deleteVolume({ commit }, volume) {
     /* Delete a volume */
-    const uri = getVolumeDetailUri(volume);
-    await axios.delete(uri);
+    const url = getAPIRoute("volumes", volume.team, volume.tenant) + volume.id;
+    await axios.delete(url);
     /* Takes a while to delete, but better user experience to just remove rather than show polling */
     commit("removeVolumeById", volume.id);
   },
 
   async attachVolume({ dispatch }, { volume, server }) {
     const payload = { attachments: [{ serverId: server.id }] };
-    const uri = getVolumeDetailUri(volume);
-    await axios.patch(uri, payload);
+    const url = getAPIRoute("volumes", volume.team, volume.tenant) + volume.id;
+    await axios.patch(url, payload);
     dispatch("pollingAddTarget", {
       entity: volume,
       status: "in-use",
@@ -121,21 +122,20 @@ const actions = {
 
   async detachVolume({ dispatch }, volume) {
     const payload = { attachments: [] }; // Empty array
-    const uri = getVolumeDetailUri(volume);
-    await axios.patch(uri, payload);
+    const url = getAPIRoute("volumes", volume.team, volume.tenant) + volume.id;
+    await axios.patch(url, payload);
     dispatch("pollingAddTarget", {
       entity: volume,
       status: "available",
     });
   },
 
-  async getTeamVolumes({ commit, rootGetters }, { tenant } = {}) {
+  async getTenantVolumes({ commit, rootGetters }, tenant) {
     /* Fetch [and replace] all volumes for the active team */
     commit("setLoading", true);
     const team = rootGetters.team;
-    const response = await axios.get(apiRoutes.volumes, {
-      params: { team: team.id, tenant: tenant?.id },
-    });
+    const url = getAPIRoute("volumes", team.id, tenant.id);
+    const response = await axios.get(url);
     const volumes = response.data;
     commit("setVolumes", { volumes, team, tenant });
     commit("setLoading", false);

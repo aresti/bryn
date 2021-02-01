@@ -1,4 +1,4 @@
-import { axios, apiRoutes } from "@/api";
+import { axios, getAPIRoute } from "@/api";
 import { createFindByIdGetter } from "@/utils/store";
 
 const state = () => {
@@ -41,13 +41,15 @@ const getters = {
 
 const actions = {
   async getKeyPairs({ commit }) {
-    const response = await axios.get(apiRoutes.keyPairs);
+    const url = getAPIRoute("keyPairs");
+    const response = await axios.get(url);
     const keyPairs = response.data;
     commit("setKeyPairs", keyPairs);
   },
   async createKeyPair({ commit, dispatch, state }, { name, publicKey }) {
     const payload = { name, publicKey };
-    const response = await axios.post(apiRoutes.keyPairs, payload);
+    const url = getAPIRoute("keyPairs");
+    const response = await axios.post(url, payload);
     const keypair = response.data;
     commit("addKeyPair", keypair);
     if (state.all.length == 1) {
@@ -57,9 +59,9 @@ const actions = {
     return keypair;
   },
   async deleteKeyPair({ commit, dispatch, getters }, keyPair) {
-    const uri = `${apiRoutes.keyPairs}${keyPair.id}`;
+    const url = `${getAPIRoute("keyPairs")}${keyPair.id}`;
     const wasDefault = getters.getKeyPairIsDefault(keyPair);
-    await axios.delete(uri);
+    await axios.delete(url);
     commit("removeKeyPairById", keyPair.id);
     if (wasDefault) {
       // User default will have changed

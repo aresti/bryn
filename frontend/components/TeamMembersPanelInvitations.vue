@@ -74,7 +74,7 @@ export default {
       this.deleteProcessing = true;
       try {
         await this.deleteInvitation(invitation);
-        this.toast(`Removed invitation: ${invitation.email}`);
+        this.toast(`Cancelled invitation: ${invitation.email}`);
       } catch (err) {
         this.toast.error(
           `Failed to remove invitation: ${

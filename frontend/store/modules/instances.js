@@ -1,4 +1,4 @@
-import { axios, apiRoutes } from "@/api";
+import { axios, getAPIRoute } from "@/api";
 import {
   pollingUtils,
   updateTeamCollection,
@@ -10,7 +10,7 @@ import {
 const SHELVED_STATUSES = ["SHELVED", "SHELVED_OFFLOADED"];
 
 const getInstanceDetailUri = (instance) =>
-  `${apiRoutes.instances}${instance.tenant}/${instance.id}`;
+  getAPIRoute("instances", instance.team, instance.tenant) + instance.id;
 
 const state = () => {
   return {
@@ -90,11 +90,12 @@ const actions = {
   },
 
   async createInstance(
-    { commit, dispatch },
+    { commit, dispatch, rootState },
     { tenant, keypair, flavor, image, name }
   ) {
     const payload = { tenant, keypair, flavor, image, name };
-    const response = await axios.post(apiRoutes.instances, payload);
+    const url = getAPIRoute("instances", rootState.activeTeamId, tenant);
+    const response = await axios.post(url, payload);
     const instance = response.data;
     commit("addInstance", instance);
     dispatch("pollingAddTarget", {
@@ -123,12 +124,11 @@ const actions = {
     });
   },
 
-  async getTeamInstances({ rootGetters, commit }, { tenant } = {}) {
+  async getTenantInstances({ rootGetters, commit }, tenant) {
     commit("setLoading", true);
     const team = rootGetters.team;
-    const response = await axios.get(apiRoutes.instances, {
-      params: { team: team.id, tenant: tenant?.id },
-    });
+    const url = getAPIRoute("instances", team.id, tenant.id);
+    const response = await axios.get(url);
     const instances = response.data;
     commit("setInstances", { instances, team, tenant });
     commit("setLoading", false);

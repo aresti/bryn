@@ -4,19 +4,32 @@ axios.defaults.xsrfCookieName = "csrftoken";
 axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
 axios.defaults.timeout = 20000;
 
-const baseUrl = "/api";
+const apiBase = "/api/";
+const teamBase = apiBase + "teams/TEAM_ID/";
+const tenantBase = teamBase + "tenants/TENANT_ID/";
 
 const apiRoutes = {
-  images: baseUrl + "/images/",
-  instances: baseUrl + "/instances/",
-  invitations: baseUrl + "/invitations/",
-  flavors: baseUrl + "/flavors/",
-  keyPairs: baseUrl + "/keypairs/",
-  team: baseUrl + "/teams/",
-  teamMembers: baseUrl + "/teammembers/",
-  userProfile: baseUrl + "/userprofile/",
-  volumes: baseUrl + "/volumes/",
-  volumeTypes: baseUrl + "/volumetypes",
+  images: tenantBase + "images/",
+  instances: tenantBase + "instances/",
+  invitations: teamBase + "invitations/",
+  flavors: tenantBase + "flavors/",
+  keyPairs: apiBase + "keypairs/",
+  teams: apiBase + "teams/",
+  teamMembers: teamBase + "members/",
+  userProfile: apiBase + "userprofile/",
+  volumes: tenantBase + "volumes/",
+  volumeTypes: tenantBase + "volumetypes/",
 };
 
-export { axios, apiRoutes };
+const getAPIRoute = (routeName, teamId = null, tenantId = null) => {
+  let route = apiRoutes[routeName];
+  if (teamId != null) {
+    route = route.replace("TEAM_ID", teamId);
+  }
+  if (tenantId != null) {
+    route = route.replace("TENANT_ID", tenantId);
+  }
+  return route;
+};
+
+export { axios, apiRoutes, getAPIRoute };
