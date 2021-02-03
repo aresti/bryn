@@ -75,10 +75,11 @@ export default {
     ...mapGetters(["getTenantById"]),
     ...mapGetters("instances", ["getInstancesForTenant", "getInstanceById"]),
     serverOptions() {
-      /* Active instances for tenant */
+      /* Instances for tenant (not shelves) */
       const tenant = this.getTenantById(this.volume.tenant);
       const instances = this.getInstancesForTenant(tenant).filter(
-        (instance) => instance.status === "ACTIVE"
+        (instance) =>
+          !["SHELVED", "SHELVED_OFFLOADED"].includes(instance.status)
       );
       return mapToFormOptions(instances);
     },
