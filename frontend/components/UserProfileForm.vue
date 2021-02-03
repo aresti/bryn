@@ -4,8 +4,7 @@
   <base-form-validated
     :form="form"
     submitLabel="Update"
-    @submit="onSubmit"
-    :nonFieldErrors="nonFieldErrors"
+    @submit="alert('submit')"
     :submitted="submitted"
     requireInput
   />
@@ -13,31 +12,26 @@
 
 <script>
 import { mapState } from "vuex";
-import { isRequired } from "@/utils/validators";
-import formValidationMixin from "@/mixins/formValidationMixin";
+import { isRequired } from "@/composables/formValidation/validators";
+import useFormValidation from "@/composables/formValidation";
 
 export default {
-  mixins: [formValidationMixin],
   data() {
     return {
-      form: {
+      form: useFormValidation({
         firstName: {
           label: "First name",
-          value: "",
           validators: [isRequired],
         },
         lastName: {
           label: "Last name",
-          value: "",
           validators: [isRequired],
         },
         email: {
           label: "Email",
-          value: "",
           validators: [isRequired],
         },
-      },
-      nonFieldErrors: [],
+      }),
       submitted: false,
     };
   },
@@ -45,9 +39,9 @@ export default {
     ...mapState(["user"]),
   },
   mounted() {
-    this.form.firstName.value = this.user.firstName;
-    this.form.lastName.value = this.user.lastName;
-    this.form.email.value = this.user.email;
+    this.form.fields.firstName.value = this.user.firstName;
+    this.form.fields.lastName.value = this.user.lastName;
+    this.form.fields.email.value = this.user.email;
   },
 };
 </script>

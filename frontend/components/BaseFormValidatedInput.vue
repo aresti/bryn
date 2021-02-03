@@ -2,32 +2,21 @@
   <base-form-input-select
     v-if="field.element === 'select'"
     v-model="field.value"
-    :name="name"
-    :options="field.options"
-    :null-option-label="`Select a ${field.label ?? name}`"
-    :invalid="formFieldIsInvalid(field)"
-    @validate="formValidateField(field)"
-    @change="formDirtyField(field)"
-    fullwidth
+    v-bind="selectedAttrs"
+    @change="field.touch()"
   />
   <base-form-input
     v-else
     v-model.trim="field.value"
-    :name="name"
+    v-bind="field.element === 'textarea' ? sharedAttrs : inputAttrs"
     :element="field.element"
-    :invalid="formFieldIsInvalid(field)"
-    @validate="debouncedValidator"
-    @input="formDirtyField(field)"
+    @input="debouncedTouch(500)"
+    @blur="debouncedTouch(0)"
   />
 </template>
 
 <script>
-import { debounce } from "@/utils";
-import formValidationMixin from "@/mixins/formValidationMixin";
-
 export default {
-  mixins: [formValidationMixin],
-
   props: {
     name: {
       type: String,
@@ -39,9 +28,39 @@ export default {
     },
   },
 
+  setup(props) {
+    // Debounced touch func
+    let timeout;
+    const debouncedTouch = (wait = 500) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(props.field.touch, wait);
+    };
+    return { debouncedTouch };
+  },
+
   computed: {
-    debouncedValidator() {
-      return debounce(this.formCreateFieldValidator(this.field));
+    sharedAttrs() {
+      // Applicable to all elements (input, textarea & select)
+      return {
+        name: this.field.name,
+        invalid: this.field.invalid,
+      };
+    },
+    inputAttrs() {
+      // Input attributes
+      return {
+        ...this.sharedAttrs,
+        type: this.field.type,
+      };
+    },
+    selectedAttrs() {
+      // Select attributes
+      return {
+        ...this.sharedAttrs,
+        options: this.field.options,
+        "null-option-label": `Select a ${this.field.label}`,
+        fullwidth: true,
+      };
     },
   },
 };

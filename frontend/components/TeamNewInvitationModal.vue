@@ -11,7 +11,6 @@
         :form="form"
         submitLabel="Send Invitation"
         :submitted="submitted"
-        :nonFieldErrors="nonFieldErrors"
         @submit="onSubmit"
       />
     </base-card>
@@ -19,18 +18,18 @@
 </template>
 
 <script>
-import formValidationMixin from "@/mixins/formValidationMixin";
 import { mapActions, mapState, mapGetters } from "vuex";
+
+import useFormValidation from "@/composables/formValidation";
 import {
   isRequired,
   isValidEmailSyntax,
   ValidationError,
-} from "@/utils/validators";
+} from "@/composables/formValidation/validators";
 
 export default {
   // Composition
   inject: ["toast"],
-  mixins: [formValidationMixin],
 
   // Interface
   emits: {
@@ -40,21 +39,19 @@ export default {
   // Local state
   data() {
     return {
-      form: {
+      form: useFormValidation({
         email: {
           label: "Email",
-          value: "",
+          type: "email",
           validators: [isRequired, isValidEmailSyntax, this.isUniqueEmail],
           iconClasses: ["fa", "fa-envelope"],
         },
         message: {
           label: "Message",
-          value: "",
           element: "textarea",
           validators: [isRequired],
         },
-      },
-      nonFieldErrors: [],
+      }),
       submitted: false,
     };
   },
@@ -82,18 +79,18 @@ export default {
       this.$emit("close-modal");
     },
     async onSubmit() {
-      this.formValidate();
-      if (this.submitted || !this.formIsValid) {
+      this.form.validate();
+      if (this.submitted || !this.form.valid) {
         return;
       }
       this.submitted = true;
       try {
-        const invitation = await this.createInvitation(this.formValues);
+        const invitation = await this.createInvitation(this.form.values);
         this.toast.success(`Team invitation sent to ${invitation.email}`);
         this.onClose();
       } catch (err) {
         if (err.response?.status === 400) {
-          this.formParseResponseError(err.response.data);
+          this.form.parseResponseError(err.response.data);
         } else {
           this.toast.error(
             `Failed to send invitation: ${

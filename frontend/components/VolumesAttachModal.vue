@@ -14,7 +14,6 @@
         :form="form"
         submitLabel="Attach Volume"
         :submitted="submitted"
-        :nonFieldErrors="nonFieldErrors"
         @submit="submitForm"
       />
     </template>
@@ -27,11 +26,13 @@
 </template>
 
 <script>
-import formValidationMixin from "@/mixins/formValidationMixin";
-import guidance from "@/content/volumes/newVolumeGuidance.md";
+import useFormValidation from "@/composables/formValidation";
+import { mapToFormOptions } from "@/composables/formValidation/utils";
+import { isRequired } from "@/composables/formValidation/validators";
 
 import VueMarkdownIt from "vue3-markdown-it";
-import { isRequired } from "@/utils/validators";
+import guidance from "@/content/volumes/newVolumeGuidance.md";
+
 import { mapActions, mapGetters } from "vuex";
 
 export default {
@@ -42,7 +43,6 @@ export default {
 
   // Composition
   inject: ["toast"],
-  mixins: [formValidationMixin],
 
   // Interface
   props: {
@@ -60,16 +60,13 @@ export default {
   data() {
     return {
       guidance,
-      form: {
+      form: useFormValidation({
         server: {
           label: "Server",
           element: "select",
-          options: [],
-          value: "",
           validators: [isRequired],
         },
-      },
-      nonFieldErrors: [],
+      }),
       submitted: false,
     };
   },
@@ -83,13 +80,13 @@ export default {
       const instances = this.getInstancesForTenant(tenant).filter(
         (instance) => instance.status === "ACTIVE"
       );
-      return this.formMapToOptions(instances);
+      return mapToFormOptions(instances);
     },
   },
 
   // Events
   mounted() {
-    this.form.server.options = this.serverOptions;
+    this.form.fields.server.options = this.serverOptions;
   },
 
   // Non-reactive
@@ -99,13 +96,13 @@ export default {
       this.$emit("close-modal");
     },
     async submitForm() {
-      this.formValidate();
-      if (this.submitted || !this.formIsValid) {
+      this.form.validate();
+      if (this.submitted || !this.form.valid) {
         return;
       }
       this.submitted = true;
       try {
-        const server = this.getInstanceById(this.formValues.server);
+        const server = this.getInstanceById(this.form.values.server);
         const volume = this.volume;
         await this.attachVolume({ volume, server });
         this.toast.success(
@@ -114,7 +111,7 @@ export default {
         this.closeModal();
       } catch (err) {
         if (err.response?.status === 400) {
-          this.formParseResponseError(err.response.data);
+          this.form.parseResponseError(err.response.data);
         } else {
           this.toast.error(
             `Failed to attach volume: ${

@@ -4,7 +4,6 @@
     submitLabel="Update"
     @submit="onSubmit"
     :submitted="submitted"
-    :nonFieldErrors="nonFieldErrors"
     :disabled="!userIsAdmin"
     requireInput
   />
@@ -12,35 +11,31 @@
 
 <script>
 import { mapActions, mapGetters } from "vuex";
-import { isRequired } from "@/utils/validators";
-import formValidationMixin from "@/mixins/formValidationMixin";
+import useFormValidation from "@/composables/formValidation";
+import { isRequired } from "@/composables/formValidation/validators";
 
 export default {
   // Composition
   inject: ["toast"],
-  mixins: [formValidationMixin],
 
   // Local state
   data() {
     return {
-      form: {
+      form: useFormValidation({
         institution: {
-          value: "",
           validators: [isRequired],
           iconClasses: ["fas", "fa-university"],
         },
         department: {
-          value: "",
           iconClasses: ["fas", "fa-building"],
         },
         phoneNumber: {
           label: "Phone",
-          value: "",
+          type: "tel",
           iconClasses: ["fas", "fa-phone"],
-          validators: [isRequired],
+          validators: [isRequired], // Rely on server side phone num validation
         },
-      },
-      nonFieldErrors: [],
+      }),
       submitted: false,
     };
   },
@@ -53,9 +48,9 @@ export default {
   watch: {
     team: {
       handler(_new, _old) {
-        this.form.institution.value = this.team.institution;
-        this.form.department.value = this.team.department;
-        this.form.phoneNumber.value = this.team.phoneNumber;
+        this.form.fields.institution.value = this.team.institution;
+        this.form.fields.department.value = this.team.department;
+        this.form.fields.phoneNumber.value = this.team.phoneNumber;
       },
       immediate: true,
     },
@@ -65,18 +60,18 @@ export default {
   methods: {
     ...mapActions(["updateTeam"]),
     async onSubmit() {
-      this.formValidate();
-      if (this.submitted || !this.formIsValid) {
+      this.form.validate();
+      if (this.submitted || !this.form.valid) {
         return;
       }
       this.submitted = true;
       try {
-        await this.updateTeam(this.formValues);
+        await this.updateTeam(this.form.values);
         this.toast.success("Team profile saved");
-        this.formResetValidation();
+        this.form.resetValidation();
       } catch (err) {
         if (err.response?.status === 400) {
-          this.formParseResponseError(err.response.data);
+          this.form.parseResponseError(err.response.data);
         } else {
           this.toast.error(
             `Failed to update team: ${

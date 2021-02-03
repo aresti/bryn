@@ -3,9 +3,7 @@
     :is="element"
     :name="name"
     :value="modelValue"
-    @input="onInput"
-    @blur="emitValidate"
-    @change="emitValidate"
+    @input="$emit('update:modelValue', $event.target.value)"
     :class="classes"
     :spellcheck="spellcheck"
   />
@@ -46,16 +44,14 @@ export default {
       type: Boolean,
       default: false,
     },
-    silentOnInput: {
-      type: Boolean,
-      default: false,
-    },
     spellcheck: {
       type: Boolean,
       default: false,
     },
   },
-  emits: ["update:modelValue", "validate", "input"],
+
+  emits: ["update:modelValue"],
+
   computed: {
     classes() {
       return [
@@ -67,18 +63,6 @@ export default {
           "is-loading": this.loading,
         },
       ];
-    },
-  },
-  methods: {
-    onInput(event) {
-      this.$emit("update:modelValue", event.target.value);
-      this.$emit("input");
-      if (!this.silentOnInput) {
-        this.emitValidate();
-      }
-    },
-    emitValidate() {
-      this.$emit("validate", this.name);
     },
   },
 };

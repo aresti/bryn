@@ -8,7 +8,6 @@
         :form="form"
         submitLabel="Create Volume"
         :submitted="submitted"
-        :nonFieldErrors="nonFieldErrors"
         @submit="submitForm"
       />
     </template>
@@ -25,15 +24,19 @@
 </template>
 
 <script>
-import formValidationMixin from "@/mixins/formValidationMixin";
-import { formatBytes } from "@/utils";
+import useFormValidation from "@/composables/formValidation";
+import { mapToFormOptions } from "@/composables/formValidation/utils";
 import {
   isAlphaNumHyphensOnly,
   isRequired,
   ValidationError,
-} from "@/utils/validators";
+} from "@/composables/formValidation/validators";
+
+import { formatBytes } from "@/utils";
+
 import guidance from "@/content/volumes/newVolumeGuidance.md";
 import VueMarkdownIt from "vue3-markdown-it";
+
 import { mapState, mapActions, mapGetters } from "vuex";
 
 export default {
@@ -44,7 +47,6 @@ export default {
 
   // Composition
   inject: ["toast"],
-  mixins: [formValidationMixin],
 
   // Interface
   emits: {
@@ -55,39 +57,32 @@ export default {
   data() {
     return {
       guidance,
-      form: {
+      form: useFormValidation({
         tenant: {
           label: "Region",
           element: "select",
-          options: [],
-          value: "",
           iconClasses: ["fas", "fa-globe-europe"],
           validators: [isRequired],
         },
         volumeType: {
           label: "Volume Type",
           element: "select",
-          options: [],
-          value: "",
           iconClasses: ["fas", "fa-hdd"],
           validators: [isRequired],
         },
         size: {
           label: "Size",
           element: "select",
-          options: [],
           value: "250",
           iconClasses: ["fas", "fa-save"],
           validators: [isRequired],
         },
         name: {
           label: "Name",
-          value: "",
           iconClasses: ["fas", "fa-tag"],
           validators: [isRequired, isAlphaNumHyphensOnly, this.isUniqueName],
         },
-      },
-      nonFieldErrors: [],
+      }),
       submitted: false,
     };
   },
@@ -99,8 +94,8 @@ export default {
     ...mapGetters("volumeTypes", ["getVolumeTypesForTenant"]),
 
     selectedTenant() {
-      return this.form.tenant.value
-        ? this.getTenantById(this.form.tenant.value)
+      return this.form.fields.tenant.value
+        ? this.getTenantById(this.form.fields.tenant.value)
         : null;
     },
 
@@ -145,21 +140,23 @@ export default {
   watch: {
     selectedTenant: {
       handler(_new, _old) {
-        this.form.volumeType.value = this.defaultVolumeTypeId;
-        this.form.volumeType.options = this.formMapToOptions(this.volumeTypes);
+        this.form.fields.volumeType.value = this.defaultVolumeTypeId;
+        this.form.fields.volumeType.options = mapToFormOptions(
+          this.volumeTypes
+        );
       },
       immediate: true,
     },
   },
 
   mounted() {
-    this.form.tenant.options = this.tenantOptions;
+    this.form.fields.tenant.options = this.tenantOptions;
     if (this.filterTenantId) {
-      this.form.tenant.value = this.filterTenantId;
+      this.form.fields.tenant.value = this.filterTenantId;
     } else if (this.tenants.length === 1) {
-      this.form.tenant.value = this.tenants[0].id;
+      this.form.fields.tenant.value = this.tenants[0].id;
     }
-    this.form.size.options = this.sizeOptions;
+    this.form.fields.size.options = this.sizeOptions;
   },
 
   // Non-reactive
@@ -171,18 +168,18 @@ export default {
     },
 
     async submitForm() {
-      this.formValidate();
-      if (this.submitted || !this.formIsValid) {
+      this.form.validate();
+      if (this.submitted || !this.form.valid) {
         return;
       }
       this.submitted = true;
       try {
-        const volume = await this.createVolume(this.formValues);
+        const volume = await this.createVolume(this.form.values);
         this.toast.success(`New volume created: ${volume.name}`);
         this.closeModal();
       } catch (err) {
         if (err.response?.status === 400) {
-          this.formParseResponseError(err.response.data);
+          this.form.parseResponseError(err.response.data);
         } else {
           this.toast.error(
             `Failed to create volume: ${

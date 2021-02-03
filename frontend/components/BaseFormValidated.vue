@@ -1,6 +1,9 @@
 <template>
   <form @submit.prevent="$emit('submit')" novalidate>
-    <base-form-field v-for="[name, field] in Object.entries(form)" :key="name">
+    <base-form-field
+      v-for="[name, field] in Object.entries(form.fields)"
+      :key="name"
+    >
       <base-form-validated-control
         :field="field"
         :name="name"
@@ -8,9 +11,9 @@
       />
     </base-form-field>
 
-    <div v-if="nonFieldErrors?.length" class="content">
+    <div v-if="form.nonFieldErrors?.length" class="content">
       <ul class="has-text-danger">
-        <template v-for="err in nonFieldErrors" :key="err">
+        <template v-for="err in form.nonFieldErrors" :key="err">
           <li>{{ err.message }}</li>
         </template>
       </ul>
@@ -19,7 +22,7 @@
     <slot name="buttons"
       ><base-button-confirm
         type="submit"
-        :disabled="submitDisabled || disabled"
+        :disabled="disableSubmit"
         :loading="submitted"
         >{{ submitLabel }}</base-button-confirm
       ></slot
@@ -28,19 +31,11 @@
 </template>
 
 <script>
-import formValidationMixin from "@/mixins/formValidationMixin";
-
 export default {
-  mixins: [formValidationMixin],
-
   props: {
     form: {
       type: Object,
       required: true,
-    },
-    nonFieldErrors: {
-      type: Array,
-      required: false,
     },
     requireInput: {
       type: Boolean,
@@ -63,12 +58,10 @@ export default {
   emits: ["submit"],
 
   computed: {
-    submitDisabled() {
-      if (this.requireInput) {
-        return !(this.formIsValid && this.formIsDirty);
-      } else {
-        return !this.formIsValid;
-      }
+    disableSubmit() {
+      if (this.disabled) return true;
+      if (this.requireInput) return !this.form.enableSubmit || !this.form.dirty;
+      return !this.form.enableSubmit;
     },
   },
 };

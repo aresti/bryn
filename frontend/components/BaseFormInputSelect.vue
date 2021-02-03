@@ -3,8 +3,7 @@
     <select
       :name="name"
       :value="modelValue"
-      @change="onChange"
-      :class="selectClasses"
+      @change="$emit('update:modelValue', $event.target.value)"
     >
       <option value="" disabled>{{ nullOptionLabel }}</option>
       <option
@@ -25,6 +24,7 @@ import bulmaSizeMixin from "@/mixins/bulmaSizeMixin";
 
 export default {
   mixins: [bulmaColorMixin, bulmaSizeMixin],
+
   props: {
     modelValue: {
       type: undefined,
@@ -59,35 +59,21 @@ export default {
       default: false,
     },
   },
-  emits: ["update:modelValue", "validate", "change"],
+
+  emits: ["update:modelValue"],
+
   computed: {
     wrapperClasses() {
       return [
         "select",
+        this.invalid ? "is-danger" : this.colorClass,
+        this.sizeClass,
         {
           "is-rounded": this.rounded,
           "is-fullwidth": this.fullwidth,
-        },
-      ];
-    },
-    selectClasses() {
-      return [
-        this.sizeClass,
-        this.invalid ? "is-danger" : this.colorClass,
-        {
           "is-loading": this.loading,
         },
       ];
-    },
-  },
-  methods: {
-    onChange(event) {
-      this.$emit("update:modelValue", event.target.value);
-      this.$emit("change");
-      this.emitValidate();
-    },
-    emitValidate() {
-      this.$emit("validate", this.name);
     },
   },
 };

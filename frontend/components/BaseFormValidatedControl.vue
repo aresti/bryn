@@ -1,9 +1,9 @@
 <template>
   <base-form-control
-    :label="field.label ? field.label : titleCase(name)"
+    :label="field.label"
     :errors="field.errors"
     :expanded="field.element === 'select'"
-    :required="!field.value && formFieldIsRequired(field)"
+    :required="!field.value && field.required"
   >
     <template v-slot:default>
       <base-form-validated-input
@@ -18,7 +18,7 @@
     <template v-slot:iconRight>
       <base-icon
         :class="{
-          'is-hidden': validationIconIsHidden,
+          'is-hidden': !field.error,
         }"
         :fa-classes="validationIconClasses"
         :color="validationIconColor"
@@ -30,12 +30,7 @@
 </template>
 
 <script>
-import { titleCase } from "@/utils";
-import formValidationMixin from "@/mixins/formValidationMixin";
-
 export default {
-  mixins: [formValidationMixin],
-
   props: {
     field: {
       type: Object,
@@ -51,25 +46,15 @@ export default {
     },
   },
 
-  setup() {
-    return { titleCase };
-  },
-
   computed: {
-    validationIconIsHidden() {
-      return (
-        this.field.element === "select" ||
-        !(this.field.value && this.field.hasOwnProperty("valid"))
-      );
-    },
     validationIconClasses() {
       return [
         "fas",
-        { "fa-check": this.field.valid, "fa-times": !this.field.valid },
+        { "fa-check": !this.field.invalid, "fa-times": this.field.invalid },
       ];
     },
     validationIconColor() {
-      return this.field.valid ? "success" : "danger";
+      return this.field.invalid ? "danger" : "success";
     },
   },
 };

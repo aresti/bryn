@@ -11,7 +11,6 @@
         :form="form"
         :submitLabel="submitButtonText"
         :submitted="submitted"
-        :nonFieldErrors="nonFieldErrors"
         @submit="onSubmit"
       />
     </template>
@@ -22,26 +21,24 @@
 </template>
 
 <script>
-import VueMarkdownIt from "vue3-markdown-it";
-
-import formValidationMixin from "@/mixins/formValidationMixin";
-import guidance from "@/content/keypairs/newKeyPairGuidance.md";
-import { mapActions, mapState, mapGetters } from "vuex";
+import useFormValidation from "@/composables/formValidation";
 import {
   isAlphaNumHyphensOnly,
   isPublicKey,
   isRequired,
   ValidationError,
-} from "@/utils/validators";
+} from "@/composables/formValidation/validators";
+
+import VueMarkdownIt from "vue3-markdown-it";
+import guidance from "@/content/keypairs/newKeyPairGuidance.md";
+
+import { mapActions, mapState, mapGetters } from "vuex";
 
 export default {
   // Template dependencies
   components: {
     VueMarkdownIt,
   },
-
-  // Composition
-  mixins: [formValidationMixin],
 
   // Interface
   props: {
@@ -58,21 +55,18 @@ export default {
   data() {
     return {
       guidance,
-      form: {
+      form: useFormValidation({
         publicKey: {
           label: "Public Key",
-          value: "",
           element: "textarea",
           validators: [isRequired, isPublicKey, this.isUniquePublicKey],
         },
         name: {
           label: "Key Name",
-          value: "",
           iconClasses: ["fas", "fa-tag"],
           validators: [isRequired, isAlphaNumHyphensOnly, this.isUniqueName],
         },
-      },
-      nonFieldErrors: [],
+      }),
       submitted: false,
     };
   },
@@ -97,18 +91,18 @@ export default {
       this.$emit("close-modal");
     },
     async onSubmit() {
-      this.formValidate();
-      if (this.submitted || !this.formIsValid) {
+      this.form.validate();
+      if (this.submitted || !this.form.valid) {
         return;
       }
       this.submitted = true;
       try {
-        const keypair = await this.createKeyPair(this.formValues);
+        const keypair = await this.createKeyPair(this.form.values);
         this.toast.success(`New SSH key created: ${keypair.name}`);
         this.onClose();
       } catch (err) {
         if (err.response?.status === 400) {
-          this.formParseResponseError(err.response.data);
+          this.form.parseResponseError(err.response.data);
         } else {
           this.toast.error(
             `Failed to create SSH key: ${

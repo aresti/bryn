@@ -8,7 +8,6 @@
         :form="form"
         submitLabel="Launch server"
         :submitted="submitted"
-        :nonFieldErrors="nonFieldErrors"
         @submit="submitForm"
       />
     </template>
@@ -19,15 +18,17 @@
 </template>
 
 <script>
-import formValidationMixin from "@/mixins/formValidationMixin";
-import guidance from "@/content/instances/newInstanceGuidance.md";
+import useFormValidation from "@/composables/formValidation";
+import { mapToFormOptions } from "@/composables/formValidation/utils";
 import {
   isAlphaNumHyphensOnly,
   isRequired,
   ValidationError,
-} from "@/utils/validators";
+} from "@/composables/formValidation/validators";
 
 import VueMarkdownIt from "vue3-markdown-it";
+import guidance from "@/content/instances/newInstanceGuidance.md";
+
 import { mapState, mapActions, mapGetters } from "vuex";
 
 export default {
@@ -37,7 +38,6 @@ export default {
   },
 
   // Composition
-  mixins: [formValidationMixin],
   inject: ["toast"],
 
   // Interface
@@ -49,47 +49,37 @@ export default {
   data() {
     return {
       guidance,
-      form: {
+      form: useFormValidation({
         tenant: {
           label: "Region",
           element: "select",
-          options: [],
-          value: "",
           iconClasses: ["fas", "fa-globe-europe"],
           validators: [isRequired],
         },
         flavor: {
           label: "Flavor",
           element: "select",
-          options: [],
-          value: "",
           iconClasses: ["fas", "fa-server"],
           validators: [isRequired],
         },
         image: {
           label: "Image",
           element: "select",
-          options: [],
-          value: "",
           iconClasses: ["fas", "fa-save"],
           validators: [isRequired],
         },
         keypair: {
           label: "SSH Key",
           element: "select",
-          options: [],
-          value: "",
           iconClasses: ["fas", "fa-key"],
           validators: [isRequired],
         },
         name: {
           label: "Name",
-          value: "",
           iconClasses: ["fas", "fa-tag"],
           validators: [isRequired, isAlphaNumHyphensOnly, this.isUniqueName],
         },
-      },
-      nonFieldErrors: [],
+      }),
       submitted: false,
     };
   },
@@ -106,8 +96,8 @@ export default {
     ...mapGetters("keyPairs", ["defaultKeyPair"]),
 
     selectedTenant() {
-      return this.form.tenant.value
-        ? this.getTenantById(this.form.tenant.value)
+      return this.form.fields.tenant.value
+        ? this.getTenantById(this.form.fields.tenant.value)
         : null;
     },
     tenantOptions() {
@@ -141,35 +131,35 @@ export default {
   watch: {
     selectedTenant: {
       handler(_new, _old) {
-        this.form.flavor.value = "";
-        this.form.flavor.options = this.formMapToOptions(this.flavors);
-        this.form.image.value = "";
-        this.form.image.options = this.formMapToOptions(this.images);
+        this.form.fields.flavor.value = "";
+        this.form.fields.flavor.options = mapToFormOptions(this.flavors);
+        this.form.fields.image.value = "";
+        this.form.fields.image.options = mapToFormOptions(this.images);
       },
       immediate: true,
     },
 
     kayPairs: {
       handler(_new, _old) {
-        this.form.keypair.options = this.formMapToOptions(this.keyPairs);
+        this.form.fields.keypair.options = mapToFormOptions(this.keyPairs);
       },
       immediate: true,
     },
 
     defaultKeyPair: {
       handler(_new, _old) {
-        this.form.keypair.value = this.defaultKeyPair?.id ?? "";
+        this.form.fields.keypair.value = this.defaultKeyPair?.id ?? "";
       },
       immediate: true,
     },
   },
 
   mounted() {
-    this.form.tenant.options = this.tenantOptions;
+    this.form.fields.tenant.options = this.tenantOptions;
     if (this.filterTenantId) {
-      this.form.tenant.value = this.filterTenantId;
+      this.form.fields.tenant.value = this.filterTenantId;
     } else if (this.tenants.length === 1) {
-      this.form.tenant.value = this.tenants[0].id;
+      this.form.fields.tenant.value = this.tenants[0].id;
     }
   },
 
@@ -182,18 +172,18 @@ export default {
     },
 
     async submitForm() {
-      this.formValidate();
-      if (this.submitted || !this.formIsValid) {
+      this.form.validate();
+      if (this.submitted || !this.form.valid) {
         return;
       }
       this.submitted = true;
       try {
-        const instance = await this.createInstance(this.formValues);
+        const instance = await this.createInstance(this.form.values);
         this.toast.success(`New server created: ${instance.name}`);
         this.closeModal();
       } catch (err) {
         if (err.response?.status === 400) {
-          this.formParseResponseError(err.response.data);
+          this.form.parseResponseError(err.response.data);
         } else {
           this.toast.error(
             `Failed to create server: ${

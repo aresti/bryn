@@ -72,3 +72,6 @@ venv.bak/
 # Visual Studio Code # 
 .vscode/
 .history
+
+# Filesystems
+.DS_Store

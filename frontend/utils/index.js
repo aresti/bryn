@@ -1,24 +1,3 @@
-function debounce(func, wait = 500, early = false) {
-  let timeout;
-  return function (...args) {
-    const context = this;
-    const isEarlyEnable = !timeout && early;
-    const executor = function () {
-      timeout = null;
-      !early && func.apply(context, args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(executor, wait);
-    isEarlyEnable && func.apply(context, args);
-  };
-}
-
-const titleCase = (str) => {
-  return str.replace(/\w\S*/g, (t) => {
-    return t.charAt(0).toUpperCase() + t.substr(1).toLowerCase();
-  });
-};
-
 const formatBytes = (bytes, decimals = 2) => {
   /* Format storage size in bytes to be human friendly */
   if (bytes === 0) return "0 Bytes";
@@ -38,4 +17,4 @@ const minutesSince = (datetime) => {
   return Math.round((new Date() - testTime) / 1000 / 60);
 };
 
-export { debounce, formatBytes, minutesSince, titleCase };
+export { formatBytes, minutesSince };
