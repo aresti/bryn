@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 
 import Home from "@/views/Home";
 import Dashboard from "@/views/Dashboard";
@@ -58,7 +58,7 @@ const routes = [
   { path: "/:pathMatch(.*)*", name: "notfound", component: NotFound },
 ];
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes,
 });
 
