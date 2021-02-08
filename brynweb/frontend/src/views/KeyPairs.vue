@@ -2,6 +2,11 @@
   <div>
     <div class="block mb-3">
       <base-level>
+        <template v-slot:left>
+          <base-level-item>
+            <h2 class="title">SSH Keys</h2>
+          </base-level-item>
+        </template>
         <template v-slot:right>
           <base-level-item>
             <base-button-create @click="showNewKeyPairModal = true">

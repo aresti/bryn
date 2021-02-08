@@ -4,7 +4,11 @@
       <base-level>
         <template v-slot:left>
           <base-level-item>
-            <tenant-filter-tabs />
+            <tenant-filter-tabs
+              entity-name="Servers"
+              v-if="tenants.length > 1"
+            />
+            <h2 v-else class="title">Servers</h2>
           </base-level-item>
         </template>
         <template v-slot:right>
@@ -87,7 +91,7 @@ export default {
       loading: (state) => state.instances.loading,
       keyPairs: (state) => state.keyPairs.all,
     }),
-    ...mapGetters(["filterTenant", "getRegionNameForTenant"]),
+    ...mapGetters(["filterTenant", "getRegionNameForTenant", "tenants"]),
     ...mapGetters("instances", [
       "instancesForFilterTenant",
       "notShelvedForFilterTenant",

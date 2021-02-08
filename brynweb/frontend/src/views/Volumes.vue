@@ -6,8 +6,12 @@
         <!-- Level left -->
         <template v-slot:left>
           <base-level-item>
-            <!-- Tenant filter tabs -->
-            <tenant-filter-tabs />
+            <!-- Tenant filter tabs OR Title-->
+            <tenant-filter-tabs
+              entity-name="Volumes"
+              v-if="tenants.length > 1"
+            />
+            <h2 v-else class="title">Volumes</h2>
           </base-level-item>
         </template>
 
@@ -131,7 +135,7 @@ export default {
     ...mapState({
       loading: (state) => state.volumes.loading,
     }),
-    ...mapGetters(["filterTenant", "getRegionNameForTenant"]),
+    ...mapGetters(["filterTenant", "getRegionNameForTenant", "tenants"]),
     ...mapGetters("volumes", ["volumesForFilterTenant"]),
 
     filteredVolumes() {
