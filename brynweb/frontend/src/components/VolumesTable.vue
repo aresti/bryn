@@ -38,7 +38,8 @@
               <base-icon
                 v-if="getVolumeIsPolling(volume)"
                 class="ml-1"
-                :fa-classes="['fas', 'fa-spinner', 'fa-spin']"
+                :icon="['fas', 'spinner']"
+                spin
                 :decorative="true"
               />
             </base-tag>
@@ -74,10 +75,7 @@
             >
               <template v-slot:default>Attach</template>
               <template v-slot:icon-before>
-                <base-icon
-                  :fa-classes="['fas', 'fa-link']"
-                  :decorative="true"
-                />
+                <base-icon :icon="['fas', 'link']" :decorative="true" />
               </template>
             </base-button>
 
@@ -91,10 +89,7 @@
             >
               <template v-slot:default>Detach</template>
               <template v-slot:icon-before>
-                <base-icon
-                  :fa-classes="['fas', 'fa-unlink']"
-                  :decorative="true"
-                />
+                <base-icon :icon="['fas', 'unlink']" :decorative="true" />
               </template>
             </base-button>
 
@@ -112,7 +107,7 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from "vuex";
+import { mapGetters } from "vuex";
 import { formatBytes, minutesSince } from "@/utils";
 import { formatDistanceToNow } from "date-fns";
 

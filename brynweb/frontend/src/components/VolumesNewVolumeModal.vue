@@ -61,25 +61,25 @@ export default {
         tenant: {
           label: "Region",
           element: "select",
-          iconClasses: ["fas", "fa-globe-europe"],
+          iconClasses: ["fas", "globe-europe"],
           validators: [isRequired],
         },
         volumeType: {
           label: "Volume Type",
           element: "select",
-          iconClasses: ["fas", "fa-hdd"],
+          iconClasses: ["fas", "hdd"],
           validators: [isRequired],
         },
         size: {
           label: "Size",
           element: "select",
           value: "250",
-          iconClasses: ["fas", "fa-save"],
+          iconClasses: ["fas", "save"],
           validators: [isRequired],
         },
         name: {
           label: "Name",
-          iconClasses: ["fas", "fa-tag"],
+          iconClasses: ["fas", "tag"],
           validators: [isRequired, isAlphaNumHyphensOnly, this.isUniqueName],
         },
       }),
@@ -139,7 +139,7 @@ export default {
   // Events
   watch: {
     selectedTenant: {
-      handler(_new, _old) {
+      handler() {
         this.form.fields.volumeType.value = this.defaultVolumeTypeId;
         this.form.fields.volumeType.options = mapToFormOptions(
           this.volumeTypes

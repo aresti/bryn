@@ -13,10 +13,7 @@
             <base-button rounded @click="showShelved = !showShelved"
               ><template v-slot:icon-before>
                 <base-icon
-                  :fa-classes="[
-                    'fas',
-                    showShelved ? 'fas fa-eye-slash' : 'fas fa-eye',
-                  ]"
+                  :icon="['fas', showShelved ? 'eye-slash' : 'eye']"
                   :decorative="true"
                 />
               </template>

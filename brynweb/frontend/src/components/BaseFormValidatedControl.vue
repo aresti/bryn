@@ -13,15 +13,15 @@
       />
     </template>
     <template v-if="field.iconClasses" v-slot:iconLeft>
-      <base-icon :fa-classes="field.iconClasses" left :decorative="true" />
+      <base-icon :icon="field.iconClasses" left :decorative="true" />
     </template>
     <template v-slot:iconRight>
       <base-icon
         :class="{
           'is-hidden': !field.error,
         }"
-        :fa-classes="validationIconClasses"
-        :color="validationIconColor"
+        :icon="['fas', 'times']"
+        color="danger"
         right
         :decorative="true"
       />
@@ -43,18 +43,6 @@ export default {
     disabled: {
       type: Boolean,
       default: false,
-    },
-  },
-
-  computed: {
-    validationIconClasses() {
-      return [
-        "fas",
-        { "fa-check": !this.field.invalid, "fa-times": this.field.invalid },
-      ];
-    },
-    validationIconColor() {
-      return this.field.invalid ? "danger" : "success";
     },
   },
 };

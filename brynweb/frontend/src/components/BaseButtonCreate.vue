@@ -3,7 +3,7 @@
     ><template v-slot:icon-before>
       <base-icon
         :size="size"
-        :fa-classes="['fas', 'fa-plus-circle']"
+        :icon="['fas', 'plus-circle']"
         :decorative="true"
       />
     </template>

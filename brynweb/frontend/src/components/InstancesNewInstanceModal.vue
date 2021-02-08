@@ -53,30 +53,30 @@ export default {
         tenant: {
           label: "Region",
           element: "select",
-          iconClasses: ["fas", "fa-globe-europe"],
+          iconClasses: ["fas", "globe-europe"],
           validators: [isRequired],
         },
         flavor: {
           label: "Flavor",
           element: "select",
-          iconClasses: ["fas", "fa-server"],
+          iconClasses: ["fas", "server"],
           validators: [isRequired],
         },
         image: {
           label: "Image",
           element: "select",
-          iconClasses: ["fas", "fa-save"],
+          iconClasses: ["fas", "save"],
           validators: [isRequired],
         },
         keypair: {
           label: "SSH Key",
           element: "select",
-          iconClasses: ["fas", "fa-key"],
+          iconClasses: ["fas", "key"],
           validators: [isRequired],
         },
         name: {
           label: "Name",
-          iconClasses: ["fas", "fa-tag"],
+          iconClasses: ["fas", "tag"],
           validators: [isRequired, isAlphaNumHyphensOnly, this.isUniqueName],
         },
       }),
@@ -130,7 +130,7 @@ export default {
   // Events
   watch: {
     selectedTenant: {
-      handler(_new, _old) {
+      handler() {
         this.form.fields.flavor.value = "";
         this.form.fields.flavor.options = mapToFormOptions(this.flavors);
         this.form.fields.image.value = "";
@@ -140,14 +140,14 @@ export default {
     },
 
     kayPairs: {
-      handler(_new, _old) {
+      handler() {
         this.form.fields.keypair.options = mapToFormOptions(this.keyPairs);
       },
       immediate: true,
     },
 
     defaultKeyPair: {
-      handler(_new, _old) {
+      handler() {
         this.form.fields.keypair.value = this.defaultKeyPair?.id ?? "";
       },
       immediate: true,

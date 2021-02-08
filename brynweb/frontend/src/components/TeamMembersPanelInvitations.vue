@@ -6,7 +6,7 @@
       class="panel-block"
     >
       <span class="panel-icon">
-        <i class="fas fa-envelope" aria-hidden="true"></i>
+        <font-awesome-icon :icon="['fas', 'envelope']" aria-hidden="true" />
       </span>
       <p class="is-flex-grow-1">
         {{ invitation.email }}

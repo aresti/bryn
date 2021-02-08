@@ -21,10 +21,7 @@
             <base-button rounded @click="showBootable = !showBootable"
               ><template v-slot:icon-before>
                 <base-icon
-                  :fa-classes="[
-                    'fas',
-                    showBootable ? 'fas fa-eye-slash' : 'fas fa-eye',
-                  ]"
+                  :icon="['fas', showBootable ? 'eye-slash' : 'eye']"
                   :decorative="true"
                 />
               </template>

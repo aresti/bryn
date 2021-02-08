@@ -1,1 +1,37 @@
-{% load static %}<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="description" content="The CLIMB project (Cloud Infrastructure for Microbial Bioinformatics) is a collaboration between Warwick, Birmingham, Cardiff and Swansea Universities to develop and deploy a world leading cyber-infrastructure for microbial bioinformatics; providing free cloud-based compute, storage, and analysis tools for academic microbiologists in the UK."><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}"><link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.png' %}"><link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon-16x16.png' %}"><link rel="manifest" href="{% static 'images/site.webmanifest' %}"><title>{% block title %}CLIMB | Cloud Infrastructure for Microbial Informatics{% endblock %}{% block title_suffix %}{% endblock %}</title>{% block extra_css %} {# Override this in templates to add extra stylesheets #} {% endblock %}<link href="/static/vue/css/chunk-vendors.67441171.css" rel="preload" as="style"><link href="/static/vue/css/index.a02554bb.css" rel="preload" as="style"><link href="/static/vue/js/chunk-vendors.68ec96f5.js" rel="preload" as="script"><link href="/static/vue/js/index.aeecfda9.js" rel="preload" as="script"><link href="/static/vue/css/chunk-vendors.67441171.css" rel="stylesheet"><link href="/static/vue/css/index.a02554bb.css" rel="stylesheet"></head><body class="has-navbar-fixed-top {% block body_extra_classes %}{% endblock %}"><noscript><strong>We're sorry but CLIMB | Cloud Infrastructure for Microbial Informatics doesn't work properly without JavaScript enabled. Please enable it to continue.</strong></noscript>{% include "includes/top_menu.html" %} {% block content %}{% endblock %} {% block extra_js %} {# Override this in templates to add extra javascript #} {% endblock %}<script src="/static/vue/js/chunk-vendors.68ec96f5.js"></script><script src="/static/vue/js/index.aeecfda9.js"></script></body></html>
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="The CLIMB project (Cloud Infrastructure for Microbial Bioinformatics) is a collaboration between Warwick, Birmingham, Cardiff and Swansea Universities to develop and deploy a world leading cyber-infrastructure for microbial bioinformatics; providing free cloud-based compute, storage, and analysis tools for academic microbiologists in the UK." />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'images/site.webmanifest' %}">
+    
+    <title>{% block title %}CLIMB | Cloud Infrastructure for Microbial Informatics{% endblock %}{% block title_suffix %}{% endblock %}</title>
+
+    {% block extra_css %}
+      {# Override this in templates to add extra stylesheets #}
+    {% endblock %}
+  <link href="/static/vue/js/chunk-vendors.js" rel="preload" as="script"><link href="/static/vue/js/index.js" rel="preload" as="script"></head>
+
+  <body class="has-navbar-fixed-top {% block body_extra_classes %}{% endblock %}">
+    <noscript>
+      <strong>We're sorry but CLIMB | Cloud Infrastructure for Microbial Informatics doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+
+    {% include "includes/top_menu.html" %}
+  
+    {% block content %}{% endblock %}
+
+    {% block extra_js %}
+      {# Override this in templates to add extra javascript #}
+    {% endblock %}
+  <script type="text/javascript" src="/static/vue/js/chunk-vendors.js"></script><script type="text/javascript" src="/static/vue/js/index.js"></script></body>
+</html>

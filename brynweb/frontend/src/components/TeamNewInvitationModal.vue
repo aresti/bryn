@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import { mapActions, mapState, mapGetters } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 import useFormValidation from "@/composables/formValidation";
 import {
@@ -44,7 +44,7 @@ export default {
           label: "Email",
           type: "email",
           validators: [isRequired, isValidEmailSyntax, this.isUniqueEmail],
-          iconClasses: ["fa", "fa-envelope"],
+          iconClasses: ["fa", "envelope"],
         },
         message: {
           label: "Message",

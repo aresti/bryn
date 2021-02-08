@@ -13,9 +13,9 @@ const mutations = {
   setInvitations(state, invitations) {
     state.all = invitations;
   },
-  removeInvitationById(state, id) {
+  removeInvitationById(state, uuid) {
     state.all.splice(
-      state.all.findIndex((obj) => obj.id === id),
+      state.all.findIndex((obj) => obj.uuid === uuid),
       1
     );
   },

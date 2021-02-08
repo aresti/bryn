@@ -5,7 +5,7 @@
     class="panel-block"
   >
     <span class="panel-icon">
-      <i class="fas fa-user" aria-hidden="true"></i>
+      <font-awesome-icon :icon="['fas', 'user']" aria-hidden="true" />
     </span>
     <p class="is-flex-grow-1">
       {{ teamMember.user.firstName }} {{ teamMember.user.lastName }}

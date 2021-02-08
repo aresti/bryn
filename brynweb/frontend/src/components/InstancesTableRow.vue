@@ -18,7 +18,8 @@
           <base-icon
             v-if="isPolling"
             class="ml-1"
-            :fa-classes="['fas', 'fa-spinner', 'fa-spin']"
+            :icon="['fas', 'spinner']"
+            spin
             :decorative="true"
           />
         </base-tag>

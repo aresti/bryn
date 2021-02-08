@@ -24,15 +24,15 @@ export default {
       form: useFormValidation({
         institution: {
           validators: [isRequired],
-          iconClasses: ["fas", "fa-university"],
+          iconClasses: ["fas", "university"],
         },
         department: {
-          iconClasses: ["fas", "fa-building"],
+          iconClasses: ["fas", "building"],
         },
         phoneNumber: {
           label: "Phone",
           type: "tel",
-          iconClasses: ["fas", "fa-phone"],
+          iconClasses: ["fas", "phone"],
           validators: [isRequired], // Rely on server side phone num validation
         },
       }),
@@ -47,7 +47,7 @@ export default {
   // Events
   watch: {
     team: {
-      handler(_new, _old) {
+      handler() {
         this.form.fields.institution.value = this.team.institution;
         this.form.fields.department.value = this.team.department;
         this.form.fields.phoneNumber.value = this.team.phoneNumber;

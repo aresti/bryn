@@ -1,11 +1,7 @@
 <template>
   <base-button rounded color="danger" :size="size" outlined
     ><template v-slot:icon-before>
-      <base-icon
-        :size="size"
-        :fa-classes="['fas', 'fa-trash-alt']"
-        :decorative="true"
-      />
+      <base-icon :size="size" :icon="['fas', 'trash-alt']" :decorative="true" />
     </template>
     <template v-slot:default><slot>Delete</slot></template>
   </base-button>

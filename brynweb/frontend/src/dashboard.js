@@ -1,12 +1,61 @@
 import { createApp } from "vue";
+
 import { axios } from "@/api";
 import store from "@/store";
 import router from "@/router";
+
 import Toast, { POSITION } from "vue-toastification";
 import VueClickAway from "vue3-click-away";
 
-import App from "@/App";
+// Font Awesome
+import { library } from "@fortawesome/fontawesome-svg-core";
+import {
+  faAngleDown,
+  faBuilding,
+  faCheck,
+  faEye,
+  faEyeSlash,
+  faGlobeEurope,
+  faHdd,
+  faKey,
+  faLink,
+  faPhone,
+  faPlusCircle,
+  faSave,
+  faServer,
+  faSpinner,
+  faTag,
+  faTimes,
+  faTrashAlt,
+  faUniversity,
+  faUnlink,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
+library.add(
+  faAngleDown,
+  faBuilding,
+  faCheck,
+  faEye,
+  faEyeSlash,
+  faGlobeEurope,
+  faHdd,
+  faKey,
+  faLink,
+  faPhone,
+  faPlusCircle,
+  faSave,
+  faServer,
+  faSpinner,
+  faTag,
+  faTimes,
+  faTrashAlt,
+  faUniversity,
+  faUnlink
+);
+
+// Create App
+import App from "@/App";
 const app = createApp(App);
 
 // Plugin registration
@@ -20,6 +69,8 @@ const toastOptions = {
 app.use(Toast, toastOptions);
 
 // Global base component registration
+app.component("font-awesome-icon", FontAwesomeIcon);
+
 import BaseButton from "@/components/BaseButton";
 import BaseButtons from "@/components/BaseButtons";
 import BaseButtonCancel from "@/components/BaseButtonCancel";

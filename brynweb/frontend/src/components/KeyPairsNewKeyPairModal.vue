@@ -32,7 +32,7 @@ import {
 import VueMarkdownIt from "vue3-markdown-it";
 import guidance from "@/content/keypairs/newKeyPairGuidance.md";
 
-import { mapActions, mapState, mapGetters } from "vuex";
+import { mapActions, mapState } from "vuex";
 
 export default {
   // Template dependencies
@@ -63,7 +63,7 @@ export default {
         },
         name: {
           label: "Key Name",
-          iconClasses: ["fas", "fa-tag"],
+          iconClasses: ["fas", "tag"],
           validators: [isRequired, isAlphaNumHyphensOnly, this.isUniqueName],
         },
       }),
