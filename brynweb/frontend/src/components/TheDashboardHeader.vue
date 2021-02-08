@@ -10,7 +10,7 @@
               </h1>
             </base-level-item>
           </template>
-          <template v-slot:right>
+          <template v-if="teams.length > 1" v-slot:right>
             <base-level-item>
               <base-dropdown-list
                 @itemSelected="onTeamSelect"
