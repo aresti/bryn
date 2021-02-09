@@ -1,4 +1,4 @@
-from rest_framework import serializers, validators
+from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 from core.serializers import HashidsIntegerField
@@ -70,12 +70,15 @@ class InvitationSerializer(serializers.ModelSerializer):
         model = Invitation
         fields = ["uuid", "email", "date", "message", "made_by", "to_team"]
 
-        # Ensure only one invite per email, per team
-        validators = [
-            validators.UniqueTogetherValidator(
-                queryset=Invitation.objects.all(), fields=["email", "to_team"]
+    def validate(self, data):
+        """Enforce only one pending invite per email, per team"""
+        if Invitation.objects.filter(
+            email=data["email"], to_team=data["to_team"], accepted=False
+        ).count():
+            raise serializers.ValidationError(
+                "There is already a pending invitation for this team and email address."
             )
-        ]
+        return data
 
 
 class TeamSerializer(serializers.ModelSerializer):

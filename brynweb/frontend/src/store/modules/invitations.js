@@ -52,9 +52,10 @@ const actions = {
     commit("addInvitation", invitation);
     return invitation;
   },
-  async deleteInvitation({ commit }, invitation) {
+  async deleteInvitation({ commit, rootState }, invitation) {
     /* Delete an invitation */
-    const url = getAPIRoute("invitations", invitation.toTeam) + invitation.uuid;
+    const url =
+      getAPIRoute("invitations", rootState.activeTeamId) + invitation.uuid;
     await axios.delete(url);
     commit("removeInvitationById", invitation.uuid);
   },

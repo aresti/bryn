@@ -106,6 +106,11 @@ class InvitationListView(generics.ListCreateAPIView):
         teams = get_teams_for_user(self.request.user, team=team_id, admin=True)
         return Invitation.objects.filter(to_team__in=teams, accepted=False)
 
+    def perform_create(self, serializer):
+        """Send email after creation"""
+        invitation = serializer.save()
+        invitation.send_invitation_email()
+
 
 class InvitationDetailView(generics.RetrieveDestroyAPIView):
     """

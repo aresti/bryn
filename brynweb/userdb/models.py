@@ -170,13 +170,6 @@ class Invitation(models.Model):
     accepted = models.BooleanField(default=False)
     date = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["to_team", "email"], name="unique_invitation"
-            )
-        ]
-
     def send_invitation_email(self):
         context = {
             "invitation": self,

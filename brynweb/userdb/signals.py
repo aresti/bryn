@@ -3,14 +3,7 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from openstack.models import KeyPair
-from .models import Invitation, Profile, Team
-
-
-@receiver(post_save, sender=Invitation)
-def send_invitation(sender, instance, created, **kwargs):
-    """Send an invitation email after an Invitation instance is created"""
-    if created:
-        instance.send_invitation_email()
+from .models import Profile, Team
 
 
 @receiver(post_save, sender=User)
