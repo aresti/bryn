@@ -59,8 +59,16 @@ export default {
   computed: {
     ...mapGetters(["team"]),
     ...mapGetters("invitations", ["allInvitations"]),
+    ...mapGetters("teamMembers", ["allTeamMembers"]),
     invalidEmails() {
-      return this.allInvitations.map((invitation) => invitation.email);
+      const invalidEmails = [];
+      invalidEmails.push(
+        ...this.allInvitations.map((invitation) => invitation.email)
+      );
+      invalidEmails.push(
+        ...this.allTeamMembers.map((teamMember) => teamMember.user.email)
+      );
+      return invalidEmails;
     },
   },
 

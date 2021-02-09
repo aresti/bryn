@@ -147,21 +147,26 @@ class Form {
     /*
      * Parse server side errors (in usual Django Rest Framework format)
      */
-    Object.entries(error).forEach(([fieldName, value]) => {
-      value.forEach((message) => {
-        if (this.fields.hasOwnProperty(fieldName)) {
-          this.fields[fieldName].errors.push(new ValidationError(message));
-          this.fields[fieldName].invalid = true;
-        } else {
-          this.nonFieldErrors = [];
-          this.nonFieldErrors.push(
-            new ValidationError(
-              field == "non_field_errors" ? message : `${message}`
-            )
-          );
-        }
+    this.nonFieldErrors = [];
+
+    if (Array.isArray(error)) {
+      /* DRF response can be simply an array of message strings */
+      error.forEach((message) => {
+        this.nonFieldErrors.push(new ValidationError(message));
       });
-    });
+    } else {
+      /* In other cases, respnse is an Object where keys are field names, each with an array of message strings */
+      Object.entries(error).forEach(([fieldName, fieldErrors]) => {
+        fieldErrors.forEach((message) => {
+          if (Object.prototype.hasOwnProperty.call(this.fields, fieldName)) {
+            this.fields[fieldName].errors.push(new ValidationError(message));
+            this.fields[fieldName].invalid = true;
+          } else {
+            this.nonFieldErrors.push(new ValidationError(message));
+          }
+        });
+      });
+    }
   }
 }
 

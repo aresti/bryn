@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 
 from core.serializers import HashidsIntegerField
 from openstack.serializers import TenantSerializer
@@ -62,7 +63,7 @@ class TeamMemberSerializer(serializers.ModelSerializer):
 
 class InvitationSerializer(serializers.ModelSerializer):
     to_team = serializers.PrimaryKeyRelatedField(
-        queryset=Team.objects.all(), pk_field=HashidsIntegerField()
+        pk_field=HashidsIntegerField(), read_only=True
     )
     made_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
@@ -71,13 +72,20 @@ class InvitationSerializer(serializers.ModelSerializer):
         fields = ["uuid", "email", "date", "message", "made_by", "to_team"]
 
     def validate(self, data):
-        """Enforce only one pending invite per email, per team"""
-        if Invitation.objects.filter(
-            email=data["email"], to_team=data["to_team"], accepted=False
-        ).count():
+        team = get_object_or_404(
+            Team, pk=self.context["request"].resolver_match.kwargs["team_id"]
+        )
+        email = data["email"]
+        team_users = team.users
+        if Invitation.objects.filter(email=email, to_team=team, accepted=False).count():
             raise serializers.ValidationError(
                 "There is already a pending invitation for this team and email address."
             )
+        if team_users.filter(email=email).count():
+            raise serializers.ValidationError(
+                "There is already a current team member with this email address."
+            )
+
         return data
 
 

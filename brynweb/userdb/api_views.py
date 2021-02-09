@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import exceptions, generics, permissions
 
-from .models import TeamMember, Invitation
+from .models import Team, TeamMember, Invitation
 from .permissions import (
     IsTeamAdminPermission,
     IsTeamAdminForUnsafePermission,
@@ -107,8 +107,12 @@ class InvitationListView(generics.ListCreateAPIView):
         return Invitation.objects.filter(to_team__in=teams, accepted=False)
 
     def perform_create(self, serializer):
-        """Send email after creation"""
-        invitation = serializer.save()
+        """
+        Set to_team from url resolver
+        Send email after creation
+        """
+        team = get_object_or_404(Team, pk=self.request.resolver_match.kwargs["team_id"])
+        invitation = serializer.save(to_team=team)
         invitation.send_invitation_email()
 
 

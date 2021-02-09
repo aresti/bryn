@@ -37,3 +37,5 @@ class InvitationFactory(factory.django.DjangoModelFactory):
 
     email = factory.Sequence(lambda n: "%d@example.com" % n)
     message = "Join our team!"
+    to_team = factory.SubFactory(TeamFactory)
+    made_by = factory.SubFactory(UserFactory)

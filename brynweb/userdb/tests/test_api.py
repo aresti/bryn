@@ -1,3 +1,7 @@
+"""
+Functional tests for the userdb API
+"""
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
@@ -45,7 +49,6 @@ class TestInvitationAPI(APITestCase):
         """Can team admins create invitations?"""
         self.client.force_login(user=self.team_a_admin)
         data = {
-            "to_team": self.team_a.hashid,
             "email": "someonenew@gmail.com",
             "message": "join us!",
         }
@@ -84,6 +87,21 @@ class TestInvitationAPI(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_admin_cannot_create_invitation_to_another_team(self):
+        """Are team admins forbidden from creating invitations to another team (setting to_team)?"""
+        self.client.force_login(user=self.team_a_admin)
+        data = {
+            "email": "someonenew@gmail.com",
+            "message": "join us!",
+            "to_team": self.team_b.hashid,  # Should be ignored (read_only on Serializer)
+        }
+        response = self.client.post(
+            reverse(self.path_name, kwargs={"team_id": self.team_a.pk}), data=data
+        )
+        self.assertEqual(
+            response.data["to_team"], self.team_a.hashid
+        )  # To team set from url resolver, not overridable
+
     def test_invitiations_list_only_shows_correct_team(self):
         """Does the invitations list only show teams for the team specified in the url?"""
         InvitationFactory(to_team=self.team_a, made_by=self.team_a_admin)
@@ -97,11 +115,20 @@ class TestInvitationAPI(APITestCase):
         self.assertEqual(len(response.data), 2)
         self.assertEqual(response.data[0].get("to_team"), self.team_a.hashid)
 
+    def test_invitation_list_only_shows_pending_invitations(self):
+        pending = InvitationFactory(to_team=self.team_a, made_by=self.team_a_admin)
+        InvitationFactory(to_team=self.team_a, made_by=self.team_a_admin, accepted=True)
+        self.client.force_login(user=self.team_a_admin)
+        response = self.client.get(
+            reverse(self.path_name, kwargs={"team_id": self.team_a.pk})
+        )
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["uuid"], str(pending.uuid))
+
     def test_non_admin_cannot_create_invitation(self):
         """Are non-amdmin team members forbidden from creating invitations?"""
         self.client.force_login(user=self.team_a_member1)
         data = {
-            "to_team": self.team_a.hashid,
             "email": "someonenew@gmail.com",
             "message": "join us!",
         }
@@ -170,6 +197,62 @@ class TestInvitationAPI(APITestCase):
         self.assertEqual(Invitation.objects.count(), 1)
         self.assertContains(
             response, "Accepted invitations cannot be deleted", status_code=405
+        )
+
+    def test_cannot_create_duplicate_pending_invitation(self):
+        """Is creation of a duplicate (team, email, accepted=False) invitation forbidden?"""
+        existing = InvitationFactory(
+            to_team=self.team_a, made_by=self.team_a_admin, accepted=False
+        )
+        self.client.force_login(user=self.team_a_admin)
+        data = {
+            "email": existing.email,
+            "message": "would you like to join again?",
+        }
+        response = self.client.post(
+            reverse(self.path_name, kwargs={"team_id": self.team_a.pk}), data=data
+        )
+        self.assertContains(
+            response,
+            "There is already a pending invitation for this team and email address.",
+            status_code=400,
+        )
+
+    def test_cannot_create_invitation_for_existing_team_member(self):
+        """Is creation of an invitation for an existing team member forbidden?"""
+        self.client.force_login(user=self.team_a_admin)
+        data = {
+            "email": self.team_a_member1.email,
+            "message": "would you like to join again?",
+        }
+        response = self.client.post(
+            reverse(self.path_name, kwargs={"team_id": self.team_a.pk}), data=data
+        )
+        self.assertContains(
+            response,
+            "There is already a current team member with this email address.",
+            status_code=400,
+        )
+
+    def test_can_re_invite_a_past_team_member(self):
+        """Can an invitation be created for a previous team member who has left?"""
+        previous_invite = InvitationFactory(
+            to_team=self.team_a, made_by=self.team_a_admin, accepted=True
+        )
+        self.client.force_login(user=self.team_a_admin)
+        data = {
+            "email": previous_invite.email,
+            "message": "would you like to join again?",
+        }
+        response = self.client.post(
+            reverse(self.path_name, kwargs={"team_id": self.team_a.pk}), data=data
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            Invitation.objects.filter(
+                to_team=self.team_a, email=previous_invite.email
+            ).count(),
+            2,
         )
 
 
