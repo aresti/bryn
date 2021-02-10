@@ -5,7 +5,6 @@ from rest_framework import exceptions, generics, permissions
 
 from .models import Team, TeamMember, Invitation
 from .permissions import (
-    IsTeamAdminPermission,
     IsTeamAdminForUnsafePermission,
     IsTeamMemberPermission,
 )
@@ -99,11 +98,15 @@ class InvitationListView(generics.ListCreateAPIView):
     """
 
     serializer_class = InvitationSerializer
-    permission_classes = [permissions.IsAuthenticated, IsTeamAdminPermission]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsTeamMemberPermission,
+        IsTeamAdminForUnsafePermission,
+    ]
 
     def get_queryset(self):
         team_id = self.kwargs.get("team_id")
-        teams = get_teams_for_user(self.request.user, team=team_id, admin=True)
+        teams = get_teams_for_user(self.request.user, team=team_id)
         return Invitation.objects.filter(to_team__in=teams, accepted=False)
 
     def perform_create(self, serializer):
@@ -122,7 +125,11 @@ class InvitationDetailView(generics.RetrieveDestroyAPIView):
     """
 
     serializer_class = InvitationSerializer
-    permission_classes = [permissions.IsAuthenticated, IsTeamAdminPermission]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsTeamMemberPermission,
+        IsTeamAdminForUnsafePermission,
+    ]
     queryset = Invitation.objects.all()
 
     def get_object(self):

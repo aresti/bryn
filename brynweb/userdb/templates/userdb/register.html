@@ -1,4 +1,4 @@
-{% extends "home/base.html" %}
+{% extends "base.html" %}
 {% load static widget_tweaks %}
 
 {% block content %}
@@ -68,36 +68,12 @@
 {% endblock %}
 
 {% block extra_js %}
-  <script>
-    class RegistrationFormGuard {
-      constructor(checkboxIds, buttonId) {
-        this.inputs = checkboxIds.map(checkboxId => {
-          return document.getElementById(checkboxId);
-        });
-        this.button = document.getElementById(buttonId);
-        this.setupEventListeners();
-      }
-
-      setupEventListeners() {
-        const boundCallback = this.setButtonStatus.bind(this);
-        this.inputs.forEach(() => {
-          document.addEventListener("click", boundCallback);
-        });
-        window.addEventListener("load", boundCallback);  // Handle back button
-      }
-
-      setButtonStatus() {
-        if (this.inputs.every(input => input.checked)) {
-          this.button.removeAttribute("disabled")
-          this.button.focus()
-        } else {
-          this.button.setAttribute("disabled", true);
-        }
-      }
-    }
+  <script type="module">
+    // Yes, only supported on 90%+ of browsers but not essential for page to function
+    import CheckboxFormGuard from "{% static 'js/CheckboxFormGuard.js' %}";
 
     document.addEventListener("DOMContentLoaded", function(){
-      new RegistrationFormGuard(["id_agree_terms", "id_is_primary_user"], "continue_btn");
+      new CheckboxFormGuard(["id_agree_terms", "id_is_primary_user"], "continue_btn");
     });
   </script>
 {% endblock %}

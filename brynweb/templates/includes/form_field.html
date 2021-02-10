@@ -3,7 +3,11 @@
 <div class="field">
   <label class="label {% if hide_label %}is-sr-only{% endif %}" for="{{ field.id_for_label }}">{{ field.label }}</label>
   <div class="control {% if fa_class %}has-icons-left{% endif %}">
-    {{ field|add_class:"input" }}
+    {% if field.errors %}
+      {{ field|add_class:"input is-danger"}}
+    {% else %}
+      {{ field|add_class:"input" }}
+    {% endif %}
     {% if fa_class %}
       <span class="icon is-small is-left">
         <i class="{{ fa_class }}"></i>

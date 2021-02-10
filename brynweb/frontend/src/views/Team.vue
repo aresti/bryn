@@ -7,7 +7,7 @@
             <h2 class="title">Team Profile</h2>
           </template>
           <template v-slot:right>
-            <base-level-item>
+            <base-level-item v-if="userIsAdmin">
               <base-button-create @click="showNewInvitationModal = true">
                 New Invitation
               </base-button-create>
@@ -56,7 +56,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["team"]),
+    ...mapGetters(["team", "userIsAdmin"]),
     ...mapGetters("teamMembers", ["allTeamMembers"]),
   },
 };

@@ -78,14 +78,14 @@ class TestInvitationAPI(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_non_admin_cannot_view_invitations(self):
-        """Is a non-admin team member forbidden from viewing invitations?"""
+    def test_non_admin_can_view_invitations(self):
+        """Is a non-admin team member able to view invitations?"""
         InvitationFactory(to_team=self.team_a, made_by=self.team_a_admin)
         self.client.force_login(user=self.team_a_member1)
         response = self.client.get(
             reverse(self.path_name, kwargs={"team_id": self.team_a.pk})
         )
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_admin_cannot_create_invitation_to_another_team(self):
         """Are team admins forbidden from creating invitations to another team (setting to_team)?"""
@@ -159,8 +159,8 @@ class TestInvitationAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get("uuid"), str(invitation.uuid))
 
-    def test_non_admin_member_cannot_get_invitation_detail(self):
-        """Are non-admin team members forbidden from viewing individual invitations?"""
+    def test_non_admin_member_can_get_invitation_detail(self):
+        """Are non-admin team members able to view individual invitations?"""
         invitation = InvitationFactory(to_team=self.team_a, made_by=self.team_a_admin)
         self.client.force_login(user=self.team_a_member1)
         response = self.client.get(
@@ -168,7 +168,7 @@ class TestInvitationAPI(APITestCase):
                 self.path_name, kwargs={"team_id": self.team_a.pk, "pk": invitation.pk},
             )
         )
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_admin_user_can_delete_an_invitation(self):
         """Can a team admin delete an invitation?"""

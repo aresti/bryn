@@ -38,7 +38,11 @@ urlpatterns = [
         views.EmailValidationSentView.as_view(),
         name="email_validation_sent",
     ),
-    path("accept-invite/<uuid:uuid>", views.accept_invite, name="accept_invite"),
+    path(
+        "accept-invitation/<uuid:uuid>/",
+        views.accept_invitation_view,
+        name="accept_invitation",
+    ),
     path(
         "validate-email/<uidb64>/<token>/",
         views.EmailValidationConfirmView.as_view(),

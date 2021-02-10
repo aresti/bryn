@@ -170,10 +170,17 @@ class Invitation(models.Model):
     accepted = models.BooleanField(default=False)
     date = models.DateTimeField(auto_now_add=True)
 
+    def create_team_membership(self, user):
+        """Create a team membership from an invitation"""
+        teammember = TeamMember(user=user, team=self.to_team, is_admin=False)
+        teammember.save()
+        self.accepted = True
+        self.save()
+
     def send_invitation_email(self):
         context = {
             "invitation": self,
-            "url": reverse("user:accept_invite", args=[self.uuid]),
+            "url": reverse("user:accept_invitation", args=[self.uuid]),
         }
         subject = render_to_string("userdb/email/user_invite_subject.txt", context)
         text_content = render_to_string("userdb/email/user_invite_email.txt", context)

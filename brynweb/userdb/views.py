@@ -1,7 +1,6 @@
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
-from django.contrib.auth import get_user_model
-from django.contrib.auth import views as auth_views
+from django.contrib.auth import views as auth_views, get_user_model, login
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.utils.http import urlsafe_base64_decode
@@ -11,12 +10,12 @@ from django.views.generic.edit import FormView
 from .forms import (
     CustomAuthenticationForm,
     CustomSetPasswordForm,
-    CustomUserCreationForm,
+    InvitedUserCreationForm,
     PrimaryUserCreationForm,
     RegistrationScreeningForm,
     TeamForm,
 )
-from .models import TeamMember, Invitation, Profile, Region
+from .models import TeamMember, Invitation
 from .tokens import account_activation_token
 
 User = get_user_model()
@@ -83,7 +82,7 @@ def team_registration_view(request):
 
             return HttpResponseRedirect(reverse("user:register_team_done"))
     else:
-        user_form = CustomUserCreationForm()
+        user_form = PrimaryUserCreationForm()
         team_form = TeamForm()
 
     return render(
@@ -132,45 +131,55 @@ class EmailValidationConfirmView(RedirectView):
         return super().get_redirect_url(*args, **kwargs)
 
 
-def accept_invite(request, uuid):
-    i = get_object_or_404(Invitation, uuid=uuid)
+def accept_invitation_view(request, uuid):
+    """Accept invitation / user signup view"""
+    # Confirm invitation is valid, and has not been accepted already
+    invitation = get_object_or_404(Invitation, uuid=uuid)
+    if invitation.accepted:
+        messages.error(request, "This invitation has already been accepted.")
+        return HttpResponseRedirect(reverse("home:home"))
+
+    success_message = (
+        f"Congratulations! You are now a member of {invitation.to_team.name}"
+    )
+
+    if request.method == "GET":
+        # Handle logged in user case
+        if request.user.is_authenticated:
+            if request.user.email != invitation.email:
+                # Email does not match
+                messages.error(
+                    request,
+                    "You cannot accept this team invitation, because the email address does not match the one "
+                    "associated with your account. Please sign in with a different account, or request a new invite.",
+                )
+                return HttpResponseRedirect(reverse("user:logout"))
+            else:
+                # Email matches
+                invitation.create_team_membership(request.user)
+                messages.success(request, success_message)
+                return HttpResponseRedirect(reverse("home:home"))
+
+        # Not logged in
+        form = InvitedUserCreationForm(initial={"email": invitation.email})
+
+    # POST: Create User and TeamMembership, redirect to login
     if request.method == "POST":
-        userform = CustomUserCreationForm(request.POST)
-        if userform.is_valid():
-            user = userform.save()
-
-            # add user profile
-            profile = Profile()
-            profile.user = user
-            profile.current_region = Region.objects.get(name="warwick")
-            profile.email_validated = True
-            profile.save()
-
-            # add team member
-            member = TeamMember()
-            member.team = i.to_team
-            member.user = user
-            member.is_admin = False
-            member.save()
-
-            i.accepted = True
-            i.save()
-
-            messages.success(
-                request,
-                "Congratulations you are now a member of %s. "
-                "Please log-in to get started." % (member.team),
-            )
-            return HttpResponseRedirect(reverse("home:home"))
-        else:
-            messages.error(request, "Invalid values supplied for form.")
-    else:
-        i = Invitation.objects.get(uuid=uuid)
-        if i.accepted:
-            messages.error(request, "This invitation has already been claimed!")
+        form = InvitedUserCreationForm(
+            request.POST, initial={"email": invitation.email}
+        )
+        if form.is_valid():
+            user = form.save()
+            invitation.create_team_membership(user)
+            user.profile.email_validated = True  # Since they received the invite
+            user.save()
+            messages.success(request, success_message)
+            login(request, user)
             return HttpResponseRedirect(reverse("home:home"))
 
-        userform = CustomUserCreationForm()
-        userform.initial["email"] = i.email
-
-    return render(request, "userdb/user-register.html", {"form": userform})
+    login_url = f"{reverse('user:login')}?next={request.path}"
+    return render(
+        request,
+        "userdb/accept_invitation_register.html",
+        {"form": form, "login_url": login_url, "to_team": invitation.to_team},
+    )

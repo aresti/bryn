@@ -10,7 +10,7 @@ locals.py
 logfile
 
 # Static #
-static/
+/static/
 
 # Backup files # 
 *.bak 

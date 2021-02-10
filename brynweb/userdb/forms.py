@@ -10,7 +10,7 @@ from django.utils.translation import gettext as _
 
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
-from .models import Team
+from .models import Invitation, Team
 
 
 class CustomAuthenticationForm(AuthenticationForm):
@@ -41,7 +41,10 @@ class CustomAuthenticationForm(AuthenticationForm):
 
         # No active teams
         teams = user.teams.all()
-        if not len(teams.filter(verified=True)):
+        pending_invitations = Invitation.objects.filter(
+            email=user.email, accepted=False
+        )
+        if not (teams.filter(verified=True).count() or pending_invitations.count()):
             if not len(teams):
                 # No teams whatsoever
                 raise forms.ValidationError(_("You have no current team memberships."))
@@ -130,6 +133,20 @@ class PrimaryUserCreationForm(CustomUserCreationForm):
 
         # Valid
         return email
+
+
+class InvitedUserCreationForm(CustomUserCreationForm):
+    def __init__(self, *args, **kwargs):
+        """Disable the email widget for invitation user creation form"""
+        super().__init__(*args, **kwargs)
+        self.fields["email"].disabled = True
+        self.fields[
+            "email"
+        ].help_text = "Your registration email must match the invitation."
+
+    agree_terms = forms.BooleanField(
+        label="I have read and agree to the above terms and conditions", required=True
+    )
 
 
 class TeamForm(forms.ModelForm):
