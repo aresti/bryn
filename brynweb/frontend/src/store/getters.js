@@ -29,9 +29,12 @@ export const getters = {
   getRegionById(state) {
     return createFindByIdGetter(state.regions);
   },
+  getRegionForTenant(_state, getters) {
+    return (tenant) => getters.getRegionById(tenant.region);
+  },
   getRegionNameForTenant(_state, getters) {
     return (tenant) => {
-      const region = getters.getRegionById(tenant.region);
+      const region = getters.getRegionForTenant(tenant);
       return region?.description?.replace("University of ", "");
     };
   },

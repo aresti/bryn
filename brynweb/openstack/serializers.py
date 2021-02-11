@@ -2,15 +2,30 @@ from rest_framework import serializers
 
 from core.serializers import HashidsIntegerField
 from . import INSTANCE_STATUS_VALUES
-from .models import KeyPair, Tenant, Region
+from .models import KeyPair, Tenant, Region, RegionSettings
+
+
+class RegionSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RegionSettings
+        fields = ["max_volume_size_gb"]
+        read_only_fields = ["max_volume_size_gb"]
 
 
 class RegionSerializer(serializers.ModelSerializer):
     id = HashidsIntegerField()
+    settings = RegionSettingsSerializer(source="regionsettings")
 
     class Meta:
         model = Region
-        fields = ["id", "name", "description", "disabled", "disable_new_instances"]
+        fields = [
+            "id",
+            "name",
+            "description",
+            "disabled",
+            "disable_new_instances",
+            "settings",
+        ]
 
 
 class TenantSerializer(serializers.ModelSerializer):
@@ -77,7 +92,7 @@ class VolumeSerializer(OpenstackBaseSerializer):
     name = serializers.CharField(required=False, allow_null=True)
     size = serializers.IntegerField()
     status = serializers.CharField(read_only=True)
-    volume_type = serializers.CharField()
+    volume_type = serializers.CharField(required=False)
 
 
 class VolumeTypeSerializer(OpenstackBaseSerializer):

@@ -114,6 +114,9 @@ class RegionSettings(models.Model):
     requires_network_setup = models.BooleanField(default=False)
     floating_ip_pool = models.CharField(max_length=50, blank=True)
     horizon_endpoint = models.URLField(blank=True)  # TODO: remove blank after migration
+    max_volume_size_gb = models.IntegerField(
+        _("Maximum allowed volume size in GB"), default=5000
+    )
 
     def __str__(self):
         return str(self.region)

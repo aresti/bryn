@@ -63,7 +63,7 @@
         <td class="is-size-6">{{ timeSinceCreated(volume) }}</td>
 
         <td>
-          <div class="buttons is-right">
+          <div v-if="!volume.bootable" class="buttons is-right">
             <!-- Attach button -->
             <base-button
               v-if="isAvailable(volume)"

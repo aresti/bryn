@@ -25,7 +25,6 @@
 
 <script>
 import useFormValidation from "@/composables/formValidation";
-import { mapToFormOptions } from "@/composables/formValidation/utils";
 import {
   isAlphaNumHyphensOnly,
   isRequired,
@@ -64,12 +63,6 @@ export default {
           iconClasses: ["fas", "globe-europe"],
           validators: [isRequired],
         },
-        volumeType: {
-          label: "Volume Type",
-          element: "select",
-          iconClasses: ["fas", "hdd"],
-          validators: [isRequired],
-        },
         size: {
           label: "Size",
           element: "select",
@@ -90,8 +83,10 @@ export default {
   computed: {
     ...mapState(["filterTenantId"]),
     ...mapGetters(["tenants", "getTenantById", "getRegionNameForTenant"]),
-    ...mapGetters("volumes", ["getVolumesForTenant"]),
-    ...mapGetters("volumeTypes", ["getVolumeTypesForTenant"]),
+    ...mapGetters("volumes", [
+      "getMaxVolumeSizeForTenant",
+      "getVolumesForTenant",
+    ]),
 
     selectedTenant() {
       return this.form.fields.tenant.value
@@ -100,7 +95,10 @@ export default {
     },
 
     sizeOptions() {
-      return [250, 500, 1000, 2000, 5000, 10000, 20000].map((size) => {
+      const allSizes = [250, 500, 1000, 2000, 5000, 10000, 20000];
+      const maxForTenant = this.getMaxVolumeSizeForTenant(this.selectedTenant);
+      const tenantSizes = allSizes.filter((size) => size <= maxForTenant);
+      return tenantSizes.map((size) => {
         return {
           value: size,
           label: formatBytes(size * Math.pow(1000, 3)),
@@ -117,35 +115,12 @@ export default {
       });
     },
 
-    volumeTypes() {
-      return this.selectedTenant
-        ? this.getVolumeTypesForTenant(this.selectedTenant)
-        : [];
-    },
-
-    defaultVolumeTypeId() {
-      return this.volumeTypes.find((vt) => vt.isDefault === true)?.id;
-    },
-
     invalidNames() {
       return this.selectedTenant
         ? this.getVolumesForTenant(this.selectedTenant).map(
             (volume) => volume.name
           )
         : [];
-    },
-  },
-
-  // Events
-  watch: {
-    selectedTenant: {
-      handler() {
-        this.form.fields.volumeType.value = this.defaultVolumeTypeId;
-        this.form.fields.volumeType.options = mapToFormOptions(
-          this.volumeTypes
-        );
-      },
-      immediate: true,
     },
   },
 

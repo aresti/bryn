@@ -57,6 +57,11 @@ const getters = {
   getVolumesForTenant(state) {
     return createFilterByTenantGetter(state.all);
   },
+  getMaxVolumeSizeForTenant(_state, _getters, _rootState, rootGetters) {
+    return (tenant) => {
+      return rootGetters.getRegionForTenant(tenant).settings.maxVolumeSizeGb;
+    };
+  },
   volumesForActiveTeam(state, _getters, rootState) {
     return collectionForTeamId(state.all, rootState.activeTeamId);
   },
