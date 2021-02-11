@@ -118,6 +118,16 @@ export default {
         ? this.getFlavorsForTenant(this.selectedTenant)
         : [];
     },
+    flavorOptions() {
+      return this.flavors.map((flavor) => {
+        return {
+          value: flavor.id,
+          label: `${flavor.name} (${flavor.vcpus} vCPUs, ${
+            flavor.ram / 1024
+          } GB RAM)`,
+        };
+      });
+    },
     invalidNames() {
       return this.selectedTenant
         ? this.getInstancesForTenant(this.selectedTenant).map(
@@ -132,7 +142,7 @@ export default {
     selectedTenant: {
       handler() {
         this.form.fields.flavor.value = "";
-        this.form.fields.flavor.options = mapToFormOptions(this.flavors);
+        this.form.fields.flavor.options = this.flavorOptions;
         this.form.fields.image.value = "";
         this.form.fields.image.options = mapToFormOptions(this.images);
       },

@@ -7,7 +7,13 @@
     </td>
 
     <td>
-      {{ flavorName }}
+      <span class="has-text-weight-semibold">{{
+        flavor.name || "[legacy flavor]"
+      }}</span
+      ><br />
+      <span v-if="flavor" class="is-size-7"
+        >{{ flavor.vcpus }} vCPUs : {{ flavor.ram / 1024 }} GB RAM</span
+      >
     </td>
 
     <td>
@@ -151,10 +157,8 @@ export default {
       const tenant = this.getTenantById(this.instance.tenant);
       return this.getRegionNameForTenant(tenant);
     },
-    flavorName() {
-      return (
-        this.getFlavorById(this.instance.flavor)?.name ?? "[legacy flavor]"
-      );
+    flavor() {
+      return this.getFlavorById(this.instance.flavor);
     },
     timeSinceCreated() {
       return formatDistanceToNow(new Date(this.instance.created)) + " ago";

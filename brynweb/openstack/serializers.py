@@ -66,6 +66,8 @@ class ImageSerializer(OpenstackBaseSerializer):
 class FlavorSerializer(OpenstackBaseSerializer):
     id = serializers.UUIDField(read_only=True)
     name = serializers.CharField()
+    ram = serializers.IntegerField()
+    vcpus = serializers.IntegerField()
 
 
 class KeyPairSerializer(serializers.ModelSerializer):
