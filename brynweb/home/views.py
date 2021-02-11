@@ -1,10 +1,13 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import redirect
 from django.views.generic import TemplateView
 from humps import camelize
 
 from openstack.models import Region
 from openstack.serializers import RegionSerializer
 from userdb.serializers import TeamSerializer, UserSerializer
+from userdb.models import Invitation
 
 
 class TeamDashboard(LoginRequiredMixin, TemplateView):
@@ -22,3 +25,19 @@ class TeamDashboard(LoginRequiredMixin, TemplateView):
         region_data = camelize(RegionSerializer(Region.objects.all(), many=True).data)
 
         return {"regions": region_data, "teams": team_data, "user": user_data}
+
+    def dispatch(self, request, *args, **kwargs):
+        """Handle edge case where use logs in with no team, but pending invite"""
+        has_teams = bool(request.user.teams.count())
+        has_pending_invitations = bool(
+            Invitation.objects.filter(email=request.user.email, accepted=False).count()
+        )
+        if not has_teams and has_pending_invitations:
+            messages.error(
+                request,
+                "You have no current team memberships. If you have received a team invitation, please follow the email"
+                " link to accept.",
+            )
+            return redirect("user:logout")
+
+        return super().dispatch(request, *args, **kwargs)
