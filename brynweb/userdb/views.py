@@ -124,7 +124,8 @@ class EmailValidationConfirmView(RedirectView):
             )
         else:
             messages.error(
-                "Account activation link has expired. We've sent you a new one!"
+                self.request,
+                "Account activation link has expired. We've sent you a new one!",
             )
             user.profile.send_validation_link()
 

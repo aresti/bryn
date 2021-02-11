@@ -80,6 +80,7 @@ MESSAGE_TAGS = {
     messages.ERROR: "is-danger",
     messages.INFO: "is-info",
     messages.SUCCESS: "is-success",
+    messages.WARNING: "is-warning",
 }
 
 
@@ -112,7 +113,10 @@ LOGIN_URL = "user:login"
 LOGIN_REDIRECT_URL = "home:home"
 
 # Don't reject auth where User.is_active is False; allows for custom error on email not-validated
-AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.AllowAllUsersModelBackend"]
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.AllowAllUsersModelBackend",
+    "userdb.backends.UniqueEmailBackend",
+]
 
 
 # Internationalization

@@ -33,15 +33,9 @@
             {% include "includes/form_field.html" with field=form.last_name only %} 
           </div>
         </div>
-        {% include "includes/form_field.html" with field=form.username fa_class="fas fa-user" only %}
-        <div class="columns">
-          <div class="column is-half">
-            {% include "includes/form_field.html" with field=form.password1 fa_class="fas fa-lock" only %}
-          </div>
-          <div class="column is-half">
-            {% include "includes/form_field.html" with field=form.password2 fa_class="fas fa-lock" only %}
-          </div>
-        </div>
+        
+        {% include "includes/form_field.html" with field=form.password1 fa_class="fas fa-lock" only %}
+        {% include "includes/form_field.html" with field=form.password2 fa_class="fas fa-lock" only %}
       </div>
 
       <div class="column is-half">

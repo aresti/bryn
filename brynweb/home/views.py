@@ -28,16 +28,19 @@ class TeamDashboard(LoginRequiredMixin, TemplateView):
 
     def dispatch(self, request, *args, **kwargs):
         """Handle edge case where use logs in with no team, but pending invite"""
-        has_teams = bool(request.user.teams.count())
-        has_pending_invitations = bool(
-            Invitation.objects.filter(email=request.user.email, accepted=False).count()
-        )
-        if not has_teams and has_pending_invitations:
-            messages.error(
-                request,
-                "You have no current team memberships. If you have received a team invitation, please follow the email"
-                " link to accept.",
+        if request.user.is_authenticated:
+            has_teams = bool(request.user.teams.count())
+            has_pending_invitations = bool(
+                Invitation.objects.filter(
+                    email=request.user.email, accepted=False
+                ).count()
             )
-            return redirect("user:logout")
+            if not has_teams and has_pending_invitations:
+                messages.error(
+                    request,
+                    "You have no current team memberships. If you have received a team invitation, please follow the "
+                    "email link to accept.",
+                )
+                return redirect("user:logout")
 
         return super().dispatch(request, *args, **kwargs)

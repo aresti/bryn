@@ -31,17 +31,11 @@
            {% include "includes/form_field.html" with field=user_form.last_name only %} 
           </div>
         </div>
+
+        {% include "includes/form_field.html" with field=user_form.password1 fa_class="fas fa-lock" only %}
+        {% include "includes/form_field.html" with field=user_form.password2 fa_class="fas fa-lock" only %}
         {% include "includes/form_field.html" with field=team_form.position fa_class="fas fa-user-graduate" only %}
         {% include "includes/form_field.html" with field=team_form.phone_number fa_class="fas fa-phone" only %}
-        {% include "includes/form_field.html" with field=user_form.username fa_class="fas fa-user" only %}
-        <div class="columns">
-          <div class="column is-half">
-            {% include "includes/form_field.html" with field=user_form.password1 fa_class="fas fa-lock" only %}
-          </div>
-          <div class="column is-half">
-            {% include "includes/form_field.html" with field=user_form.password2 fa_class="fas fa-lock" only %}
-          </div>
-        </div>
       </div>
 
       <div class="column is-half">

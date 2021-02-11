@@ -13,7 +13,7 @@
 
     {% include 'includes/form_non_field_errors.html' with errors=form.non_field_errors %}
 
-    {% include 'includes/form_field.html' with field=form.username|attr:'placeholder:Username'|add_class:'is-medium' fa_class="fas fa-user" hide_label="True" only %}
+    {% include 'includes/form_field.html' with field=form.username|attr:'placeholder:Email or username'|add_class:'is-medium' fa_class="fas fa-user" hide_label="True" only %}
     {% include 'includes/form_field.html' with field=form.password|attr:'placeholder:Password'|add_class:'is-medium' fa_class="fas fa-lock" hide_label="True" only %}
     
     <div class="field">

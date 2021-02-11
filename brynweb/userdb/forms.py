@@ -79,7 +79,6 @@ class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = User
         fields = (
-            "username",
             "first_name",
             "last_name",
             "email",
@@ -93,7 +92,6 @@ class CustomUserCreationForm(UserCreationForm):
         self.fields["first_name"].required = True
         self.fields["last_name"].required = True
         self.fields["email"].required = True
-        self.fields["username"].help_text = None
         self.fields[
             "password1"
         ].help_text = "Minimum 8 characters & not entirely numeric."
@@ -108,6 +106,14 @@ class CustomUserCreationForm(UserCreationForm):
             raise forms.ValidationError("A user with this email already exists.")
         else:
             return self.cleaned_data["email"]
+
+    def save(self, commit=False):
+        """Use email as username (cannot just change user model due legacy)"""
+        user = super().save(commit=False)
+        user.username = user.email
+        if commit:
+            user.save()
+        return user
 
 
 class PrimaryUserCreationForm(CustomUserCreationForm):
