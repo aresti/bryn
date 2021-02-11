@@ -1,5 +1,6 @@
 from django.urls import path
 
+from . import api_views as core_views
 from openstack import api_views as openstack_views
 from userdb import api_views as userdb_views
 
@@ -12,6 +13,8 @@ app_name = "api"
 # Models using uuid as primary keys are exposed directly, since these offer the same benefits.
 
 urlpatterns = [
+    # {%url "api:messages" % }
+    path("messages/", core_views.MessagesListView.as_view(), name="messages"),
     # {% url "api:keypairs" %}
     path("keypairs/", openstack_views.KeyPairListView.as_view(), name="key_pairs"),
     # {% url "api:keypairs" pk=keypair.id %}

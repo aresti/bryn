@@ -3,8 +3,9 @@
 </template>
 
 <script>
-import { useToast } from "vue-toastification";
+import { useToast, TYPE } from "vue-toastification";
 import { mapActions } from "vuex";
+import { axios, apiRoutes } from "@/api";
 
 export default {
   // Composition
@@ -31,6 +32,23 @@ export default {
       this.toast.error(
         `Failed to initialise dashboard: ${err.response?.data.detail ?? err}`
       );
+    }
+  },
+
+  async mounted() {
+    /* Creat toasts for any Django messages */
+    const levelTagMap = {
+      "is-danger": TYPE.ERROR,
+      "is-success": TYPE.SUCCESS,
+      "is-warning": TYPE.WARNING,
+      "is-info": TYPE.INFO,
+    };
+    const response = await axios.get(apiRoutes.messages);
+    const messages = response.data;
+    if (messages.length) {
+      messages.forEach((message) => {
+        this.toast(message.message, { type: levelTagMap[message.levelTag] });
+      });
     }
   },
 };

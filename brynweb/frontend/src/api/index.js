@@ -14,6 +14,7 @@ const apiRoutes = {
   invitations: teamBase + "invitations/",
   flavors: tenantBase + "flavors/",
   keyPairs: apiBase + "keypairs/",
+  messages: apiBase + "messages/",
   teams: apiBase + "teams/",
   teamMembers: teamBase + "members/",
   userProfile: apiBase + "userprofile/",

@@ -1,5 +1,6 @@
-from . import hashids
 from rest_framework import exceptions, serializers
+
+from . import hashids
 
 
 class HashidsFieldMixin:
@@ -19,3 +20,10 @@ class HashidsFieldMixin:
 
 class HashidsIntegerField(HashidsFieldMixin, serializers.IntegerField):
     pass
+
+
+class MessageSerializer(serializers.Serializer):
+    level = serializers.IntegerField()
+    level_tag = serializers.CharField()
+    message = serializers.CharField()
+    extra_tags = serializers.CharField()
