@@ -9,6 +9,10 @@ media
 locals.py
 logfile
 
+
+# Vue frontend #
+brynweb/frontend/build/*
+
 # Static #
 /static/
 
