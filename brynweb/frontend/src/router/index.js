@@ -22,7 +22,7 @@ const routes = [
     name: "teamHome",
     component: TeamHome,
     redirect: (to) => {
-      return to.path + "/servers";
+      return to.path + "/dashboard";
     },
     children: [
       {

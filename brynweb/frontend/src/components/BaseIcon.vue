@@ -1,6 +1,6 @@
 <template>
   <span :aria-hidden="decorative" :class="containerClasses">
-    <font-awesome-icon v-bind="$attrs" />
+    <font-awesome-icon v-bind="$attrs" :size="size" />
   </span>
 </template>
 
@@ -35,6 +35,12 @@ export default {
           "is-right": this.right,
         },
       ];
+    },
+    size() {
+      const sizeMap = {
+        "is-large": "lg",
+      };
+      return sizeMap[this.sizeClass];
     },
   },
 };
