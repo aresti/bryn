@@ -10,12 +10,12 @@ from userdb.serializers import TeamSerializer, UserSerializer
 from userdb.models import Invitation
 
 
-class TeamDashboard(LoginRequiredMixin, TemplateView):
+class FrontendView(LoginRequiredMixin, TemplateView):
     """
-    Team dashboard (home)
+    Frontend View: render Vue SPA
     """
 
-    template_name = "home/dashboard.html"
+    template_name = "home/index.html"
 
     def get_context_data(self, *args, **kwargs):
         user = self.request.user

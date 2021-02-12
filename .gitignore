@@ -11,7 +11,7 @@ logfile
 
 
 # Vue frontend #
-brynweb/frontend/build/*
+brynweb/frontend/build/
 
 # Static #
 /static/

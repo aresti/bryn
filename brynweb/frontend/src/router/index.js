@@ -1,12 +1,14 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 import Home from "@/views/Home";
+import TeamHome from "@/views/TeamHome";
+
 import Dashboard from "@/views/Dashboard";
 import NotFound from "@/views/NotFound";
 import Servers from "@/views/Servers";
 import Volumes from "@/views/Volumes";
 import KeyPairs from "@/views/KeyPairs";
-import Team from "@/views/Team";
+import TeamManagement from "@/views/TeamManagement";
 import UserProfile from "@/views/UserProfile";
 
 const routes = [
@@ -16,13 +18,19 @@ const routes = [
     component: Home,
   },
   {
-    path: "/dashboard/:teamId",
-    name: "dashboard",
-    component: Dashboard,
+    path: "/teams/:teamId",
+    name: "teamHome",
+    component: TeamHome,
     redirect: (to) => {
       return to.path + "/servers";
     },
     children: [
+      {
+        path: "dashboard",
+        name: "dashboard",
+        component: Dashboard,
+        meta: { displayName: "Dashboard", menuSection: "general" },
+      },
       {
         path: "servers",
         name: "servers",
@@ -44,7 +52,7 @@ const routes = [
       {
         path: "team",
         name: "team",
-        component: Team,
+        component: TeamManagement,
         meta: { displayName: "Team Management", menuSection: "admin" },
       },
       {

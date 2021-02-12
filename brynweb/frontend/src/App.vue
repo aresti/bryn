@@ -30,7 +30,9 @@ export default {
       await this.initStore(); // Initialises global & user data (non-team sepecifc)
     } catch (err) {
       this.toast.error(
-        `Failed to initialise dashboard: ${err.response?.data.detail ?? err}`
+        `Failed to initialise team admin console: ${
+          err.response?.data.detail ?? err
+        }`
       );
     }
   },

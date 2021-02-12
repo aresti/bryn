@@ -1,6 +1,6 @@
 <template>
   <base-hero-full v-if="teams.length" centered>
-    <h2 class="subtitle">Initializing team dashboard...</h2>
+    <h2 class="subtitle">Initializing team admin console...</h2>
     <base-progress indeterminate color="success" />
   </base-hero-full>
   <no-teams v-else />
@@ -19,7 +19,7 @@ export default {
     if (this.teams.length) {
       const defaultTeam = this.teams[0];
       this.$router.push({
-        name: "dashboard",
+        name: "teamHome",
         params: { teamId: defaultTeam.id },
       });
     }
