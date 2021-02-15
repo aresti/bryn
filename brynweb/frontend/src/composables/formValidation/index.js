@@ -157,6 +157,7 @@ class Form {
     return ($event) => {
       const field = this.fields[$event.target.name];
       if (field == null) return;
+      field.value = $event.target.value;
       switch ($event.type) {
         case "input":
           field.debouncedTouch(500);
@@ -168,7 +169,6 @@ class Form {
           field.touch();
           break;
       }
-      field.value = $event.target.value;
     };
   }
 

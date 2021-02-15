@@ -4,6 +4,7 @@ import {
   createFindByIdGetter,
   createFilterByTenantGetter,
 } from "@/utils/store";
+import { SET_FLAVORS } from "./types";
 
 const state = () => {
   return {
@@ -12,7 +13,7 @@ const state = () => {
 };
 
 const mutations = {
-  setFlavors(state, { flavors, team, tenant }) {
+  [SET_FLAVORS](state, { flavors, team, tenant }) {
     updateTeamCollection(state.all, flavors, team, tenant);
   },
 };
@@ -32,7 +33,7 @@ const actions = {
     const url = getAPIRoute("flavors", team.id, tenant.id);
     const response = await axios.get(url);
     const flavors = response.data;
-    commit("setFlavors", { flavors, team, tenant });
+    commit(SET_FLAVORS, { flavors, team, tenant });
   },
 };
 
