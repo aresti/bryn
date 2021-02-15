@@ -9,6 +9,7 @@
       </div>
       <base-form-validated
         :form="form"
+        @fieldValidate="form.onFieldValidate"
         submitLabel="Send Invitation"
         :submitted="submitted"
         @submit="onSubmit"

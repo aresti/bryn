@@ -10,6 +10,9 @@
         :name="name"
         :field="field"
         :disabled="disabled"
+        @input="$emit('input', $event)"
+        @change="$emit('change', $event)"
+        @blur="$emit('blur', $event)"
       />
     </template>
     <template v-if="field.iconClasses" v-slot:iconLeft>
@@ -45,5 +48,7 @@ export default {
       default: false,
     },
   },
+
+  emits: ["input", "change", "blur"],
 };
 </script>

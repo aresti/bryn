@@ -12,6 +12,7 @@
 
       <base-form-validated
         :form="form"
+        @fieldValidate="form.onFieldValidate"
         submitLabel="Attach Volume"
         :submitted="submitted"
         @submit="submitForm"

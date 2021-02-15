@@ -6,6 +6,7 @@
 
       <base-form-validated
         :form="form"
+        @fieldValidate="form.onFieldValidate"
         submitLabel="Create Volume"
         :submitted="submitted"
         @submit="submitForm"

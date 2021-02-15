@@ -1,17 +1,17 @@
 <template>
   <base-form-input-select
     v-if="field.element === 'select'"
-    v-model="field.value"
+    :modelValue="field.value"
     v-bind="selectedAttrs"
-    @change="field.touch()"
+    @change="$emit('change', $event)"
   />
   <base-form-input
     v-else
-    v-model.trim="field.value"
+    :modelValue="field.value"
     v-bind="field.element === 'textarea' ? sharedAttrs : inputAttrs"
     :element="field.element"
-    @input="debouncedTouch(500)"
-    @blur="debouncedTouch(0)"
+    @input="$emit('input', $event)"
+    @blur="$emit('blur', $event)"
   />
 </template>
 
@@ -28,15 +28,7 @@ export default {
     },
   },
 
-  setup(props) {
-    // Debounced touch func
-    let timeout;
-    const debouncedTouch = (wait = 500) => {
-      clearTimeout(timeout);
-      timeout = setTimeout(props.field.touch, wait);
-    };
-    return { debouncedTouch };
-  },
+  emits: ["input", "change", "blur"],
 
   computed: {
     sharedAttrs() {

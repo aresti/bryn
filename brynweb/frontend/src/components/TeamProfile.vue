@@ -1,6 +1,7 @@
 <template>
   <base-form-validated
     :form="form"
+    @fieldValidate="form.onFieldValidate"
     submitLabel="Update"
     @submit="onSubmit"
     :submitted="submitted"
@@ -23,11 +24,12 @@ export default {
     return {
       form: useFormValidation({
         institution: {
-          validators: [isRequired],
           iconClasses: ["fas", "university"],
+          validators: [isRequired],
         },
         department: {
           iconClasses: ["fas", "building"],
+          validators: [isRequired],
         },
         phoneNumber: {
           label: "Phone",

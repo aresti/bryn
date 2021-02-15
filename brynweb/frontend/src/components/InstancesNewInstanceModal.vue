@@ -6,6 +6,7 @@
 
       <base-form-validated
         :form="form"
+        @fieldValidate="form.onFieldValidate"
         submitLabel="Launch server"
         :submitted="submitted"
         @submit="submitForm"

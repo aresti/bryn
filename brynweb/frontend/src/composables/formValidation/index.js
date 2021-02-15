@@ -73,6 +73,13 @@ class FormField {
     };
   }
 
+  get debouncedTouch() {
+    return (wait = 500) => {
+      clearTimeout(this.timeout);
+      this.timeout = setTimeout(this.touch, wait);
+    };
+  }
+
   resetValidation() {
     /*
      * Reset field validation
@@ -141,6 +148,28 @@ class Form {
     Object.values(this.fields).forEach((field) => {
       field.validate();
     });
+  }
+
+  get onFieldValidate() {
+    /*
+     * Handle a field validation event (arrow func to make suitable for event callback)
+     */
+    return ($event) => {
+      const field = this.fields[$event.target.name];
+      if (field == null) return;
+      switch ($event.type) {
+        case "input":
+          field.debouncedTouch(500);
+          break;
+        case "blur":
+          field.debouncedTouch(0);
+          break;
+        case "change":
+          field.touch();
+          break;
+      }
+      field.value = $event.target.value;
+    };
   }
 
   parseResponseError(error) {

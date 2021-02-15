@@ -9,6 +9,7 @@
       </p>
       <base-form-validated
         :form="form"
+        @fieldValidate="form.onFieldValidate"
         :submitLabel="submitButtonText"
         :submitted="submitted"
         @submit="onSubmit"

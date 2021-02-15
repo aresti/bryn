@@ -8,14 +8,15 @@
         :field="field"
         :name="name"
         :disabled="disabled"
+        @input="onFieldEvent($event)"
+        @blur="onFieldEvent($event)"
+        @change="onFieldEvent($event)"
       />
     </base-form-field>
 
     <div v-if="form.nonFieldErrors?.length" class="content">
       <ul class="has-text-danger">
-        <template v-for="err in form.nonFieldErrors" :key="err">
-          <li>{{ err.message }}</li>
-        </template>
+        <li v-for="err in form.nonFieldErrors" :key="err">{{ err.message }}</li>
       </ul>
     </div>
 
@@ -55,13 +56,19 @@ export default {
     },
   },
 
-  emits: ["submit"],
+  emits: ["submit", "fieldValidate"],
 
   computed: {
     disableSubmit() {
       if (this.disabled) return true;
       if (this.requireInput) return !this.form.enableSubmit || !this.form.dirty;
       return !this.form.enableSubmit;
+    },
+  },
+
+  methods: {
+    onFieldEvent($event) {
+      this.$emit("fieldValidate", $event);
     },
   },
 };

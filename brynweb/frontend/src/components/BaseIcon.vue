@@ -1,6 +1,6 @@
 <template>
   <span :aria-hidden="decorative" :class="containerClasses">
-    <font-awesome-icon v-bind="$attrs" :size="size" />
+    <font-awesome-icon v-bind="$attrs" :size="faSize" />
   </span>
 </template>
 
@@ -36,7 +36,7 @@ export default {
         },
       ];
     },
-    size() {
+    faSize() {
       const sizeMap = {
         "is-large": "lg",
       };
