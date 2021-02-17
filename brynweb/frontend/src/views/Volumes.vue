@@ -100,6 +100,13 @@
 
 <script>
 import { mapActions, mapGetters, mapState } from "vuex";
+import { DELETE_VOLUME, DETACH_VOLUME } from "@/store/action-types";
+import {
+  FILTER_TENANT,
+  VOLUMES_FOR_FILTER_TENANT,
+  GET_REGION_NAME_FOR_TENANT,
+  TENANTS,
+} from "@/store/getter-types";
 
 import VolumesAttachModal from "@/components/VolumesAttachModal";
 import VolumesNewVolumeModal from "@/components/VolumesNewVolumeModal";
@@ -135,8 +142,12 @@ export default {
     ...mapState({
       loading: (state) => state.volumes.loading,
     }),
-    ...mapGetters(["filterTenant", "getRegionNameForTenant", "tenants"]),
-    ...mapGetters("volumes", ["volumesForFilterTenant"]),
+    ...mapGetters({
+      filterTenant: FILTER_TENANT,
+      volumesForFilterTenant: VOLUMES_FOR_FILTER_TENANT,
+      getRegionNameForTenant: GET_REGION_NAME_FOR_TENANT,
+      tenants: TENANTS,
+    }),
 
     filteredVolumes() {
       return this.showBootable
@@ -158,7 +169,7 @@ export default {
   // Note, this wont work as a mixin due https://github.com/vuejs/vue-router-next/issues/454
   beforeRouteEnter(to, _from, next) {
     next((vm) => {
-      const hasTenants = vm.$store.getters.tenants.length;
+      const hasTenants = vm.$store.getters[TENANTS].length;
       const hasLicense = true; // TODO: after licensing
       if (!(hasTenants && hasLicense)) {
         // No tenants or no license, redirect to team admin view
@@ -169,7 +180,10 @@ export default {
 
   // Non-reactive
   methods: {
-    ...mapActions("volumes", ["deleteVolume", "detachVolume"]),
+    ...mapActions({
+      deleteVolume: DELETE_VOLUME,
+      detachVolume: DETACH_VOLUME,
+    }),
 
     /* Volume attachment */
     onAttachVolume(volume) {

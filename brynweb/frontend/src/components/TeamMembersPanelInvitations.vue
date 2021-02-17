@@ -1,44 +1,49 @@
 <template>
-  <template v-if="allInvitations.length">
-    <div
-      v-for="(invitation, index) in allInvitations"
-      :key="index"
-      class="panel-block"
-    >
-      <span class="panel-icon">
-        <font-awesome-icon :icon="['fas', 'envelope']" aria-hidden="true" />
-      </span>
-      <p class="is-flex-grow-1">
-        {{ invitation.email }}
-      </p>
-      <base-button
-        v-if="userIsAdmin"
-        color="danger"
-        size="small"
-        rounded
-        outlined
-        @click="onDelete(invitation)"
-        >Delete</base-button
+  <div>
+    <template v-if="allInvitations.length">
+      <div
+        v-for="(invitation, index) in allInvitations"
+        :key="index"
+        class="panel-block"
       >
-    </div>
-  </template>
-  <template v-else>
-    <div class="panel-block"><p>No invitations pending</p></div>
-  </template>
+        <span class="panel-icon">
+          <font-awesome-icon :icon="['fas', 'envelope']" aria-hidden="true" />
+        </span>
+        <p class="is-flex-grow-1">
+          {{ invitation.email }}
+        </p>
+        <base-button
+          v-if="userIsAdmin"
+          color="danger"
+          size="small"
+          rounded
+          outlined
+          @click="onDelete(invitation)"
+          >Delete</base-button
+        >
+      </div>
+    </template>
 
-  <base-modal-delete
-    v-if="confirmDeleteInvitation"
-    verb="Delete"
-    type="Invitation"
-    :name="confirmDeleteInvitation.email"
-    :processing="deleteProcessing"
-    @close-modal="onCancelDelete"
-    @confirm-delete="onConfirmDelete"
-  />
+    <template v-else>
+      <div class="panel-block"><p>No invitations pending</p></div>
+    </template>
+
+    <base-modal-delete
+      v-if="confirmDeleteInvitation"
+      verb="Delete"
+      type="Invitation"
+      :name="confirmDeleteInvitation.email"
+      :processing="deleteProcessing"
+      @close-modal="onCancelDelete"
+      @confirm-delete="onConfirmDelete"
+    />
+  </div>
 </template>
 
 <script>
 import { mapActions, mapGetters } from "vuex";
+import { DELETE_INVITATION } from "@/store/action-types";
+import { ALL_INVITATIONS, USER_IS_ADMIN } from "@/store/getter-types";
 
 export default {
   // Composition
@@ -53,13 +58,17 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["userIsAdmin"]),
-    ...mapGetters("invitations", ["allInvitations"]),
+    ...mapGetters({
+      allInvitations: ALL_INVITATIONS,
+      userIsAdmin: USER_IS_ADMIN,
+    }),
   },
 
   // Non-reactive
   methods: {
-    ...mapActions("invitations", ["deleteInvitation"]),
+    ...mapActions({
+      deleteInvitation: DELETE_INVITATION,
+    }),
     onDelete(invitation) {
       this.confirmDeleteInvitation = invitation;
     },

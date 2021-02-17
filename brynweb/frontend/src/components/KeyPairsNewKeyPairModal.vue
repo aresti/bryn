@@ -34,6 +34,7 @@ import VueMarkdownIt from "vue3-markdown-it";
 import guidance from "@/content/keypairs/newKeyPairGuidance.md";
 
 import { mapActions, mapState } from "vuex";
+import { CREATE_KEY_PAIR } from "@/store/action-types";
 
 export default {
   // Template dependencies
@@ -75,8 +76,8 @@ export default {
   inject: ["toast"],
 
   computed: {
-    ...mapState("keyPairs", {
-      keyPairs: (state) => state.all,
+    ...mapState({
+      keyPairs: (state) => state.keyPairs.all,
     }),
     invalidNames() {
       return this.keyPairs.map((keypair) => keypair.name);
@@ -87,7 +88,9 @@ export default {
   },
 
   methods: {
-    ...mapActions("keyPairs", ["createKeyPair"]),
+    ...mapActions({
+      createKeyPair: CREATE_KEY_PAIR,
+    }),
     onClose() {
       this.$emit("close-modal");
     },

@@ -2,153 +2,179 @@ import { axios, getAPIRoute } from "@/api";
 import {
   updateTeamCollection,
   collectionForTeamId,
-  pollingUtils,
   createFindByIdGetter,
   createFilterByTenantGetter,
 } from "@/utils/store";
+import {
+  ATTACH_VOLUME,
+  CREATE_POLLING_TARGET,
+  CREATE_VOLUME,
+  DELETE_VOLUME,
+  DETACH_VOLUME,
+  FETCH_TENANT_VOLUMES,
+  FETCH_VOLUME,
+} from "../action-types";
+import {
+  ALL_VOLUMES,
+  FILTER_TENANT,
+  GET_ITEM_IS_POLLING,
+  GET_MAX_VOLUME_SIZE_FOR_TENANT,
+  GET_REGION_FOR_TENANT,
+  GET_VOLUMES_FOR_TENANT,
+  GET_VOLUME_BY_ID,
+  GET_VOLUME_IS_POLLING,
+  TEAM,
+  VOLUMES_FOR_FILTER_TENANT,
+} from "../getter-types";
+import {
+  ADD_VOLUME,
+  MODIFY_VOLUME,
+  SET_VOLUMES,
+  SET_VOLUMES_LOADING,
+  REMOVE_VOLUME_BY_ID,
+} from "../mutation-types";
 
 const state = () => {
   return {
     all: [],
-    pollingSymbol: null, // Identifier for polling from setInterval()
-    pollingTargets: [], // [{volumeId, ["targetStatus", "alternativeStatus"]}]
     loading: false,
   };
 };
 
 const mutations = {
-  pollingAddTarget: pollingUtils.addTargetMutation,
-  pollingRemoveTarget: pollingUtils.removeTargetMutation,
-  pollingSetSymbol: pollingUtils.setSymbolMutation,
-  pollingClearSymbol: pollingUtils.clearSymbolMutation,
-
-  addVolume(state, volume) {
+  [ADD_VOLUME](state, volume) {
     state.all.unshift(volume);
   },
-  setVolumes(state, { volumes, team, tenant }) {
+  [SET_VOLUMES](state, { volumes, team, tenant }) {
     /* Update all volumes for a team (fetch [and replace]) */
     updateTeamCollection(state.all, volumes, team, tenant);
   },
-  setLoading(state, loading) {
+  [SET_VOLUMES_LOADING](state, loading) {
     state.loading = loading;
   },
-  updateVolume(state, volume) {
+  [MODIFY_VOLUME](state, volume) {
     /* Update an existing volume, maintaining the ref */
     const target = state.all.find((target) => target.id === volume.id);
     if (target) {
       Object.assign(target, volume);
     }
   },
-  removeVolumeById(state, id) {
-    state.all.splice(
-      state.all.findIndex((obj) => obj.id === id),
-      1
-    );
+  [REMOVE_VOLUME_BY_ID](state, id) {
+    const index = state.all.findIndex((volume) => volume.id === id);
+    if (index >= 0) {
+      state.all.splice(index, 1);
+    }
   },
 };
 
 const getters = {
-  getVolumeById(state) {
+  [GET_VOLUME_BY_ID](state) {
     return createFindByIdGetter(state.all);
   },
-  getVolumeIsPolling(state) {
-    return pollingUtils.createEntityIsPollingGetter(state);
+  [GET_VOLUME_IS_POLLING](state, _getters, _rootState, rootGetters) {
+    return (volume) => rootGetters[GET_ITEM_IS_POLLING](state.all, volume);
   },
-  getVolumesForTenant(state) {
+  [GET_VOLUMES_FOR_TENANT](state) {
     return createFilterByTenantGetter(state.all);
   },
-  getMaxVolumeSizeForTenant(_state, _getters, _rootState, rootGetters) {
+  [GET_MAX_VOLUME_SIZE_FOR_TENANT](_state, _getters, _rootState, rootGetters) {
     return (tenant) => {
-      return rootGetters.getRegionForTenant(tenant).settings.maxVolumeSizeGb;
+      return rootGetters[GET_REGION_FOR_TENANT](tenant).settings
+        .maxVolumeSizeGb;
     };
   },
-  volumesForActiveTeam(state, _getters, rootState) {
+  [ALL_VOLUMES](state, _getters, rootState) {
     return collectionForTeamId(state.all, rootState.activeTeamId);
   },
-  volumesForFilterTenant(_state, getters, rootState, rootGetters) {
+  [VOLUMES_FOR_FILTER_TENANT](_state, getters, rootState, rootGetters) {
     return rootState.filterTenantId
-      ? getters.getVolumesForTenant(rootGetters.filterTenant)
-      : getters.volumesForActiveTeam;
+      ? getters[GET_VOLUMES_FOR_TENANT](rootGetters[FILTER_TENANT])
+      : getters[ALL_VOLUMES];
   },
 };
 
 const actions = {
-  pollingAddTarget({ state, commit, dispatch }, { entity, status }) {
-    pollingUtils.addTargetAction(
-      { state, commit, dispatch },
-      { entity, status, fetchActionName: "fetchVolume" }
-    );
-  },
-  pollingFetchTargets: pollingUtils.fetchTargetsAction,
-  pollingRemoveFulfilled: pollingUtils.removeFulfilledAction,
-
-  async fetchVolume({ commit }, volume) {
+  async [FETCH_VOLUME]({ commit }, volume) {
     /* Fetch and update an individual volume */
     const url = getAPIRoute("volumes", volume.team, volume.tenant) + volume.id;
-    const response = await axios.get(url);
-    volume = response.data;
-    commit("updateVolume", volume);
-    return volume;
+    try {
+      const response = await axios.get(url);
+      volume = response.data;
+      commit(MODIFY_VOLUME, volume);
+      return volume;
+    } catch (err) {
+      if (err.response?.status === 404) {
+        // Volume is gone; remove from local state
+        commit(REMOVE_VOLUME_BY_ID, volume.id);
+      }
+      throw err;
+    }
   },
 
-  async createVolume(
-    { commit, dispatch, rootState },
+  async [CREATE_VOLUME](
+    { commit, dispatch, rootState, state },
     { tenant, volumeType, size, name }
   ) {
     const payload = { tenant, volumeType, size, name };
     const url = getAPIRoute("volumes", rootState.activeTeamId, tenant);
     const response = await axios.post(url, payload);
     const volume = response.data;
-    commit("addVolume", volume);
-    dispatch("pollingAddTarget", {
-      entity: volume,
-      status: ["available", "in-use", "error"],
+    commit(ADD_VOLUME, volume);
+    dispatch(CREATE_POLLING_TARGET, {
+      collection: state.all,
+      item: volume,
+      fetchAction: FETCH_VOLUME,
+      targetStatuses: ["available", "in-use", "error"],
     });
     return volume;
   },
 
-  async deleteVolume({ commit }, volume) {
+  async [DELETE_VOLUME]({ commit }, volume) {
     /* Delete a volume */
     const url = getAPIRoute("volumes", volume.team, volume.tenant) + volume.id;
     await axios.delete(url);
     /* Takes a while to delete, but better user experience to just remove rather than show polling */
-    commit("removeVolumeById", volume.id);
+    commit(REMOVE_VOLUME_BY_ID, volume.id);
   },
 
-  async attachVolume({ dispatch }, { volume, server }) {
+  async [ATTACH_VOLUME]({ dispatch, state }, { volume, server }) {
     const payload = { attachments: [{ serverId: server.id }] };
     const url = getAPIRoute("volumes", volume.team, volume.tenant) + volume.id;
     await axios.patch(url, payload);
-    dispatch("pollingAddTarget", {
-      entity: volume,
-      status: "in-use",
+    dispatch(CREATE_POLLING_TARGET, {
+      collection: state.all,
+      item: volume,
+      fetchAction: FETCH_VOLUME,
+      targetStatuses: ["in-use"],
     });
   },
 
-  async detachVolume({ dispatch }, volume) {
+  async [DETACH_VOLUME]({ dispatch, state }, volume) {
     const payload = { attachments: [] }; // Empty array
     const url = getAPIRoute("volumes", volume.team, volume.tenant) + volume.id;
     await axios.patch(url, payload);
-    dispatch("pollingAddTarget", {
-      entity: volume,
-      status: "available",
+    dispatch(CREATE_POLLING_TARGET, {
+      collection: state.all,
+      item: volume,
+      fetchAction: FETCH_VOLUME,
+      targetStatuses: ["available"],
     });
   },
 
-  async getTenantVolumes({ commit, rootGetters }, tenant) {
+  async [FETCH_TENANT_VOLUMES]({ commit, rootGetters }, tenant) {
     /* Fetch [and replace] all volumes for the active team */
-    commit("setLoading", true);
-    const team = rootGetters.team;
+    commit(SET_VOLUMES_LOADING, true);
+    const team = rootGetters[TEAM];
     const url = getAPIRoute("volumes", team.id, tenant.id);
     const response = await axios.get(url);
     const volumes = response.data;
-    commit("setVolumes", { volumes, team, tenant });
-    commit("setLoading", false);
+    commit(SET_VOLUMES, { volumes, team, tenant });
+    commit(SET_VOLUMES_LOADING, false);
   },
 };
 
 export default {
-  namespaced: true,
+  namespaced: false,
   state,
   getters,
   actions,

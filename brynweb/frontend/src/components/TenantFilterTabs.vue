@@ -15,6 +15,8 @@
 
 <script>
 import { mapGetters, mapActions, mapState } from "vuex";
+import { SET_FILTER_TENANT } from "@/store/action-types";
+import { GET_REGION_NAME_FOR_TENANT, TENANTS } from "@/store/getter-types";
 
 export default {
   props: {
@@ -25,8 +27,13 @@ export default {
   },
 
   computed: {
-    ...mapState(["filterTenantId"]),
-    ...mapGetters(["tenants", "getRegionNameForTenant"]),
+    ...mapState({
+      filterTenantId: (state) => state.filterTenantId,
+    }),
+    ...mapGetters({
+      getRegionNameForTenant: GET_REGION_NAME_FOR_TENANT,
+      tenants: TENANTS,
+    }),
 
     allDescription() {
       return this.entityName == null ? "All" : "All " + this.entityName;
@@ -34,7 +41,9 @@ export default {
   },
 
   methods: {
-    ...mapActions(["setFilterTenant"]),
+    ...mapActions({
+      setFilterTenant: SET_FILTER_TENANT,
+    }),
     onTabClick(tenant = null) {
       this.setFilterTenant(tenant);
     },

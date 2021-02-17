@@ -108,6 +108,13 @@
 
 <script>
 import { mapGetters } from "vuex";
+import {
+  GET_INSTANCE_BY_ID,
+  GET_REGION_NAME_FOR_TENANT,
+  GET_TENANT_BY_ID,
+  GET_VOLUME_IS_POLLING,
+} from "@/store/getter-types";
+
 import { formatBytes, minutesSince } from "@/utils";
 import { formatDistanceToNow } from "date-fns";
 
@@ -148,9 +155,12 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["getRegionNameForTenant", "getTenantById"]),
-    ...mapGetters("instances", ["getInstanceById"]),
-    ...mapGetters("volumes", ["getVolumeIsPolling"]),
+    ...mapGetters({
+      getInstanceById: GET_INSTANCE_BY_ID,
+      getRegionNameForTenant: GET_REGION_NAME_FOR_TENANT,
+      getTenantById: GET_TENANT_BY_ID,
+      getVolumeIsPolling: GET_VOLUME_IS_POLLING,
+    }),
   },
 
   methods: {

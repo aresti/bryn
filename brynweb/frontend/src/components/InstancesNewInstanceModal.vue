@@ -31,6 +31,16 @@ import VueMarkdownIt from "vue3-markdown-it";
 import guidance from "@/content/instances/newInstanceGuidance.md";
 
 import { mapState, mapActions, mapGetters } from "vuex";
+import { CREATE_INSTANCE } from "@/store/action-types";
+import {
+  DEFAULT_KEY_PAIR,
+  GET_FLAVORS_FOR_TENANT,
+  GET_IMAGES_FOR_TENANT,
+  GET_INSTANCES_FOR_TENANT,
+  GET_REGION_NAME_FOR_TENANT,
+  GET_TENANT_BY_ID,
+  TENANTS,
+} from "@/store/getter-types";
 
 export default {
   // Dependencies
@@ -86,15 +96,19 @@ export default {
   },
 
   computed: {
-    ...mapState(["filterTenantId"]),
-    ...mapState("keyPairs", {
-      keyPairs: (state) => state.all,
+    ...mapState({
+      filterTenantId: (state) => state.filterTenantId,
+      keyPairs: (state) => state.keyPairs.all,
     }),
-    ...mapGetters(["tenants", "getTenantById", "getRegionNameForTenant"]),
-    ...mapGetters("flavors", ["getFlavorsForTenant"]),
-    ...mapGetters("images", ["getImagesForTenant"]),
-    ...mapGetters("instances", ["getInstancesForTenant"]),
-    ...mapGetters("keyPairs", ["defaultKeyPair"]),
+    ...mapGetters({
+      tenants: TENANTS,
+      getTenantById: GET_TENANT_BY_ID,
+      getRegionNameForTenant: GET_REGION_NAME_FOR_TENANT,
+      getFlavorsForTenant: GET_FLAVORS_FOR_TENANT,
+      getImagesForTenant: GET_IMAGES_FOR_TENANT,
+      getInstancesForTenant: GET_INSTANCES_FOR_TENANT,
+      defaultKeyPair: DEFAULT_KEY_PAIR,
+    }),
 
     selectedTenant() {
       return this.form.fields.tenant.value
@@ -176,7 +190,9 @@ export default {
 
   // Non-reactive
   methods: {
-    ...mapActions("instances", ["createInstance"]),
+    ...mapActions({
+      createInstance: CREATE_INSTANCE,
+    }),
 
     closeModal() {
       this.$emit("close-modal");

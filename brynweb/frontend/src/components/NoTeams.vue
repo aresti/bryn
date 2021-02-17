@@ -15,7 +15,9 @@
 import { mapState } from "vuex";
 
 export default {
-  computed: mapState(["adminEmail"]),
+  computed: mapState({
+    adminEmail: (state) => state.adminEmail,
+  }),
 };
 </script>
 

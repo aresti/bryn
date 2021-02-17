@@ -12,6 +12,8 @@
 
 <script>
 import { mapGetters } from "vuex";
+import { TENANTS } from "@/store/getter-types";
+
 import TheSideMenuList from "@/components/TheSideMenuList";
 
 export default {
@@ -36,6 +38,8 @@ export default {
     };
   },
 
-  computed: mapGetters(["tenants"]),
+  computed: mapGetters({
+    tenants: TENANTS,
+  }),
 };
 </script>

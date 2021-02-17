@@ -11,6 +11,7 @@ import images from "./modules/images";
 import instances from "./modules/instances";
 import invitations from "./modules/invitations";
 import keyPairs from "./modules/keyPairs";
+import polling from "./modules/polling";
 import teamMembers from "./modules/teamMembers";
 import volumes from "./modules/volumes";
 import volumeTypes from "./modules/volumeTypes";
@@ -30,6 +31,7 @@ const modules = {
   instances,
   invitations,
   keyPairs,
+  polling,
   teamMembers,
   volumes,
   volumeTypes,

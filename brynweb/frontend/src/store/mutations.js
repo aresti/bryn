@@ -1,38 +1,49 @@
+import {
+  INIT_REGIONS,
+  INIT_TEAMS,
+  INIT_USER,
+  SET_ACTIVE_TEAM_ID,
+  SET_FILTER_TENANT_ID,
+  SET_TEAM_INITIALIZED,
+  MODIFY_TEAM,
+  SET_USER,
+} from "@/store/mutation-types";
+
 const mutations = {
-  initRegions(state) {
+  [INIT_REGIONS](state) {
     state.regions = JSON.parse(
       document.getElementById("regionsData").textContent
     );
   },
 
-  initTeams(state) {
+  [INIT_TEAMS](state) {
     state.teams = JSON.parse(document.getElementById("teamsData").textContent);
   },
 
-  initUser(state) {
+  [INIT_USER](state) {
     state.user = JSON.parse(document.getElementById("userData").textContent);
   },
 
-  setActiveTeamId(state, id) {
+  [SET_ACTIVE_TEAM_ID](state, id) {
     state.activeTeamId = id;
   },
 
-  setFilterTenantId(state, id) {
+  [SET_FILTER_TENANT_ID](state, id) {
     state.filterTenantId = id;
   },
 
-  setTeamInitialized(state) {
+  [SET_TEAM_INITIALIZED](state) {
     state.teams.find(
       (team) => team.id === state.activeTeamId
     ).initialized = true;
   },
 
-  updateTeam(state, teamData) {
+  [MODIFY_TEAM](state, teamData) {
     const team = state.teams.find((team) => team.id === state.activeTeamId);
     Object.assign(team, teamData);
   },
 
-  updateUser(state, user) {
+  [SET_USER](state, user) {
     state.user = user;
   },
 };

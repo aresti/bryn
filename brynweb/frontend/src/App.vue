@@ -4,8 +4,9 @@
 
 <script>
 import { useToast, TYPE } from "vue-toastification";
-import { mapActions } from "vuex";
 import { axios, apiRoutes } from "@/api";
+import { mapActions } from "vuex";
+import { INIT_STORE } from "@/store/action-types";
 
 export default {
   // Composition
@@ -22,7 +23,9 @@ export default {
   },
 
   // Local state
-  computed: mapActions(["initStore"]),
+  computed: mapActions({
+    initStore: INIT_STORE,
+  }),
 
   // Events
   async beforeMount() {

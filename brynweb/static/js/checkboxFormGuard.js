@@ -17,7 +17,6 @@ export default class CheckboxFormGuard {
   }
 
   setButtonStatus() {
-    console.log("here");
     if (this.inputs.every((input) => input.checked)) {
       this.button.removeAttribute("disabled");
     } else {

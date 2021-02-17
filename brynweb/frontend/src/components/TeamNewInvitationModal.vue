@@ -20,6 +20,8 @@
 
 <script>
 import { mapActions, mapGetters } from "vuex";
+import { CREATE_INVITATION } from "@/store/action-types";
+import { ALL_INVITATIONS, ALL_TEAM_MEMBERS, TEAM } from "@/store/getter-types";
 
 import useFormValidation from "@/composables/formValidation";
 import {
@@ -58,9 +60,11 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["team"]),
-    ...mapGetters("invitations", ["allInvitations"]),
-    ...mapGetters("teamMembers", ["allTeamMembers"]),
+    ...mapGetters({
+      allInvitations: ALL_INVITATIONS,
+      allTeamMembers: ALL_TEAM_MEMBERS,
+      team: TEAM,
+    }),
     invalidEmails() {
       const invalidEmails = [];
       invalidEmails.push(
@@ -75,7 +79,9 @@ export default {
 
   // Non-reactive
   methods: {
-    ...mapActions("invitations", ["createInvitation"]),
+    ...mapActions({
+      createInvitation: CREATE_INVITATION,
+    }),
     isUniqueEmail(value) {
       if (!value || !this.invalidEmails.includes(value)) {
         return true;

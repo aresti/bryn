@@ -35,6 +35,12 @@ import VueMarkdownIt from "vue3-markdown-it";
 import guidance from "@/content/volumes/newVolumeGuidance.md";
 
 import { mapActions, mapGetters } from "vuex";
+import { ATTACH_VOLUME } from "@/store/action-types";
+import {
+  GET_INSTANCE_BY_ID,
+  GET_INSTANCES_FOR_TENANT,
+  GET_TENANT_BY_ID,
+} from "@/store/getter-types";
 
 export default {
   // Template dependencies
@@ -73,8 +79,11 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["getTenantById"]),
-    ...mapGetters("instances", ["getInstancesForTenant", "getInstanceById"]),
+    ...mapGetters({
+      getInstanceById: GET_INSTANCE_BY_ID,
+      getInstancesForTenant: GET_INSTANCES_FOR_TENANT,
+      getTenantById: GET_TENANT_BY_ID,
+    }),
     serverOptions() {
       /* Instances for tenant (not shelves) */
       const tenant = this.getTenantById(this.volume.tenant);
@@ -93,7 +102,9 @@ export default {
 
   // Non-reactive
   methods: {
-    ...mapActions("volumes", ["attachVolume"]),
+    ...mapActions({
+      attachVolume: ATTACH_VOLUME,
+    }),
     closeModal() {
       this.$emit("close-modal");
     },

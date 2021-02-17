@@ -41,6 +41,7 @@ import TeamNewInvitationModal from "@/components/TeamNewInvitationModal";
 import TeamProfile from "@/components/TeamProfile";
 
 import { mapGetters } from "vuex";
+import { ALL_TEAM_MEMBERS, TEAM, USER_IS_ADMIN } from "@/store/getter-types";
 
 export default {
   components: {
@@ -56,8 +57,11 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["team", "userIsAdmin"]),
-    ...mapGetters("teamMembers", ["allTeamMembers"]),
+    ...mapGetters({
+      allTeamMembers: ALL_TEAM_MEMBERS,
+      team: TEAM,
+      userIsAdmin: USER_IS_ADMIN,
+    }),
   },
 };
 </script>

@@ -35,11 +35,17 @@
 
 <script>
 import { mapGetters, mapState } from "vuex";
+import { TEAM, USER_FULL_NAME } from "@/store/getter-types";
 
 export default {
   computed: {
-    ...mapState(["teams"]),
-    ...mapGetters(["team", "userFullName"]),
+    ...mapState({
+      teams: (state) => state.teams,
+    }),
+    ...mapGetters({
+      team: TEAM,
+      userFullName: USER_FULL_NAME,
+    }),
   },
   methods: {
     onTeamSelect(team) {

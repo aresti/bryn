@@ -1,5 +1,11 @@
 import { axios, getAPIRoute } from "@/api";
 import { collectionForTeamId } from "@/utils/store";
+import { DELETE_TEAM_MEMBER, FETCH_TEAM_MEMBERS } from "@/store/action-types";
+import { ADMIN_TEAM_MEMBERS, ALL_TEAM_MEMBERS } from "@/store/getter-types";
+import {
+  REMOVE_TEAM_MEMBER_BY_ID,
+  SET_TEAM_MEMBERS,
+} from "@/store/mutation-types";
 
 const state = () => {
   return {
@@ -8,10 +14,10 @@ const state = () => {
 };
 
 const mutations = {
-  setTeamMembers(state, members) {
+  [SET_TEAM_MEMBERS](state, members) {
     state.all = members;
   },
-  removeTeamMemberById(state, id) {
+  [REMOVE_TEAM_MEMBER_BY_ID](state, id) {
     state.all.splice(
       state.all.findIndex((obj) => obj.id === id),
       1
@@ -20,33 +26,33 @@ const mutations = {
 };
 
 const getters = {
-  allTeamMembers(state, _getters, rootState) {
+  [ALL_TEAM_MEMBERS](state, _getters, rootState) {
     return collectionForTeamId(state.all, rootState.activeTeamId);
   },
-  adminTeamMembers(_state, getters) {
-    return getters.allTeamMembers.filter((member) => member.isAdmin);
+  [ADMIN_TEAM_MEMBERS](_state, getters) {
+    return getters[ALL_TEAM_MEMBERS].filter((member) => member.isAdmin);
   },
 };
 
 const actions = {
-  async getTeamMembers({ commit, rootState }) {
+  async [FETCH_TEAM_MEMBERS]({ commit, rootState }) {
     const url = getAPIRoute("teamMembers", rootState.activeTeamId);
     const response = await axios.get(url);
     const members = response.data;
-    commit("setTeamMembers", members);
+    commit(SET_TEAM_MEMBERS, members);
   },
-  async deleteTeamMember({ commit }, teamMember) {
+  async [DELETE_TEAM_MEMBER]({ commit }, teamMember) {
     /* Delete a team member */
     const url = `${getAPIRoute("teamMembers", teamMember.team)}${
       teamMember.id
     }`;
     await axios.delete(url);
-    commit("removeTeamMemberById", teamMember.id);
+    commit(REMOVE_TEAM_MEMBER_BY_ID, teamMember.id);
   },
 };
 
 export default {
-  namespaced: true,
+  namespaced: false,
   state,
   getters,
   actions,

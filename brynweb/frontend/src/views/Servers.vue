@@ -59,6 +59,13 @@
 
 <script>
 import { mapGetters, mapState } from "vuex";
+import {
+  FILTER_TENANT,
+  GET_REGION_NAME_FOR_TENANT,
+  INSTANCES_FOR_FILTER_TENANT,
+  LIVE_INSTANCES_FOR_FILTER_TENANT,
+  TENANTS,
+} from "@/store/getter-types";
 
 import InstancesNewInstanceModal from "@/components/InstancesNewInstanceModal";
 import InstancesTable from "@/components/InstancesTable";
@@ -91,20 +98,22 @@ export default {
       loading: (state) => state.instances.loading,
       keyPairs: (state) => state.keyPairs.all,
     }),
-    ...mapGetters(["filterTenant", "getRegionNameForTenant", "tenants"]),
-    ...mapGetters("instances", [
-      "instancesForFilterTenant",
-      "notShelvedForFilterTenant",
-    ]),
+    ...mapGetters({
+      filterTenant: FILTER_TENANT,
+      getRegionNameForTenant: GET_REGION_NAME_FOR_TENANT,
+      instancesForFilterTenant: INSTANCES_FOR_FILTER_TENANT,
+      liveInstancesForFilterTenant: LIVE_INSTANCES_FOR_FILTER_TENANT,
+      tenants: TENANTS,
+    }),
     filteredInstances() {
       return this.showShelved
         ? this.instancesForFilterTenant
-        : this.notShelvedForFilterTenant;
+        : this.liveInstancesForFilterTenant;
     },
     hasShelved() {
       return (
         this.instancesForFilterTenant.length !==
-        this.notShelvedForFilterTenant.length
+        this.liveInstancesForFilterTenant.length
       );
     },
     noItemsMessage() {
@@ -122,7 +131,7 @@ export default {
   // Note, this wont work as a mixin due https://github.com/vuejs/vue-router-next/issues/454
   beforeRouteEnter(to, _from, next) {
     next((vm) => {
-      const hasTenants = vm.$store.getters.tenants.length;
+      const hasTenants = vm.$store.getters[TENANTS].length;
       const hasLicense = true; // TODO: after licensing
       if (!(hasTenants && hasLicense)) {
         // No tenants or no license, redirect to team admin view

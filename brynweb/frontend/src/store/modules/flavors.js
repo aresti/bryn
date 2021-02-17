@@ -4,7 +4,13 @@ import {
   createFindByIdGetter,
   createFilterByTenantGetter,
 } from "@/utils/store";
-import { SET_FLAVORS } from "./types";
+import { FETCH_TENANT_FLAVORS } from "@/store/action-types";
+import {
+  GET_FLAVOR_BY_ID,
+  GET_FLAVORS_FOR_TENANT,
+  TEAM,
+} from "@/store/getter-types";
+import { SET_FLAVORS } from "@/store/mutation-types";
 
 const state = () => {
   return {
@@ -19,17 +25,18 @@ const mutations = {
 };
 
 const getters = {
-  getFlavorById(state) {
+  [GET_FLAVOR_BY_ID](state) {
     return createFindByIdGetter(state.all);
   },
-  getFlavorsForTenant(state) {
+
+  [GET_FLAVORS_FOR_TENANT](state) {
     return createFilterByTenantGetter(state.all);
   },
 };
 
 const actions = {
-  async getTenantFlavors({ commit, rootGetters }, tenant) {
-    const team = rootGetters.team;
+  async [FETCH_TENANT_FLAVORS]({ commit, rootGetters }, tenant) {
+    const team = rootGetters[TEAM];
     const url = getAPIRoute("flavors", team.id, tenant.id);
     const response = await axios.get(url);
     const flavors = response.data;
@@ -38,7 +45,7 @@ const actions = {
 };
 
 export default {
-  namespaced: true,
+  namespaced: false,
   state,
   getters,
   actions,

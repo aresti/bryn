@@ -50,29 +50,45 @@
         </base-button>
       </base-buttons>
     </td>
-  </tr>
 
-  <!-- Confirm action modal -->
-  <base-modal-delete
-    v-if="confirmAction"
-    :verb="confirmAction.verb"
-    type="server"
-    :name="instance.name"
-    :processing="actionProcessing"
-    @close-modal="onCancelAction"
-    @confirm-delete="onConfirmAction"
-  />
+    <!-- Confirm action modal -->
+    <base-modal-delete
+      v-if="confirmAction"
+      :verb="confirmAction.verb"
+      type="server"
+      :name="instance.name"
+      :processing="actionProcessing"
+      @close-modal="onCancelAction"
+      @confirm-delete="onConfirmAction"
+    />
+  </tr>
 </template>
 
 <script>
 import { minutesSince } from "@/utils";
 import { formatDistanceToNow } from "date-fns";
+import { TYPE } from "vue-toastification";
+
 import { mapActions, mapGetters } from "vuex";
+import { DELETE_INSTANCE, TRANSITION_INSTANCE } from "@/store/action-types";
+import {
+  GET_FLAVOR_BY_ID,
+  GET_INSTANCE_IS_POLLING,
+  GET_REGION_NAME_FOR_TENANT,
+  GET_TENANT_BY_ID,
+} from "@/store/getter-types";
 
 const statusColorMap = {
   ACTIVE: "success",
   SHUTDOWN: "grey-light",
   SHELVED: "grey-lighter",
+};
+
+const colorToastTypeMap = {
+  danger: TYPE.ERROR,
+  success: TYPE.SUCCESS,
+  warning: TYPE.WARNING,
+  info: TYPE.INFO,
 };
 
 /*
@@ -144,9 +160,12 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["getTenantById", "getRegionNameForTenant"]),
-    ...mapGetters("flavors", ["getFlavorById"]),
-    ...mapGetters("instances", ["getInstanceIsPolling"]),
+    ...mapGetters({
+      getFlavorById: GET_FLAVOR_BY_ID,
+      getInstanceIsPolling: GET_INSTANCE_IS_POLLING,
+      getRegionNameForTenant: GET_REGION_NAME_FOR_TENANT,
+      getTenantById: GET_TENANT_BY_ID,
+    }),
     isNew() {
       return minutesSince(this.instance.created) < 3;
     },
@@ -174,11 +193,10 @@ export default {
 
   // Non-reactive
   methods: {
-    ...mapActions("instances", [
-      "deleteInstance",
-      "fetchInstance",
-      "targetInstanceStatus",
-    ]),
+    ...mapActions({
+      deleteInstance: DELETE_INSTANCE,
+      transitionInstance: TRANSITION_INSTANCE,
+    }),
 
     onActionClick(action) {
       if (action.confirm) {
@@ -202,21 +220,17 @@ export default {
         return;
       }
       this.actionProcessing = true;
-      const toastMsg = `${action.presentParticiple} ${this.instance.name}`;
       try {
-        if (action.color == "success") {
-          this.toast.success(toastMsg);
-        } else {
-          this.toast(toastMsg);
-        }
         if (action.targetStatus === "DELETED") {
           await this.deleteInstance(this.instance);
         } else {
-          await this.targetInstanceStatus({
+          await this.transitionInstance({
             instance: this.instance,
             status: action.targetStatus,
           });
         }
+        const toastMsg = `${action.presentParticiple} ${this.instance.name}`;
+        this.toast(toastMsg, { type: colorToastTypeMap[action.color] });
       } catch (err) {
         this.toast.error(
           `Failed to ${action.verb} ${this.instance.name}: ${

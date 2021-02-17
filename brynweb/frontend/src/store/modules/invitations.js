@@ -1,4 +1,15 @@
 import { axios, getAPIRoute } from "@/api";
+import {
+  CREATE_INVITATION,
+  DELETE_INVITATION,
+  FETCH_INVITATIONS,
+} from "@/store/action-types";
+import { ALL_INVITATIONS, TEAM } from "@/store/getter-types";
+import {
+  ADD_INVITATION,
+  REMOVE_INVITATION_BY_ID,
+  SET_INVITATIONS,
+} from "@/store/mutation-types";
 
 const state = () => {
   return {
@@ -7,13 +18,15 @@ const state = () => {
 };
 
 const mutations = {
-  addInvitation(state, invitation) {
+  [ADD_INVITATION](state, invitation) {
     state.all.unshift(invitation);
   },
-  setInvitations(state, invitations) {
+
+  [SET_INVITATIONS](state, invitations) {
     state.all = invitations;
   },
-  removeInvitationById(state, uuid) {
+
+  [REMOVE_INVITATION_BY_ID](state, uuid) {
     state.all.splice(
       state.all.findIndex((obj) => obj.uuid === uuid),
       1
@@ -22,7 +35,7 @@ const mutations = {
 };
 
 const getters = {
-  allInvitations(state, _getters, rootState) {
+  [ALL_INVITATIONS](state, _getters, rootState) {
     return state.all.filter(
       (invitation) => invitation.toTeam === rootState.activeTeamId
     );
@@ -30,13 +43,14 @@ const getters = {
 };
 
 const actions = {
-  async getInvitations({ commit, rootState }) {
+  async [FETCH_INVITATIONS]({ commit, rootState }) {
     const url = getAPIRoute("invitations", rootState.activeTeamId);
     const response = await axios.get(url);
     const invitations = response.data;
-    commit("setInvitations", invitations);
+    commit(SET_INVITATIONS, invitations);
   },
-  async createInvitation(
+
+  async [CREATE_INVITATION](
     { commit, rootGetters, rootState },
     { email, message }
   ) {
@@ -44,25 +58,26 @@ const actions = {
       email,
       message,
       user: rootState.user.id,
-      to_team: rootGetters.team.id,
+      to_team: rootGetters[TEAM].id,
     };
     const url = getAPIRoute("invitations", rootState.activeTeamId);
     const response = await axios.post(url, payload);
     const invitation = response.data;
-    commit("addInvitation", invitation);
+    commit(ADD_INVITATION, invitation);
     return invitation;
   },
-  async deleteInvitation({ commit, rootState }, invitation) {
+
+  async [DELETE_INVITATION]({ commit, rootState }, invitation) {
     /* Delete an invitation */
     const url =
       getAPIRoute("invitations", rootState.activeTeamId) + invitation.uuid;
     await axios.delete(url);
-    commit("removeInvitationById", invitation.uuid);
+    commit(REMOVE_INVITATION_BY_ID, invitation.uuid);
   },
 };
 
 export default {
-  namespaced: true,
+  namespaced: false,
   state,
   getters,
   actions,

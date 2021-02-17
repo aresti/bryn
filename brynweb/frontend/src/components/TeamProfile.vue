@@ -12,6 +12,9 @@
 
 <script>
 import { mapActions, mapGetters } from "vuex";
+import { UPDATE_TEAM } from "@/store/action-types";
+import { TEAM, USER_IS_ADMIN } from "@/store/getter-types";
+
 import useFormValidation from "@/composables/formValidation";
 import { isRequired } from "@/composables/formValidation/validators";
 
@@ -43,7 +46,10 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["team", "userIsAdmin"]),
+    ...mapGetters({
+      team: TEAM,
+      userIsAdmin: USER_IS_ADMIN,
+    }),
   },
 
   // Events
@@ -60,7 +66,9 @@ export default {
 
   // Non-reactive
   methods: {
-    ...mapActions(["updateTeam"]),
+    ...mapActions({
+      updateTeam: UPDATE_TEAM,
+    }),
     async onSubmit() {
       this.form.validate();
       if (this.submitted || !this.form.valid) {

@@ -41,6 +41,18 @@
 
 <script>
 import { mapActions, mapGetters, mapState } from "vuex";
+import {
+  FETCH_ALL_TENANT_DATA,
+  FETCH_TEAM_SPECIFIC_DATA,
+  SET_ACTIVE_TEAM,
+} from "@/store/action-types";
+import {
+  GET_REGION_BY_ID,
+  GET_TENANT_BY_ID,
+  LOADING,
+  TEAM,
+  TENANTS,
+} from "@/store/getter-types";
 
 import TheContent from "@/components/TheContent";
 import TheHeader from "@/components/TheHeader";
@@ -68,14 +80,17 @@ export default {
   },
 
   computed: {
-    ...mapState(["teams", "user"]),
-    ...mapGetters([
-      "loading",
-      "team",
-      "tenants",
-      "getTenantById",
-      "getRegionById",
-    ]),
+    ...mapState({
+      teams: (state) => state.teams,
+      user: (state) => state.user,
+    }),
+    ...mapGetters({
+      getRegionId: GET_REGION_BY_ID,
+      getTenantById: GET_TENANT_BY_ID,
+      loading: LOADING,
+      team: TEAM,
+      tenants: TENANTS,
+    }),
   },
 
   // Events
@@ -102,11 +117,11 @@ export default {
 
   // Non-reactive
   methods: {
-    ...mapActions([
-      "setActiveTeam",
-      "fetchTeamSpecificData",
-      "fetchAllTenantData",
-    ]),
+    ...mapActions({
+      fetchAllTenantData: FETCH_ALL_TENANT_DATA,
+      fetchTeamSpecificData: FETCH_TEAM_SPECIFIC_DATA,
+      setActiveTeam: SET_ACTIVE_TEAM,
+    }),
 
     setTeamForRoute(route) {
       /* Set the activeTeamId state from route params */

@@ -53,6 +53,7 @@
 
 <script>
 import { mapGetters } from "vuex";
+import { GET_KEY_PAIR_IS_DEFAULT } from "@/store/getter-types";
 
 export default {
   // Interface
@@ -87,7 +88,9 @@ export default {
     };
   },
 
-  computed: mapGetters("keyPairs", ["getKeyPairIsDefault"]),
+  computed: mapGetters({
+    getKeyPairIsDefault: GET_KEY_PAIR_IS_DEFAULT,
+  }),
 };
 </script>
 

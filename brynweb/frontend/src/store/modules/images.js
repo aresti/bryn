@@ -4,6 +4,13 @@ import {
   createFindByIdGetter,
   createFilterByTenantGetter,
 } from "@/utils/store";
+import { FETCH_TENANT_IMAGES } from "@/store/action-types";
+import {
+  GET_IMAGE_BY_ID,
+  GET_IMAGES_FOR_TENANT,
+  TEAM,
+} from "@/store/getter-types";
+import { SET_IMAGES } from "@/store/mutation-types";
 
 const state = () => {
   return {
@@ -12,32 +19,33 @@ const state = () => {
 };
 
 const mutations = {
-  setImages(state, { images, team, tenant }) {
+  [SET_IMAGES](state, { images, team, tenant }) {
     updateTeamCollection(state.all, images, team, tenant);
   },
 };
 
 const getters = {
-  getImageById(state) {
+  [GET_IMAGE_BY_ID](state) {
     return createFindByIdGetter(state.all);
   },
-  getImagesForTenant(state) {
+
+  [GET_IMAGES_FOR_TENANT](state) {
     return createFilterByTenantGetter(state.all);
   },
 };
 
 const actions = {
-  async getTenantImages({ commit, rootGetters }, tenant) {
-    const team = rootGetters.team;
+  async [FETCH_TENANT_IMAGES]({ commit, rootGetters }, tenant) {
+    const team = rootGetters[TEAM];
     const url = getAPIRoute("images", team.id, tenant.id);
     const response = await axios.get(url);
     const images = response.data;
-    commit("setImages", { images, team, tenant });
+    commit(SET_IMAGES, { images, team, tenant });
   },
 };
 
 export default {
-  namespaced: true,
+  namespaced: false,
   state,
   getters,
   actions,

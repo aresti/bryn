@@ -38,6 +38,14 @@ import guidance from "@/content/volumes/newVolumeGuidance.md";
 import VueMarkdownIt from "vue3-markdown-it";
 
 import { mapState, mapActions, mapGetters } from "vuex";
+import { CREATE_VOLUME } from "@/store/action-types";
+import {
+  GET_MAX_VOLUME_SIZE_FOR_TENANT,
+  GET_REGION_NAME_FOR_TENANT,
+  GET_TENANT_BY_ID,
+  GET_VOLUMES_FOR_TENANT,
+  TENANTS,
+} from "@/store/getter-types";
 
 export default {
   // Template dependencies
@@ -82,12 +90,16 @@ export default {
   },
 
   computed: {
-    ...mapState(["filterTenantId"]),
-    ...mapGetters(["tenants", "getTenantById", "getRegionNameForTenant"]),
-    ...mapGetters("volumes", [
-      "getMaxVolumeSizeForTenant",
-      "getVolumesForTenant",
-    ]),
+    ...mapState({
+      filterTenantId: (state) => state.filterTenantId,
+    }),
+    ...mapGetters({
+      getMaxVolumeSizeForTenant: GET_MAX_VOLUME_SIZE_FOR_TENANT,
+      getRegionNameForTenant: GET_REGION_NAME_FOR_TENANT,
+      getTenantById: GET_TENANT_BY_ID,
+      getVolumesForTenant: GET_VOLUMES_FOR_TENANT,
+      tenants: TENANTS,
+    }),
 
     selectedTenant() {
       return this.form.fields.tenant.value
@@ -137,7 +149,9 @@ export default {
 
   // Non-reactive
   methods: {
-    ...mapActions("volumes", ["createVolume"]),
+    ...mapActions({
+      createVolume: CREATE_VOLUME,
+    }),
 
     closeModal() {
       this.$emit("close-modal");

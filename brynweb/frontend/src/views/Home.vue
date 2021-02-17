@@ -14,7 +14,9 @@ export default {
   components: {
     NoTeams,
   },
-  computed: mapState(["teams"]),
+  computed: mapState({
+    teams: (state) => state.teams,
+  }),
   mounted() {
     if (this.teams.length) {
       const defaultTeam = this.teams[0];

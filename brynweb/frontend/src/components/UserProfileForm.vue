@@ -39,7 +39,9 @@ export default {
     };
   },
   computed: {
-    ...mapState(["user"]),
+    ...mapState({
+      user: (state) => state.user,
+    }),
   },
   mounted() {
     this.form.fields.firstName.value = this.user.firstName;

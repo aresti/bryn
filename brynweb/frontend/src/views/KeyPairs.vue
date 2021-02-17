@@ -45,6 +45,7 @@
 
 <script>
 import { mapActions, mapState } from "vuex";
+import { DELETE_KEY_PAIR, SET_DEFAULT_KEY_PAIR } from "@/store/action-types";
 
 import KeyPairsNewKeyPairModal from "@/components/KeyPairsNewKeyPairModal";
 import KeyPairsTable from "@/components/KeyPairsTable";
@@ -68,13 +69,16 @@ export default {
     };
   },
 
-  computed: mapState("keyPairs", {
-    keyPairs: (state) => state.all,
+  computed: mapState({
+    keyPairs: (state) => state.keyPairs.all,
   }),
 
   // Non-reactive
   methods: {
-    ...mapActions("keyPairs", ["deleteKeyPair", "setDefaultKeyPair"]),
+    ...mapActions({
+      deleteKeyPair: DELETE_KEY_PAIR,
+      setDefaultKeyPair: SET_DEFAULT_KEY_PAIR,
+    }),
 
     onDeleteKeyPair(keyPair) {
       this.confirmDeleteKeyPair = keyPair;

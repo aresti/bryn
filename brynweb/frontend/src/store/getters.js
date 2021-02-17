@@ -1,45 +1,61 @@
 import { createFindByIdGetter } from "@/utils/store";
+import {
+  ADMIN_TEAM_MEMBERS,
+  DEFAULT_TENANT,
+  FILTER_TENANT,
+  LOADING,
+  TEAM,
+  TENANTS,
+  USER_IS_ADMIN,
+  USER_FULL_NAME,
+  GET_TENANT_BY_ID,
+  GET_REGION_BY_ID,
+  GET_REGION_FOR_TENANT,
+  GET_REGION_NAME_FOR_TENANT,
+} from "./getter-types";
 
 export const getters = {
-  userFullName(state) {
+  [USER_FULL_NAME](state) {
     return `${state.user.firstName} ${state.user.lastName}`;
   },
-  userIsAdmin(state, getters) {
-    return getters["teamMembers/adminTeamMembers"].some(
+  [USER_IS_ADMIN](state, getters) {
+    return getters[ADMIN_TEAM_MEMBERS].some(
       (member) => member.user.id === state.user.id
     );
   },
-  team(state) {
+  [TEAM](state) {
     return state.teams.find((team) => team.id === state.activeTeamId);
   },
-  tenants(state, getters) {
-    return state.activeTeamId ? getters.team.tenants : [];
+  [TENANTS](state, getters) {
+    return state.activeTeamId ? getters[TEAM].tenants : [];
   },
-  defaultTenant(_state, getters) {
-    return getters.tenants.find(
-      (tenant) => tenant.region === getters.team.defaultRegion
+  [DEFAULT_TENANT](_state, getters) {
+    return getters[TENANTS].find(
+      (tenant) => tenant.region === getters[TEAM].defaultRegion
     );
   },
-  filterTenant(state, getters) {
-    return getters.tenants.find((tenant) => tenant.id === state.filterTenantId);
+  [FILTER_TENANT](state, getters) {
+    return getters[TENANTS].find(
+      (tenant) => tenant.id === state.filterTenantId
+    );
   },
-  getTenantById(_state, getters) {
-    return createFindByIdGetter(getters.tenants);
+  [GET_TENANT_BY_ID](_state, getters) {
+    return createFindByIdGetter(getters[TENANTS]);
   },
-  getRegionById(state) {
+  [GET_REGION_BY_ID](state) {
     return createFindByIdGetter(state.regions);
   },
-  getRegionForTenant(_state, getters) {
-    return (tenant) => getters.getRegionById(tenant.region);
+  [GET_REGION_FOR_TENANT](_state, getters) {
+    return (tenant) => getters[GET_REGION_BY_ID](tenant.region);
   },
-  getRegionNameForTenant(_state, getters) {
+  [GET_REGION_NAME_FOR_TENANT](_state, getters) {
     return (tenant) => {
-      const region = getters.getRegionForTenant(tenant);
+      const region = getters[GET_REGION_FOR_TENANT](tenant);
       return region?.description?.replace("University of ", "");
     };
   },
-  loading(_state, getters) {
-    return !getters.team.initialized;
+  [LOADING](_state, getters) {
+    return !getters[TEAM].initialized;
   },
 };
 

@@ -1,43 +1,47 @@
 <template>
-  <div
-    v-for="(teamMember, index) in allTeamMembers"
-    :key="index"
-    class="panel-block"
-  >
-    <span class="panel-icon">
-      <font-awesome-icon :icon="['fas', 'user']" aria-hidden="true" />
-    </span>
-    <p class="is-flex-grow-1">
-      {{ teamMember.user.firstName }} {{ teamMember.user.lastName }}
-    </p>
-    <base-tag v-if="teamMember.isAdmin" class="ml-3" color="dark" rounded
-      >Admin</base-tag
+  <div>
+    <div
+      v-for="(teamMember, index) in allTeamMembers"
+      :key="index"
+      class="panel-block"
     >
-    <base-button
-      v-if="!teamMember.isAdmin && userIsAdmin"
-      color="danger"
-      size="small"
-      rounded
-      outlined
-      @click="onDelete(teamMember)"
-      >Remove</base-button
-    >
-  </div>
+      <span class="panel-icon">
+        <font-awesome-icon :icon="['fas', 'user']" aria-hidden="true" />
+      </span>
+      <p class="is-flex-grow-1">
+        {{ teamMember.user.firstName }} {{ teamMember.user.lastName }}
+      </p>
+      <base-tag v-if="teamMember.isAdmin" class="ml-3" color="dark" rounded
+        >Admin</base-tag
+      >
+      <base-button
+        v-if="!teamMember.isAdmin && userIsAdmin"
+        color="danger"
+        size="small"
+        rounded
+        outlined
+        @click="onDelete(teamMember)"
+        >Remove</base-button
+      >
+    </div>
 
-  <base-modal-delete
-    v-if="confirmDeleteTeamMember"
-    verb="Remove"
-    type="Team
+    <base-modal-delete
+      v-if="confirmDeleteTeamMember"
+      verb="Remove"
+      type="Team
   Member"
-    :name="fullName(confirmDeleteTeamMember)"
-    :processing="deleteProcessing"
-    @close-modal="onCancelDelete"
-    @confirm-delete="onConfirmDelete"
-  />
+      :name="fullName(confirmDeleteTeamMember)"
+      :processing="deleteProcessing"
+      @close-modal="onCancelDelete"
+      @confirm-delete="onConfirmDelete"
+    />
+  </div>
 </template>
 
 <script>
 import { mapActions, mapGetters } from "vuex";
+import { DELETE_TEAM_MEMBER } from "@/store/action-types";
+import { ALL_TEAM_MEMBERS, USER_IS_ADMIN } from "@/store/getter-types";
 
 export default {
   // Composition
@@ -52,13 +56,17 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["userIsAdmin"]),
-    ...mapGetters("teamMembers", ["allTeamMembers"]),
+    ...mapGetters({
+      allTeamMembers: ALL_TEAM_MEMBERS,
+      userIsAdmin: USER_IS_ADMIN,
+    }),
   },
 
   // Non-reactive
   methods: {
-    ...mapActions("teamMembers", ["deleteTeamMember"]),
+    ...mapActions({
+      deleteTeamMember: DELETE_TEAM_MEMBER,
+    }),
     fullName(teamMember) {
       return `${teamMember.user.firstName} ${teamMember.user.lastName}`;
     },
