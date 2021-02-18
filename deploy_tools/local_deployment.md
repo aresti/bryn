@@ -15,11 +15,13 @@ Backend test server:
 python brynweb/manage.py runserver
 ```
 
-Frontend development (server not required, Django settings include `frontend/build/templates` as a tempalte dir):
+Frontend development:
 
 ```
 cd frontend
-npm run watch
+npm run serve
 ```
 
-Frontend build for production: `npm run build`
+Then access at http://localhost:8080/, via webpack devserver to get HMR (non webpack routes are proxied to Django at 8000)
+
+Frontend build for production: `npm run build`, then simply serve from Django (webpack outputs templates & bundles to dirs accessible to Django)

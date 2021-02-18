@@ -21,6 +21,15 @@ module.exports = {
 
   pages: pages,
 
+  devServer: {
+    proxy: {
+      ["^(?!/static/vue/)(?!/sockjs-node/)"]: {
+        target: "http://localhost:8000",
+      },
+    },
+    host: "localhost", // Without this, HMR will route to local network e.g. 192.168.1.2:8080/socksjs-node/ and fail
+  },
+
   chainWebpack: (config) => {
     config.module
       .rule("md")
