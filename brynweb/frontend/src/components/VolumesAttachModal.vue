@@ -21,7 +21,7 @@
 
     <template v-slot:right>
       <h4 class="title is-4">Help with attachments</h4>
-      <vue-markdown-it :source="guidance" />
+      <div v-html="guidanceHTML"></div>
     </template>
   </base-modal-split>
 </template>
@@ -31,8 +31,9 @@ import useFormValidation from "@/composables/formValidation";
 import { mapToFormOptions } from "@/composables/formValidation/utils";
 import { isRequired } from "@/composables/formValidation/validators";
 
-import VueMarkdownIt from "vue3-markdown-it";
-import guidance from "@/content/volumes/newVolumeGuidance.md";
+import marked from "marked";
+import DOMPurify from "dompurify";
+import guidanceMarkdown from "@/content/volumes/newVolumeGuidance.md";
 
 import { mapActions, mapGetters } from "vuex";
 import { ATTACH_VOLUME } from "@/store/action-types";
@@ -43,11 +44,6 @@ import {
 } from "@/store/getter-types";
 
 export default {
-  // Template dependencies
-  components: {
-    VueMarkdownIt,
-  },
-
   // Composition
   inject: ["toast"],
 
@@ -66,7 +62,7 @@ export default {
   // Local state
   data() {
     return {
-      guidance,
+      guidanceHTML: DOMPurify.sanitize(marked(guidanceMarkdown)),
       form: useFormValidation({
         server: {
           label: "Server",

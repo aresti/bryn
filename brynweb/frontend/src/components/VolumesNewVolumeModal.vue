@@ -19,7 +19,7 @@
         guarantee the integrity or availability of your data. It is essential
         that you backup your data elsewhere.</base-message
       >
-      <vue-markdown-it :source="guidance" />
+      <div v-html="guidanceHTML"></div>
     </template>
   </base-modal-split>
 </template>
@@ -34,8 +34,9 @@ import {
 
 import { formatBytes } from "@/utils";
 
-import guidance from "@/content/volumes/newVolumeGuidance.md";
-import VueMarkdownIt from "vue3-markdown-it";
+import marked from "marked";
+import DOMPurify from "dompurify";
+import guidanceMarkdown from "@/content/volumes/newVolumeGuidance.md";
 
 import { mapState, mapActions, mapGetters } from "vuex";
 import { CREATE_VOLUME } from "@/store/action-types";
@@ -48,11 +49,6 @@ import {
 } from "@/store/getter-types";
 
 export default {
-  // Template dependencies
-  components: {
-    VueMarkdownIt,
-  },
-
   // Composition
   inject: ["toast"],
 
@@ -64,7 +60,7 @@ export default {
   // Local state
   data() {
     return {
-      guidance,
+      guidanceHTML: DOMPurify.sanitize(marked(guidanceMarkdown)),
       form: useFormValidation({
         tenant: {
           label: "Region",

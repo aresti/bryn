@@ -13,7 +13,7 @@
       />
     </template>
     <template v-slot:right>
-      <vue-markdown-it :source="guidance" />
+      <div v-html="guidanceHTML"></div>
     </template>
   </base-modal-split>
 </template>
@@ -27,8 +27,9 @@ import {
   ValidationError,
 } from "@/composables/formValidation/validators";
 
-import VueMarkdownIt from "vue3-markdown-it";
-import guidance from "@/content/instances/newInstanceGuidance.md";
+import marked from "marked";
+import DOMPurify from "dompurify";
+import guidanceMarkdown from "@/content/instances/newInstanceGuidance.md";
 
 import { mapState, mapActions, mapGetters } from "vuex";
 import { CREATE_INSTANCE } from "@/store/action-types";
@@ -43,11 +44,6 @@ import {
 } from "@/store/getter-types";
 
 export default {
-  // Dependencies
-  components: {
-    VueMarkdownIt,
-  },
-
   // Composition
   inject: ["toast"],
 
@@ -59,7 +55,7 @@ export default {
   // Local state
   data() {
     return {
-      guidance,
+      guidanceHTML: DOMPurify.sanitize(marked(guidanceMarkdown)),
       form: useFormValidation({
         tenant: {
           label: "Region",

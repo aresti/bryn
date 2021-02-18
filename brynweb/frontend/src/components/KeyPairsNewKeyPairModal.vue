@@ -16,7 +16,8 @@
       />
     </template>
     <template v-slot:right>
-      <vue-markdown-it :source="guidance" />
+      <div v-html="guidanceHTML"></div>
+      >
     </template>
   </base-modal-split>
 </template>
@@ -30,18 +31,14 @@ import {
   ValidationError,
 } from "@/composables/formValidation/validators";
 
-import VueMarkdownIt from "vue3-markdown-it";
-import guidance from "@/content/keypairs/newKeyPairGuidance.md";
+import marked from "marked";
+import DOMPurify from "dompurify";
+import guidanceMarkdown from "@/content/keypairs/newKeyPairGuidance.md";
 
 import { mapActions, mapState } from "vuex";
 import { CREATE_KEY_PAIR } from "@/store/action-types";
 
 export default {
-  // Template dependencies
-  components: {
-    VueMarkdownIt,
-  },
-
   // Interface
   props: {
     submitButtonText: {
@@ -56,7 +53,7 @@ export default {
 
   data() {
     return {
-      guidance,
+      guidanceHTML: DOMPurify.sanitize(marked(guidanceMarkdown)),
       form: useFormValidation({
         publicKey: {
           label: "Public Key",

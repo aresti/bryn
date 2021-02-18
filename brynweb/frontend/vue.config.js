@@ -28,4 +28,10 @@ module.exports = {
       .use("raw-loader")
       .loader("raw-loader");
   },
+
+  pluginOptions: {
+    webpackBundleAnalyzer: {
+      openAnalyzer: false,
+    },
+  },
 };
