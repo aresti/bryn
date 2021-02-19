@@ -96,7 +96,7 @@ class OpenstackRetrieveView(OpenstackAPIView):
             request.user, tenant_id=tenant_id, team_id=team_id
         )  # may raise
 
-        openstack = OpenstackService(tenant)
+        openstack = OpenstackService(tenant=tenant)
         transform_func = self.get_transform_func(tenant)
         try:
             response = methodcaller("get", pk)(getattr(openstack, self.service.value))
@@ -120,7 +120,7 @@ class OpenstackListView(OpenstackAPIView):
             request.user, team_id=team_id, tenant_id=tenant_id
         )  # may raise
 
-        openstack = OpenstackService(tenant)
+        openstack = OpenstackService(tenant=tenant)
         transform_func = self.get_transform_func(tenant)
         try:
             response = methodcaller("get_list")(getattr(openstack, self.service.value))
@@ -141,7 +141,7 @@ class OpenstackCreateMixin(OpenstackAPIView):
         tenant = get_tenant_for_user(
             request.user, team_id=team_id, tenant_id=tenant_id
         )  # may raise
-        openstack = OpenstackService(tenant)
+        openstack = OpenstackService(tenant=tenant)
         transform_func = self.get_transform_func(tenant)
 
         serialized = self.serializer_class(data=request.data)
@@ -167,7 +167,7 @@ class OpenstackDeleteMixin(OpenstackAPIView):
             request.user, team_id=team_id, tenant_id=tenant_id
         )  # may raise
 
-        openstack = OpenstackService(tenant)
+        openstack = OpenstackService(tenant=tenant)
         try:
             methodcaller("delete", pk)(getattr(openstack, self.service.value))
         except Exception as e:
@@ -247,7 +247,7 @@ class InstanceDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
             request.user, team_id=team_id, tenant_id=tenant_id
         )  # may raise
 
-        openstack = OpenstackService(tenant)
+        openstack = OpenstackService(tenant=tenant)
         service = getattr(openstack, self.service.value)
 
         target_status = request.data.get("status")
@@ -337,7 +337,7 @@ class VolumeDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
             request.user, team_id=team_id, tenant_id=tenant_id
         )  # may raise
 
-        openstack = OpenstackService(tenant)
+        openstack = OpenstackService(tenant=tenant)
         service = getattr(openstack, self.service.value)
         attachments = request.data.get("attachments")
         try:

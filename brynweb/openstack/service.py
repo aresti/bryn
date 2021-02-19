@@ -3,6 +3,7 @@ import time
 from novaclient import client as novaclient
 from keystoneauth1 import loading
 from keystoneauth1 import session as keystonesession
+from keystoneclient.v2_0 import client as keystoneclient
 from glanceclient import Client as GlanceClient
 from cinderclient import client as cinderclient
 
@@ -35,15 +36,25 @@ class OpenstackService:
         VOLUMES = "volumes"
         VOLUME_TYPES = "volume_types"
 
-    def __init__(self, tenant):
+    def __init__(self, tenant=None, region=None):
+        if not (tenant or region):
+            raise OpenstackException(
+                "Either 'tenant' or 'region' is required to create an OpenstackService instance."
+            )
+
         self.tenant = tenant
+        if tenant:
+            self.region = tenant.region
+        else:
+            self.region = region
 
         self._session = None
         self._nova = None
         self._cinder = None
         self._glance = None
+        self._keystone = None
 
-        self.auth_settings = auth_settings.AUTHENTICATION[self.tenant.region.name]
+        self.auth_settings = auth_settings.AUTHENTICATION[self.region.name]
         self.images = ImagesService(self)
         self.flavors = FlavorsService(self)
         self.keypairs = KeypairsService(self)
@@ -55,18 +66,22 @@ class OpenstackService:
     def session(self):
         if not self._session:
             loader = loading.get_plugin_loader("password")
-            if self.tenant.auth_password:
-                # TODO: Remove once all legacy tenants updated
-                username = self.tenant.get_tenant_name()
-                password = self.tenant.auth_password
-            else:
+            if self.tenant:  # Service user for project operations
                 username = self.auth_settings["SERVICE_USERNAME"]
                 password = self.auth_settings["SERVICE_PASSWORD"]
+                project_id = self.tenant.created_tenant_id
+                project_name = None
+            else:  # Admin user for domain operations
+                username = self.auth_settings["ADMIN_USERNAME"]
+                password = self.auth_settings["ADMIN_PASSWORD"]
+                project_id = None
+                project_name = self.auth_settings["TENANT_NAME"]
             auth = loader.load_from_options(
                 auth_url=self.auth_settings["AUTH_URL"],
                 username=username,
                 password=password,
-                project_id=self.tenant.created_tenant_id,
+                project_id=project_id,
+                project_name=project_name,
             )
             self._session = keystonesession.Session(auth=auth)
         return self._session
@@ -88,6 +103,18 @@ class OpenstackService:
         if not self._glance:
             self._glance = GlanceClient(2, session=self.session)
         return self._glance
+
+    @property
+    def keystone(self):
+        if not self._keystone:
+            if "ADMIN_URL" in self.auth_settings:
+                self._keystone = keystoneclient.Client(
+                    token=self.session.get_token(),
+                    endpoint=self.auth_settings["ADMIN_URL"],
+                )
+            else:
+                self._keystone = keystoneclient.Client(session=self.session)
+        return self._keystone
 
 
 class KeypairsService:
