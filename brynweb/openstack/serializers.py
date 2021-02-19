@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from core.serializers import HashidsIntegerField
 from . import INSTANCE_STATUS_VALUES
-from .models import KeyPair, Tenant, Region, RegionSettings
+from .models import KeyPair, Tenant, Region, RegionSettings, HypervisorStats
 
 
 class RegionSettingsSerializer(serializers.ModelSerializer):
@@ -101,3 +101,13 @@ class VolumeTypeSerializer(OpenstackBaseSerializer):
     id = serializers.UUIDField(read_only=True)
     name = serializers.CharField(read_only=True)
     is_default = serializers.BooleanField(read_only=True, default=False)
+
+
+class HypervisorStatsSerializer(serializers.ModelSerializer):
+    region = serializers.PrimaryKeyRelatedField(
+        pk_field=HashidsIntegerField(), read_only=True
+    )
+
+    class Meta:
+        model = HypervisorStats
+        exclude = ["id"]

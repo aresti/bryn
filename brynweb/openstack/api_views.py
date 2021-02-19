@@ -9,10 +9,11 @@ from rest_framework import exceptions as drf_exceptions
 from rest_framework.response import Response
 
 from .service import OpenstackService, ServiceUnavailable, OpenstackException
-from .models import Tenant, KeyPair
+from .models import KeyPair, Tenant, HypervisorStats
 from .serializers import (
     AttachmentSerializer,
     FlavorSerializer,
+    HypervisorStatsSerializer,
     ImageSerializer,
     InstanceSerializer,
     KeyPairSerializer,
@@ -375,3 +376,12 @@ class VolumeTypeListView(OpenstackListView):
 
     serializer_class = VolumeTypeSerializer
     service = OpenstackService.Services.VOLUME_TYPES
+
+
+class HypervisorStatsListView(generics.ListAPIView):
+    """
+    Hypervisor stats list view.
+    """
+
+    serializer_class = HypervisorStatsSerializer
+    queryset = HypervisorStats.objects.all()

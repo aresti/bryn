@@ -13,8 +13,12 @@ app_name = "api"
 # Models using uuid as primary keys are exposed directly, since these offer the same benefits.
 
 urlpatterns = [
-    # {%url "api:messages" % }
-    path("messages/", core_views.MessagesListView.as_view(), name="messages"),
+    # {% url "api:hypervisor-stats" %}
+    path(
+        "hypervisor-stats/",
+        openstack_views.HypervisorStatsListView.as_view(),
+        name="hypervisor_stats",
+    ),
     # {% url "api:keypairs" %}
     path("keypairs/", openstack_views.KeyPairListView.as_view(), name="key_pairs"),
     # {% url "api:keypairs" pk=keypair.id %}
@@ -23,6 +27,8 @@ urlpatterns = [
         openstack_views.KeyPairDetailView.as_view(),
         name="key_pairs",
     ),
+    # {%url "api:messages" % }
+    path("messages/", core_views.MessagesListView.as_view(), name="messages"),
     path(
         "teams/<hashids:team_id>/tenants/",
         openstack_views.TenantListView.as_view(),
