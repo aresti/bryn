@@ -121,3 +121,11 @@
 # def run():
 #     t = Team.objects.get(pk=1)
 #     setup_tenant(t, Region.objects.get(name="bham"))
+
+
+def setup_team():
+    pass
+
+
+def setup_tenant():
+    pass
