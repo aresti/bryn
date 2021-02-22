@@ -1,7 +1,9 @@
 from novaclient import client
+from keystoneauth1.identity import v3
 from keystoneauth1 import loading
 from keystoneauth1 import session
 from keystoneclient.v2_0 import client as keystoneclient
+from keystoneclient.v3 import client as keystoneclient_v3
 from glanceclient import Client
 from neutronclient.v2_0 import client as neutronclient
 from cinderclient import client as cinderclient
@@ -34,11 +36,21 @@ class OpenstackClient:
 
     def get_sess(self):
         if not self.have_sess:
-            loader = loading.get_plugin_loader('password')
-            auth = loader.load_from_options(auth_url=self.authsettings['AUTH_URL'],
-                                           username=self.authsettings['AUTH_NAME'],
-                                           password=self.authsettings['AUTH_PASSWORD'],
-                                           project_name=self.authsettings['TENANT_NAME'])
+            if "/v3/" in self.authsettings['AUTH_URL']:
+                auth = v3.Password(
+                    auth_url=self.authsettings['AUTH_URL'],
+                    username=self.authsettings['AUTH_NAME'],
+                    password=self.authsettings['AUTH_PASSWORD'],
+                    project_name=self.authsettings['TENANT_NAME'],
+                    user_domain_id="default",
+                    project_domain_id="default",
+                )
+            else:
+                loader = loading.get_plugin_loader('password')
+                auth = loader.load_from_options(auth_url=self.authsettings['AUTH_URL'],
+                                            username=self.authsettings['AUTH_NAME'],
+                                            password=self.authsettings['AUTH_PASSWORD'],
+                                            project_name=self.authsettings['TENANT_NAME'])
             self.sess = session.Session(auth=auth)
             self.have_sess = True
         return self.sess
