@@ -1,9 +1,11 @@
 import time
 
 from novaclient import client as novaclient
-from keystoneauth1 import loading
 from keystoneauth1 import session as keystonesession
-from keystoneclient.v2_0 import client as keystoneclient
+from keystoneauth1.identity import v3
+
+# from keystoneclient.v2_0 import client as keystoneclient
+from keystoneclient.v3 import client as keystoneclient
 from glanceclient import Client as GlanceClient
 from cinderclient import client as cinderclient
 
@@ -65,7 +67,6 @@ class OpenstackService:
     @property
     def session(self):
         if not self._session:
-            loader = loading.get_plugin_loader("password")
             if self.tenant:  # Service user for project operations
                 username = self.auth_settings["SERVICE_USERNAME"]
                 password = self.auth_settings["SERVICE_PASSWORD"]
@@ -76,12 +77,14 @@ class OpenstackService:
                 password = self.auth_settings["ADMIN_PASSWORD"]
                 project_id = None
                 project_name = self.auth_settings["TENANT_NAME"]
-            auth = loader.load_from_options(
+            auth = v3.Password(
                 auth_url=self.auth_settings["AUTH_URL"],
                 username=username,
                 password=password,
                 project_id=project_id,
                 project_name=project_name,
+                user_domain_id="default",
+                project_domain_id="default",
             )
             self._session = keystonesession.Session(auth=auth)
         return self._session
@@ -95,7 +98,7 @@ class OpenstackService:
     @property
     def cinder(self):
         if not self._cinder:
-            self._cinder = cinderclient.Client(2, session=self.session)
+            self._cinder = cinderclient.Client(3, session=self.session)
         return self._cinder
 
     @property
