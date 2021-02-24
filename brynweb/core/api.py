@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import api_views as core_views
+from home import api_views as home_views
 from openstack import api_views as openstack_views
 from userdb import api_views as userdb_views
 
@@ -13,6 +14,12 @@ app_name = "api"
 # Models using uuid as primary keys are exposed directly, since these offer the same benefits.
 
 urlpatterns = [
+    # {% url "api:announcements" %}
+    path(
+        "announcements/",
+        home_views.AnnouncementListView.as_view(),
+        name="announcements",
+    ),
     # {% url "api:hypervisor-stats" %}
     path(
         "hypervisor-stats/",
