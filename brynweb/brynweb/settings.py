@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "home",
     "openstack",
     "discourse",
+    "tinymce",
 ]
 
 MIDDLEWARE = [
