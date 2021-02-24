@@ -9,6 +9,7 @@ const teamBase = apiBase + "teams/TEAM_ID/";
 const tenantBase = teamBase + "tenants/TENANT_ID/";
 
 const apiRoutes = {
+  announcements: apiBase + "announcements/",
   hypervisorStats: apiBase + "hypervisor-stats/",
   images: tenantBase + "images/",
   instances: tenantBase + "instances/",

@@ -12,6 +12,9 @@ export const SET_USER = "UPDATE_USER";
 
 /* -- MODULES (not namespaced) -- */
 
+// Announcements
+export const SET_ANNOUNCEMENTS = "SET_ANNOUNCEMENTS";
+
 // Flavors
 export const SET_FLAVORS = "SET_FLAVORS";
 
@@ -34,9 +37,18 @@ export const ADD_KEY_PAIR = "ADD_KEY_PAIR";
 export const SET_KEY_PAIRS = "SET_KEY_PAIRS";
 export const REMOVE_KEY_PAIR_BY_ID = "REMOVE_KEY_PAIR_BY_ID";
 
+// Polling
+export const UPDATE_OR_CREATE_POLLING_TARGET = "ADD_POLLING_TARGET";
+export const REMOVE_POLLING_TARGET = "REMOVE_POLLING_TARGET";
+export const CLEAR_POLLING_SYMBOL = "CLEAR_POLLING_SYMBOL";
+export const SET_POLLING_SYMBOL = "SET_POLLING_SYMBOL";
+
 // Team Members
 export const REMOVE_TEAM_MEMBER_BY_ID = "REMOVE_TEAM_MEMBER_BY_ID";
 export const SET_TEAM_MEMBERS = "SET_TEAM_MEMBERS";
+
+// Volume Types
+export const SET_VOLUME_TYPES = "SET_VOLUME_TYPES";
 
 // Volumes
 export const ADD_VOLUME = "ADD_VOLUME";
@@ -44,12 +56,3 @@ export const MODIFY_VOLUME = "MODIFY_VOLUME";
 export const REMOVE_VOLUME_BY_ID = "REMOVE_VOLUME_BY_ID";
 export const SET_VOLUMES = "SET_VOLUMES";
 export const SET_VOLUMES_LOADING = "SET_VOLUMES_LOADING";
-
-// Volume types
-export const SET_VOLUME_TYPES = "SET_VOLUME_TYPES";
-
-// Polling
-export const UPDATE_OR_CREATE_POLLING_TARGET = "ADD_POLLING_TARGET";
-export const REMOVE_POLLING_TARGET = "REMOVE_POLLING_TARGET";
-export const CLEAR_POLLING_SYMBOL = "CLEAR_POLLING_SYMBOL";
-export const SET_POLLING_SYMBOL = "SET_POLLING_SYMBOL";

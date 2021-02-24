@@ -2,6 +2,7 @@ import { axios, getAPIRoute } from "@/api";
 
 import {
   FETCH_ALL_TENANT_DATA,
+  FETCH_ANNOUNCEMENTS,
   FETCH_HYPERVISOR_STATS,
   FETCH_INVITATIONS,
   FETCH_KEY_PAIRS,
@@ -39,8 +40,11 @@ const actions = {
     commit(INIT_USER);
     commit(INIT_REGIONS);
     commit(INIT_TEAMS);
-    await dispatch(FETCH_KEY_PAIRS);
-    // await dispatch(FETCH_HYPERVISOR_STATS);
+    await Promise.all([
+      dispatch(FETCH_KEY_PAIRS),
+      dispatch(FETCH_HYPERVISOR_STATS),
+      dispatch(FETCH_ANNOUNCEMENTS),
+    ]);
   },
 
   [SET_ACTIVE_TEAM]({ commit }, team) {

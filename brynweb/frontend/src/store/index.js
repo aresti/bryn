@@ -6,6 +6,7 @@ import mutations from "./mutations";
 import actions from "./actions";
 
 // Modules
+import announcements from "./modules/announcements";
 import flavors from "./modules/flavors";
 import images from "./modules/images";
 import instances from "./modules/instances";
@@ -27,6 +28,7 @@ const state = {
 };
 
 const modules = {
+  announcements,
   flavors,
   images,
   instances,
