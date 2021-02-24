@@ -2,6 +2,7 @@ import { axios, getAPIRoute } from "@/api";
 
 import {
   FETCH_ALL_TENANT_DATA,
+  FETCH_HYPERVISOR_STATS,
   FETCH_INVITATIONS,
   FETCH_KEY_PAIRS,
   FETCH_TENANT_FLAVORS,
@@ -25,6 +26,7 @@ import {
   INIT_TEAMS,
   INIT_USER,
   SET_ACTIVE_TEAM_ID,
+  SET_HYPERVISOR_STATS,
   SET_FILTER_TENANT_ID,
   SET_TEAM_INITIALIZED,
   MODIFY_TEAM,
@@ -38,14 +40,24 @@ const actions = {
     commit(INIT_REGIONS);
     commit(INIT_TEAMS);
     await dispatch(FETCH_KEY_PAIRS);
+    // await dispatch(FETCH_HYPERVISOR_STATS);
   },
+
   [SET_ACTIVE_TEAM]({ commit }, team) {
     commit(SET_ACTIVE_TEAM_ID, team.id);
     commit(SET_FILTER_TENANT_ID, null);
   },
+
   [SET_FILTER_TENANT]({ commit }, tenant) {
     /* allow null/undefined */
     commit(SET_FILTER_TENANT_ID, tenant?.id);
+  },
+
+  async [FETCH_HYPERVISOR_STATS]({ commit }) {
+    const url = getAPIRoute("hypervisorStats");
+    const response = await axios.get(url);
+    const hypervisorStats = response.data;
+    commit(SET_HYPERVISOR_STATS, hypervisorStats);
   },
 
   async [FETCH_TENANT_SPECIFIC_DATA]({ dispatch, getters }, tenant) {

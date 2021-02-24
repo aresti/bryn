@@ -19,6 +19,7 @@ import volumeTypes from "./modules/volumeTypes";
 const state = {
   adminEmail: "Lisa.Marchioretto@quadram.ac.uk",
   activeTeamId: null,
+  hypervisorStats: [],
   filterTenantId: null,
   regions: [],
   teams: [],

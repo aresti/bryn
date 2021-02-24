@@ -1,3 +1,6 @@
+// Bulma & styles
+require("./assets/sass/main.scss");
+
 // Font Awesome
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -25,9 +28,6 @@ library.add(
 );
 
 dom.watch();
-
-// Bulma & styles
-require("./assets/sass/main.scss");
 
 // Hamburgers
 document.addEventListener("DOMContentLoaded", () => {

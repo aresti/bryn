@@ -4,6 +4,7 @@ import {
   INIT_USER,
   SET_ACTIVE_TEAM_ID,
   SET_FILTER_TENANT_ID,
+  SET_HYPERVISOR_STATS,
   SET_TEAM_INITIALIZED,
   MODIFY_TEAM,
   SET_USER,
@@ -30,6 +31,10 @@ const mutations = {
 
   [SET_FILTER_TENANT_ID](state, id) {
     state.filterTenantId = id;
+  },
+
+  [SET_HYPERVISOR_STATS](state, hypervisorStats) {
+    state.hypervisorStats = hypervisorStats;
   },
 
   [SET_TEAM_INITIALIZED](state) {
