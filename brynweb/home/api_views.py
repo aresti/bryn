@@ -13,6 +13,8 @@ class AnnouncementListView(ListAPIView):
 
     permission_classes = []
     serializer_class = AnnouncementSerializer
-    queryset = Announcement.objects.filter(published=True).filter(
-        Q(expiry__gt=Now()) | Q(expiry=None)
+    queryset = (
+        Announcement.objects.filter(published=True)
+        .filter(Q(expiry__gt=Now()) | Q(expiry=None))
+        .order_by("-updated_at")
     )
