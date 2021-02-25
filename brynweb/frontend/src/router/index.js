@@ -51,7 +51,7 @@ const routes = [
       },
       {
         path: "team",
-        name: "team",
+        name: "teamManagement",
         component: TeamManagement,
         meta: { displayName: "Team Management", menuSection: "admin" },
       },

@@ -2,7 +2,7 @@
 import axios from "axios";
 axios.defaults.xsrfCookieName = "csrftoken";
 axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
-axios.defaults.timeout = 20000;
+axios.defaults.timeout = 30000;
 
 const apiBase = "/api/";
 const teamBase = apiBase + "teams/TEAM_ID/";

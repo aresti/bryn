@@ -24,6 +24,8 @@ import {
   GET_VOLUME_BY_ID,
   GET_VOLUME_IS_POLLING,
   TEAM,
+  TOTAL_TEAM_VOLUMES,
+  TOTAL_TEAM_CAPACITY_GB,
   VOLUMES_FOR_FILTER_TENANT,
 } from "../getter-types";
 import {
@@ -68,6 +70,15 @@ const mutations = {
 };
 
 const getters = {
+  [ALL_VOLUMES](state, _getters, rootState) {
+    return collectionForTeamId(state.all, rootState.activeTeamId);
+  },
+  [GET_MAX_VOLUME_SIZE_FOR_TENANT](_state, _getters, _rootState, rootGetters) {
+    return (tenant) => {
+      return rootGetters[GET_REGION_FOR_TENANT](tenant).settings
+        .maxVolumeSizeGb;
+    };
+  },
   [GET_VOLUME_BY_ID](state) {
     return createFindByIdGetter(state.all);
   },
@@ -77,14 +88,18 @@ const getters = {
   [GET_VOLUMES_FOR_TENANT](state) {
     return createFilterByTenantGetter(state.all);
   },
-  [GET_MAX_VOLUME_SIZE_FOR_TENANT](_state, _getters, _rootState, rootGetters) {
-    return (tenant) => {
-      return rootGetters[GET_REGION_FOR_TENANT](tenant).settings
-        .maxVolumeSizeGb;
+  [TOTAL_TEAM_CAPACITY_GB](_state, getters) {
+    const reducer = (acc, volume) => {
+      if (volume.bootable) return acc;
+      return acc + volume.size;
     };
+    return getters[ALL_VOLUMES].filter((volume) => !volume.bootable).reduce(
+      reducer,
+      0
+    );
   },
-  [ALL_VOLUMES](state, _getters, rootState) {
-    return collectionForTeamId(state.all, rootState.activeTeamId);
+  [TOTAL_TEAM_VOLUMES](_state, getters) {
+    return getters[ALL_VOLUMES].filter((volume) => !volume.bootable).length;
   },
   [VOLUMES_FOR_FILTER_TENANT](_state, getters, rootState, rootGetters) {
     return rootState.filterTenantId

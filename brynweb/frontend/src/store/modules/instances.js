@@ -17,13 +17,18 @@ import {
 import {
   ALL_INSTANCES,
   FILTER_TENANT,
+  GET_FLAVOR_BY_ID,
   GET_INSTANCE_BY_ID,
   GET_INSTANCES_FOR_TENANT,
   GET_INSTANCE_IS_POLLING,
   GET_ITEM_IS_POLLING,
   INSTANCES_FOR_FILTER_TENANT,
+  LIVE_INSTANCES,
   LIVE_INSTANCES_FOR_FILTER_TENANT,
   TEAM,
+  TOTAL_TEAM_INSTANCES,
+  TOTAL_TEAM_RAM_GB,
+  TOTAL_TEAM_VCPUS,
 } from "../getter-types";
 import {
   ADD_INSTANCE,
@@ -87,10 +92,34 @@ const getters = {
       ? getters[GET_INSTANCES_FOR_TENANT](rootGetters[FILTER_TENANT])
       : getters[ALL_INSTANCES];
   },
+  [LIVE_INSTANCES](_state, getters) {
+    return getters[ALL_INSTANCES].filter(
+      ({ status }) => SHELVED_STATUSES.indexOf(status) === -1
+    );
+  },
   [LIVE_INSTANCES_FOR_FILTER_TENANT](_state, getters) {
     return getters[INSTANCES_FOR_FILTER_TENANT].filter(
       ({ status }) => SHELVED_STATUSES.indexOf(status) === -1
     );
+  },
+  [TOTAL_TEAM_INSTANCES](_state, getters) {
+    return getters[LIVE_INSTANCES].length;
+  },
+  [TOTAL_TEAM_RAM_GB](_state, getters, _rootState, rootGetters) {
+    const reducer = (acc, instance) => {
+      const flavor = rootGetters[GET_FLAVOR_BY_ID](instance.flavor);
+      if (flavor == null) return acc; // Legacy flavor, unknown
+      return acc + flavor.ram / 1024;
+    };
+    return getters[LIVE_INSTANCES].reduce(reducer, 0);
+  },
+  [TOTAL_TEAM_VCPUS](_state, getters, _rootState, rootGetters) {
+    const reducer = (acc, instance) => {
+      const flavor = rootGetters[GET_FLAVOR_BY_ID](instance.flavor);
+      if (flavor == null) return acc; // Legacy flavor, unknown
+      return acc + flavor.vcpus;
+    };
+    return getters[LIVE_INSTANCES].reduce(reducer, 0);
   },
 };
 
