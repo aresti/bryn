@@ -2,11 +2,11 @@
   <tr>
     <td>
       <span class="icon-text">
-        <base-icon
-          :icon="['fas', region.disabled ? 'times-circle' : 'check-circle']"
-          :decorative="true"
-        />
-        <span>{{ region.name }}</span>
+        <span>{{ region?.description?.replace("University of ", "") }}</span
+        ><br />
+        <span v-if="region.disabled" class="is-size-7 is-text-danger"
+          >Offline</span
+        >
       </span>
     </td>
     <td>{{ stats.runningVms }}</td>

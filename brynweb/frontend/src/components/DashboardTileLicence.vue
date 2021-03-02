@@ -4,7 +4,7 @@
     <div class="level-item has-text-centered">
       <div>
         <p class="heading">VALID UNTIL</p>
-        <p class="title">01/03/2021</p>
+        <p class="is-size-3">01/03/2021</p>
       </div>
     </div>
   </div>

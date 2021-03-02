@@ -8,7 +8,7 @@
     >
       <div>
         <p class="heading">{{ label }}</p>
-        <p class="title">{{ value }}</p>
+        <p class="is-size-3">{{ value }}</p>
       </div>
     </div>
   </div>
