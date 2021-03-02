@@ -13,7 +13,7 @@ class RegionSettingsSerializer(serializers.ModelSerializer):
 
 
 class RegionSerializer(serializers.ModelSerializer):
-    id = HashidsIntegerField()
+    id = HashidsIntegerField(read_only=True)
     settings = RegionSettingsSerializer(source="regionsettings")
 
     class Meta:
@@ -29,7 +29,7 @@ class RegionSerializer(serializers.ModelSerializer):
 
 
 class TenantSerializer(serializers.ModelSerializer):
-    id = HashidsIntegerField()
+    id = HashidsIntegerField(read_only=True)
     team = serializers.PrimaryKeyRelatedField(
         pk_field=HashidsIntegerField(), read_only=True
     )

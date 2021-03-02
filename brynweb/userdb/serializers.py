@@ -15,7 +15,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    id = HashidsIntegerField()
+    id = HashidsIntegerField(read_only=True)
     profile = ProfileSerializer(many=False, read_only=False)
 
     class Meta:
@@ -50,7 +50,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class TeamMemberSerializer(serializers.ModelSerializer):
-    id = HashidsIntegerField()
+    id = HashidsIntegerField(read_only=True)
     team = serializers.PrimaryKeyRelatedField(
         pk_field=HashidsIntegerField(), read_only=True
     )
@@ -90,7 +90,7 @@ class InvitationSerializer(serializers.ModelSerializer):
 
 
 class TeamSerializer(serializers.ModelSerializer):
-    id = HashidsIntegerField()
+    id = HashidsIntegerField(read_only=True)
     default_region = serializers.PrimaryKeyRelatedField(
         read_only=True, pk_field=HashidsIntegerField()
     )

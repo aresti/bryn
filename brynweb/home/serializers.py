@@ -5,7 +5,7 @@ from .models import Announcement
 
 
 class AnnouncementSerializer(ModelSerializer):
-    id = HashidsIntegerField()
+    id = HashidsIntegerField(read_only=True)
 
     class Meta:
         model = Announcement
