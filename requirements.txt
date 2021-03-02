@@ -30,7 +30,7 @@ djangorestframework==3.12.1
 djangorestframework-camel-case==1.2.0
 dogpile.cache==1.0.0
 ecdsa==0.16.0
-fabric==2.5.0
+fabric==2.6.0
 factory-boy==3.2.0
 Faker==5.8.0
 filelock==3.0.12
@@ -72,6 +72,8 @@ oslo.serialization==2.29.2
 oslo.utils==4.8.0
 packaging==20.4
 paramiko==2.7.2
+patchwork==1.0.1
+pathlib2==2.3.5
 pathspec==0.8.0
 pbr==5.5.0
 phonenumberslite==8.12.11

@@ -25,3 +25,4 @@ npm run serve
 Then access at http://localhost:8080/, via webpack devserver to get HMR (non webpack routes are proxied to Django at 8000)
 
 Frontend build for production: `npm run build`, then simply serve from Django (webpack outputs templates & bundles to dirs accessible to Django)
+Whitenoise is used for static files so no need to setup static routing in nginx config.
