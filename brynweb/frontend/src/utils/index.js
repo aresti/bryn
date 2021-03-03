@@ -1,6 +1,6 @@
 const formatBytes = (bytes, decimals = 2) => {
   /* Format storage size in bytes to be human friendly */
-  if (bytes === 0) return "0 Bytes";
+  if (bytes === 0) return "0";
 
   const k = 1000;
   const dm = decimals < 0 ? 0 : decimals;
