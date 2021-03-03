@@ -133,6 +133,18 @@ export default {
     },
   },
 
+  // Events
+  watch: {
+    selectedTenant: {
+      handler() {
+        if (this.selectedTenant != null) {
+          this.form.fields.size.options = this.sizeOptions;
+        }
+      },
+      immediate: true,
+    },
+  },
+
   mounted() {
     this.form.fields.tenant.options = this.tenantOptions;
     if (this.filterTenantId) {
@@ -140,7 +152,6 @@ export default {
     } else if (this.tenants.length === 1) {
       this.form.fields.tenant.value = this.tenants[0].id;
     }
-    this.form.fields.size.options = this.sizeOptions;
   },
 
   // Non-reactive
