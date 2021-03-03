@@ -3,6 +3,7 @@
     <select
       :name="name"
       :value="modelValue"
+      :disabled="disabled"
       @change="$emit('update:modelValue', $event.target.value)"
     >
       <option value="" disabled>{{ nullOptionLabel }}</option>
@@ -63,6 +64,9 @@ export default {
   emits: ["update:modelValue"],
 
   computed: {
+    disabled() {
+      return this.options.length === 0;
+    },
     wrapperClasses() {
       return [
         "select",
