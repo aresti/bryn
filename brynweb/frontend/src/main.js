@@ -11,6 +11,7 @@ import VueClickAway from "vue3-click-away";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import {
   faAngleDown,
+  faBox,
   faBuilding,
   faBullhorn,
   faCheck,
@@ -23,6 +24,8 @@ import {
   faInfoCircle,
   faKey,
   faLink,
+  faMemory,
+  faMicrochip,
   faPhone,
   faPlusCircle,
   faSave,
@@ -39,6 +42,7 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 library.add(
   faAngleDown,
+  faBox,
   faBuilding,
   faBullhorn,
   faCheck,
@@ -51,6 +55,8 @@ library.add(
   faInfoCircle,
   faKey,
   faLink,
+  faMemory,
+  faMicrochip,
   faPhone,
   faPlusCircle,
   faSave,

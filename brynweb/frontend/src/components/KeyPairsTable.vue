@@ -2,9 +2,9 @@
   <base-table fullwidth hoverable>
     <template v-slot:head>
       <tr>
-        <th v-for="heading in headings" :key="heading">
-          {{ heading }}
-        </th>
+        <th>Name</th>
+        <th class="is-hidden-touch">Fingerprint</th>
+        <th><!-- Action buttons --></th>
       </tr>
     </template>
     <template v-slot:body>
@@ -19,7 +19,9 @@
             >Default</base-tag
           >
         </td>
-        <td class="is-family-monospace">{{ keyPair.fingerprint }}</td>
+        <td class="is-family-monospace is-hidden-touch">
+          {{ keyPair.fingerprint }}
+        </td>
         <td>
           <div class="buttons is-right">
             <base-button
@@ -35,7 +37,7 @@
             <base-button
               rounded
               size="small"
-              class="has-tooltip-left has-tooltip-multiline has-tooltip-text-left"
+              class="has-tooltip-left has-tooltip-multiline has-tooltip-text-left is-hidden-touch"
               :data-tooltip="keyPair.publicKey"
             >
               View Public Key
@@ -82,12 +84,6 @@ export default {
   },
 
   // Local state
-  data() {
-    return {
-      headings: ["Name", "Fingerprint", ""],
-    };
-  },
-
   computed: mapGetters({
     getKeyPairIsDefault: GET_KEY_PAIR_IS_DEFAULT,
   }),

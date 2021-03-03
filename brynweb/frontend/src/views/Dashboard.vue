@@ -1,26 +1,54 @@
 <template>
-  <div class="columns is-relative is-variable is-5">
-    <div class="column is-8">
-      <dashboard-team-tiles />
-      <dashboard-service-status />
-    </div>
+  <div>
+    <h3 class="is-size-3 mb-5">Welcome back, {{ user.firstName }}</h3>
+    <service-announcement
+      v-for="announcement in serviceAnnouncements"
+      :key="announcement.id"
+      :announcement="announcement"
+    />
+    <dashboard-team-tiles />
+    <dashboard-service-status />
 
-    <div class="column is-4 announcements-column">
-      <dashboard-announcements />
+    <div v-if="newsAnnouncements.length">
+      <hr class="has-background-grey-lighter" />
+      <h4 class="is-size-3 mb-4">Latest news</h4>
+      <news-announcement
+        v-for="announcement in newsAnnouncements"
+        :key="announcement.id"
+        :announcement="announcement"
+      />
     </div>
   </div>
 </template>
 
 <script>
-import DashboardAnnouncements from "@/components/DashboardAnnouncements.vue";
 import DashboardServiceStatus from "@/components/DashboardServiceStatus.vue";
 import DashboardTeamTiles from "@/components/DashboardTeamTiles.vue";
+import NewsAnnouncement from "@/components/NewsAnnouncement";
+import ServiceAnnouncement from "@/components/ServiceAnnouncement";
+
+import { mapGetters, mapState } from "vuex";
+import {
+  NEWS_ANNOUNCEMENTS,
+  SERVICE_ANNOUNCEMENTS,
+} from "@/store/getter-types";
 
 export default {
   components: {
-    DashboardAnnouncements,
     DashboardServiceStatus,
     DashboardTeamTiles,
+    NewsAnnouncement,
+    ServiceAnnouncement,
+  },
+
+  computed: {
+    ...mapState({
+      user: (state) => state.user,
+    }),
+    ...mapGetters({
+      newsAnnouncements: NEWS_ANNOUNCEMENTS,
+      serviceAnnouncements: SERVICE_ANNOUNCEMENTS,
+    }),
   },
 };
 </script>

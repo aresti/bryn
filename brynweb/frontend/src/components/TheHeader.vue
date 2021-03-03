@@ -1,5 +1,5 @@
 <template>
-  <section class="hero is-primary">
+  <section class="hero is-primary the-header">
     <div class="hero-body">
       <header class="container">
         <base-level>
@@ -30,6 +30,8 @@
         </base-level>
       </header>
     </div>
+
+    <the-header-tabs class="is-hidden-desktop" />
   </section>
 </template>
 
@@ -37,7 +39,13 @@
 import { mapGetters, mapState } from "vuex";
 import { TEAM, USER_FULL_NAME } from "@/store/getter-types";
 
+import TheHeaderTabs from "@/components/TheHeaderTabs";
+
 export default {
+  components: {
+    TheHeaderTabs,
+  },
+
   computed: {
     ...mapState({
       teams: (state) => state.teams,
@@ -47,6 +55,7 @@ export default {
       userFullName: USER_FULL_NAME,
     }),
   },
+
   methods: {
     onTeamSelect(team) {
       this.$router.push({
@@ -59,7 +68,7 @@ export default {
 </script>
 
 <style scoped>
-.hero {
+.the-header {
   background: rgb(32, 60, 71);
   background: linear-gradient(
     0deg,

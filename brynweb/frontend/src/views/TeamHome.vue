@@ -1,6 +1,6 @@
 <template>
   <div
-    class="page-content is-flex is-flex-direction-column is-align-items-stretch is-flex-grow-1"
+    class="page-content pb-5 is-flex is-flex-direction-column is-align-items-stretch is-flex-grow-1 has-background-light"
   >
     <the-header />
 
@@ -25,10 +25,10 @@
 
       <div v-else class="container">
         <div class="columns is-variable is-6">
-          <div class="column is-one-fifth">
+          <div class="column is-one-fifth is-hidden-touch">
             <the-side-menu />
           </div>
-          <div class="column is-four-fiths">
+          <div class="column">
             <the-content />
           </div>
         </div>
@@ -36,7 +36,7 @@
     </section>
   </div>
 
-  <the-footer class="mt-5" />
+  <the-footer />
 </template>
 
 <script>

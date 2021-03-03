@@ -2,9 +2,11 @@
   <base-table fullwidth hoverable>
     <template v-slot:head>
       <tr>
-        <th v-for="heading in headings" :key="heading">
-          {{ heading }}
-        </th>
+        <th>Name</th>
+        <th>Flavor</th>
+        <th>Status</th>
+        <th class="is-hidden-touch">Created</th>
+        <th><!-- Action buttons --></th>
       </tr>
     </template>
     <template v-slot:body>
@@ -29,11 +31,6 @@ export default {
       type: Array,
       required: true,
     },
-  },
-  data() {
-    return {
-      headings: ["Server", "Flavor", "Status", "Created", ""],
-    };
   },
 };
 </script>

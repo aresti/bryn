@@ -18,7 +18,9 @@
 
     <td>
       <base-tag-control>
-        <base-tag v-if="isNew" color="dark" rounded>NEW</base-tag>
+        <base-tag v-if="isNew" color="dark" rounded class="is-hidden-touch"
+          >NEW</base-tag
+        >
         <base-tag :color="statusColor" rounded light>
           {{ instance.status }}
           <base-icon
@@ -33,7 +35,7 @@
       <span class="is-family-monospace is-size-7">{{ instance.ip }}</span>
     </td>
 
-    <td>{{ timeSinceCreated }}</td>
+    <td class="is-hidden-touch">{{ timeSinceCreated }}</td>
 
     <td class="actions-cell">
       <base-buttons v-if="!isPolling" class="is-right">

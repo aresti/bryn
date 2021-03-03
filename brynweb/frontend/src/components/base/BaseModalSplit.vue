@@ -5,7 +5,7 @@
         <div class="column is-6 content">
           <slot name="left"></slot>
         </div>
-        <div class="column is-6 content modal-right-col">
+        <div class="column is-6 content modal-right-col is-hidden-touch">
           <slot name="right"></slot>
         </div>
       </div>

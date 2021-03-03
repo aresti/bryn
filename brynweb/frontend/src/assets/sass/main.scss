@@ -32,7 +32,8 @@ $navbar-background-color: $grey-darker;
 $navbar-item-hover-color: $white;
 $navbar-item-hover-background-color: $black-ter;
 
-$footer-background-color: $white-ter;
+$footer-background-color: $grey-darker;
+$footer-color: $white;
 $footer-padding: 3rem 1.5rem;
 
 @import "~bulma/bulma";

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="block mb-3">
+    <div class="block mb-5">
       <base-level>
         <template v-slot:left>
           <base-level-item>
@@ -35,13 +35,15 @@
       </base-level>
     </div>
 
-    <instances-table :instances="filteredInstances" />
+    <div v-if="!loading" class="box">
+      <instances-table
+        v-if="instancesForFilterTenant.length"
+        :instances="filteredInstances"
+      />
 
-    <div
-      v-if="!(loading || instancesForFilterTenant.length)"
-      class="content has-text-centered"
-    >
-      <h4 class="subtitle">{{ noItemsMessage }}</h4>
+      <div v-else class="content has-text-centered">
+        <h4 class="subtitle mb-0">{{ noItemsMessage }}</h4>
+      </div>
     </div>
 
     <instances-new-instance-modal

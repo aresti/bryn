@@ -17,8 +17,10 @@
       </div>
     </div>
     <div class="columns">
-      <div class="column content">
-        <team-profile />
+      <div class="column">
+        <div class="box">
+          <team-profile />
+        </div>
       </div>
       <div class="column">
         <team-members-panel :teamMembers="allTeamMembers" />

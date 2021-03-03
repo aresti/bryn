@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="block mb-3">
+    <div class="block mb-5">
       <!-- Actions & filters level -->
       <base-level>
         <!-- Level left -->
@@ -22,7 +22,10 @@
 
           <!-- Show/hide bootable button -->
           <base-level-item>
-            <base-button rounded @click="showBootable = !showBootable"
+            <base-button
+              class="mr-2"
+              rounded
+              @click="showBootable = !showBootable"
               ><template v-slot:icon-before>
                 <base-icon
                   :icon="['fas', showBootable ? 'eye-slash' : 'eye']"
@@ -33,10 +36,7 @@
                 showBootable ? "Hide boot volumes" : "Show boot volumes"
               }}</template>
             </base-button>
-          </base-level-item>
 
-          <!-- New volume button -->
-          <base-level-item>
             <base-button-create @click="showNewVolumeModal = true">
               New volume
             </base-button-create>
@@ -45,20 +45,20 @@
       </base-level>
     </div>
 
-    <!-- Volumes table -->
-    <volumes-table
-      :volumes="filteredVolumes"
-      @attach-volume="onAttachVolume"
-      @delete-volume="onDeleteVolume"
-      @detach-volume="onDetachVolume"
-    />
+    <div v-if="!loading" class="box">
+      <!-- Volumes table -->
+      <volumes-table
+        v-if="filteredVolumes.length"
+        :volumes="filteredVolumes"
+        @attach-volume="onAttachVolume"
+        @delete-volume="onDeleteVolume"
+        @detach-volume="onDetachVolume"
+      />
 
-    <!-- No volumes message -->
-    <div
-      v-if="!(loading || filteredVolumes.length)"
-      class="content has-text-centered"
-    >
-      <h4 class="subtitle">{{ noItemsMessage }}</h4>
+      <!-- No volumes message -->
+      <div v-else class="content has-text-centered">
+        <h4 class="subtitle mb-0">{{ noItemsMessage }}</h4>
+      </div>
     </div>
 
     <!-- New volume modal -->

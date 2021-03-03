@@ -2,14 +2,16 @@
   <div>
     <h2>User Profile</h2>
 
-    <base-form-validated
-      :form="form"
-      @fieldValidate="form.onFieldValidate"
-      submitLabel="Update"
-      @submit="alert('submit')"
-      :submitted="submitted"
-      requireInput
-    />
+    <div class="box">
+      <base-form-validated
+        :form="form"
+        @fieldValidate="form.onFieldValidate"
+        submitLabel="Update"
+        @submit="alert('submit')"
+        :submitted="submitted"
+        requireInput
+      />
+    </div>
   </div>
 </template>
 

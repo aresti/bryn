@@ -1,46 +1,11 @@
 <template>
-  <div class="columns is-multiline">
-    <div class="column is-half">
-      <dashboard-tile routeName="servers">
-        <dashboard-tile-metrics
-          title="Servers"
-          :metrics="{
-            Servers: totalTeamInstances,
-            vCPUs: totalTeamVCPUs,
-            RAM: formatSize(totalTeamRamGb),
-          }"
-        />
-      </dashboard-tile>
-    </div>
-
-    <div class="column is-half">
-      <dashboard-tile routeName="volumes">
-        <dashboard-tile-metrics
-          title="Volumes"
-          :metrics="{
-            Volumes: totalTeamVolumes,
-            Capacity: formatSize(totalTeamCapacity),
-          }"
-        />
-      </dashboard-tile>
-    </div>
-
-    <div class="column is-half">
-      <dashboard-tile routeName="teamManagement">
-        <dashboard-tile-metrics
-          title="Team"
-          :metrics="{
-            Members: allTeamMembers.length,
-            Invitations: allInvitations.length,
-          }"
-        />
-      </dashboard-tile>
-    </div>
-
-    <div class="column is-half">
-      <dashboard-tile routeName="teamManagement">
-        <dashboard-tile-licence />
-      </dashboard-tile>
+  <div class="columns is-touch is-hidden-mobile">
+    <div v-for="(obj, key) in tiles" :key="key" class="column">
+      <dashboard-stats-tile
+        :description="key"
+        :iconClasses="obj.iconClasses"
+        :data="String(obj.value)"
+      />
     </div>
   </div>
 </template>
@@ -59,15 +24,11 @@ import {
   TOTAL_TEAM_VOLUMES,
 } from "@/store/getter-types";
 
-import DashboardTile from "@/components/DashboardTile";
-import DashboardTileLicence from "@/components/DashboardTileLicence";
-import DashboardTileMetrics from "@/components/DashboardTileMetrics";
+import DashboardStatsTile from "@/components/DashboardStatsTile";
 
 export default {
   components: {
-    DashboardTile,
-    DashboardTileLicence,
-    DashboardTileMetrics,
+    DashboardStatsTile,
   },
 
   computed: {
@@ -80,6 +41,30 @@ export default {
       totalTeamVCPUs: TOTAL_TEAM_VCPUS,
       totalTeamVolumes: TOTAL_TEAM_VOLUMES,
     }),
+    tiles() {
+      return {
+        Servers: {
+          iconClasses: ["fas", "server"],
+          value: this.totalTeamInstances,
+        },
+        vCPUs: {
+          iconClasses: ["fas", "microchip"],
+          value: this.totalTeamVCPUs,
+        },
+        Memory: {
+          iconClasses: ["fas", "memory"],
+          value: formatBytes(this.totalTeamRamGb * Math.pow(1000, 3)),
+        },
+        Volumes: {
+          iconClasses: ["fas", "hdd"],
+          value: this.totalTeamVolumes,
+        },
+        Capacity: {
+          iconClasses: ["fas", "box"],
+          value: formatBytes(this.totalTeamCapacity * Math.pow(1000, 3)),
+        },
+      };
+    },
   },
 
   methods: {

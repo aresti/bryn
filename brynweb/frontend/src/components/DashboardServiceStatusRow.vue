@@ -1,29 +1,28 @@
 <template>
   <tr>
     <td>
-      <span class="icon-text">
-        <span>{{ region?.description?.replace("University of ", "") }}</span
-        ><br />
-        <span v-if="region.disabled" class="is-size-7 is-text-danger"
-          >Offline</span
-        >
-      </span>
+      <span>{{ region?.description?.replace("University of ", "") }}</span
+      ><br />
+      <span v-if="region.disabled" class="is-size-7 has-text-danger"
+        >Offline</span
+      >
+      <span v-else class="is-size-7 has-text-success">Available</span>
     </td>
     <td>{{ stats.runningVms }}</td>
     <td>
-      <p class="is-size-7 has-text-centered">
+      <p class="is-size-7 has-text-centered is-hidden-touch">
         {{ stats.vcpusUsed }} / {{ stats.vcpus }}
       </p>
       <base-progress :value="vcpusPercent" :max="100" color="info" />
     </td>
     <td>
-      <p class="is-size-7 has-text-centered">
+      <p class="is-size-7 has-text-centered is-hidden-touch">
         {{ MBtoTB(stats.memoryMbUsed) }} / {{ MBtoTB(stats.memoryMb) }} TB
       </p>
       <base-progress :value="memoryPercent" :max="100" color="info" />
     </td>
     <td>
-      <p class="is-size-7 has-text-centered">
+      <p class="is-size-7 has-text-centered is-hidden-touch">
         {{ GBtoPB(stats.localGbUsed) }} / {{ GBtoPB(stats.localGb) }} PB
       </p>
       <base-progress :value="localGbPercent" :max="100" color="info" />

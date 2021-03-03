@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="block mb-3">
+    <div class="block mb-5">
       <base-level>
         <template v-slot:left>
           <base-level-item>
@@ -16,14 +16,17 @@
         </template>
       </base-level>
     </div>
-    <key-pairs-table
-      :keyPairs="keyPairs"
-      @delete-keypair="onDeleteKeyPair"
-      @set-default-keypair="onSetDefault"
-    />
 
-    <div v-if="!keyPairs.length" class="content has-text-centered">
-      <h4 class="subtitle">You haven't created any SSH keys yet</h4>
+    <div class="box">
+      <key-pairs-table
+        v-if="keyPairs.length"
+        :keyPairs="keyPairs"
+        @delete-keypair="onDeleteKeyPair"
+        @set-default-keypair="onSetDefault"
+      />
+      <div v-else class="content has-text-centered">
+        <h4 class="subtitle mb-0">You haven't created any SSH keys yet</h4>
+      </div>
     </div>
 
     <key-pairs-new-key-pair-modal

@@ -1,5 +1,5 @@
 <template>
-  <base-button rounded color="success" :size="size" outlined
+  <base-button rounded color="success" :size="size"
     ><template v-slot:icon-before>
       <base-icon
         :size="size"

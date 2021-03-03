@@ -3,9 +3,13 @@
     <!-- Table header -->
     <template v-slot:head>
       <tr>
-        <th v-for="heading in headings" :key="heading">
-          {{ heading }}
-        </th>
+        <th>Name</th>
+        <th class="is-hidden-touch">Type</th>
+        <th>Size</th>
+        <th>Status</th>
+        <th class="is-hidden-touch">Attached To</th>
+        <th class="is-hidden-touch">Created</th>
+        <th><!-- Action buttons --></th>
       </tr>
     </template>
 
@@ -22,7 +26,7 @@
         </td>
 
         <!-- Type & Bootable -->
-        <td>
+        <td class="is-hidden-touch">
           {{ volume.volumeType }}<br />
           <span v-if="volume.bootable" class="is-size-7">Bootable</span>
         </td>
@@ -32,7 +36,13 @@
         <!-- Status & polling spinner -->
         <td>
           <base-tag-control>
-            <base-tag v-if="isNew(volume)" color="dark" rounded>NEW</base-tag>
+            <base-tag
+              v-if="isNew(volume)"
+              color="dark"
+              rounded
+              class="is-hidden-touch"
+              >NEW</base-tag
+            >
             <base-tag :color="statusColor(volume.status)" rounded light>
               {{ volume.status.toUpperCase() }}
               <base-icon
@@ -47,7 +57,7 @@
         </td>
 
         <!-- Attachments -->
-        <td>
+        <td class="is-hidden-touch">
           <span
             v-for="attachment in formatAttachments(volume.attachments)"
             :key="attachment.id"
@@ -60,7 +70,9 @@
         </td>
 
         <!-- Created at -->
-        <td class="is-size-6">{{ timeSinceCreated(volume) }}</td>
+        <td class="is-size-6 is-hidden-touch">
+          {{ timeSinceCreated(volume) }}
+        </td>
 
         <td>
           <div v-if="!volume.bootable" class="buttons is-right">
@@ -138,20 +150,6 @@ export default {
     "attach-volume": volumePayloadValidator,
     "delete-volume": volumePayloadValidator,
     "detach-volume": volumePayloadValidator,
-  },
-
-  data() {
-    return {
-      headings: [
-        "Name",
-        "Type",
-        "Size",
-        "Status",
-        "Attached To",
-        "Created",
-        "",
-      ],
-    };
   },
 
   computed: {

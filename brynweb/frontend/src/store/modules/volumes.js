@@ -144,12 +144,18 @@ const actions = {
     return volume;
   },
 
-  async [DELETE_VOLUME]({ commit }, volume) {
+  async [DELETE_VOLUME]({ dispatch, state }, volume) {
     /* Delete a volume */
     const url = getAPIRoute("volumes", volume.team, volume.tenant) + volume.id;
     await axios.delete(url);
-    /* Takes a while to delete, but better user experience to just remove rather than show polling */
-    commit(REMOVE_VOLUME_BY_ID, volume.id);
+    dispatch(CREATE_POLLING_TARGET, {
+      collection: state.all,
+      item: volume,
+      fetchAction: FETCH_VOLUME,
+      targetStatuses: [], // gone,
+    });
+    // /* Takes a while to delete, but better user experience to just remove rather than show polling */
+    // commit(REMOVE_VOLUME_BY_ID, volume.id);
   },
 
   async [ATTACH_VOLUME]({ dispatch, state }, { volume, server }) {
