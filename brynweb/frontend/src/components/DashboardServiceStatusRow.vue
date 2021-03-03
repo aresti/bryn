@@ -8,6 +8,20 @@
       >
       <span v-else class="is-size-7 has-text-success">Available</span>
     </td>
+    <td>
+      <base-icon
+        v-if="region.disableNewInstances"
+        color="danger"
+        size="large"
+        :icon="['fas', 'times-circle']"
+      />
+      <base-icon
+        v-else
+        color="success"
+        size="large"
+        :icon="['fas', 'check-circle']"
+      />
+    </td>
     <td>{{ stats.runningVms }}</td>
     <td>
       <p class="is-size-7 has-text-centered is-hidden-touch">
@@ -21,7 +35,7 @@
       </p>
       <base-progress :value="memoryPercent" :max="100" color="info" />
     </td>
-    <td>
+    <td class="is-hidden-mobile">
       <p class="is-size-7 has-text-centered is-hidden-touch">
         {{ GBtoPB(stats.localGbUsed) }} / {{ GBtoPB(stats.localGb) }} PB
       </p>
