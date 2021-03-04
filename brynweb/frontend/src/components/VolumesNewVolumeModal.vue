@@ -41,6 +41,7 @@ import guidanceMarkdown from "@/content/volumes/newVolumeGuidance.md";
 import { mapState, mapActions, mapGetters } from "vuex";
 import { CREATE_VOLUME } from "@/store/action-types";
 import {
+  DEFAULT_TENANT,
   GET_MAX_VOLUME_SIZE_FOR_TENANT,
   GET_REGION_NAME_FOR_TENANT,
   GET_TENANT_BY_ID,
@@ -90,6 +91,7 @@ export default {
       filterTenantId: (state) => state.filterTenantId,
     }),
     ...mapGetters({
+      defaultTenant: DEFAULT_TENANT,
       getMaxVolumeSizeForTenant: GET_MAX_VOLUME_SIZE_FOR_TENANT,
       getRegionNameForTenant: GET_REGION_NAME_FOR_TENANT,
       getTenantById: GET_TENANT_BY_ID,
@@ -119,7 +121,9 @@ export default {
       return this.tenants.map((tenant) => {
         return {
           value: tenant.id,
-          label: this.getRegionNameForTenant(tenant),
+          label: `${this.getRegionNameForTenant(tenant)}${
+            tenant === this.defaultTenant ? " (default)" : ""
+          }`,
         };
       });
     },
@@ -151,6 +155,8 @@ export default {
       this.form.fields.tenant.value = this.filterTenantId;
     } else if (this.tenants.length === 1) {
       this.form.fields.tenant.value = this.tenants[0].id;
+    } else if (this.defaultTenant) {
+      this.form.fields.tenant.value = this.defaultTenant.id;
     }
   },
 

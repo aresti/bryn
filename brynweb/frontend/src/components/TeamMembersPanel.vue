@@ -1,6 +1,6 @@
 <template>
   <nav class="panel is-primary">
-    <p class="panel-heading">Team Members</p>
+    <p class="panel-heading">Membership</p>
     <p class="panel-tabs">
       <a
         v-for="tab in tabs"

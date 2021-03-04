@@ -34,6 +34,7 @@ import guidanceMarkdown from "@/content/instances/newInstanceGuidance.md";
 import { mapState, mapActions, mapGetters } from "vuex";
 import { CREATE_INSTANCE } from "@/store/action-types";
 import {
+  DEFAULT_TENANT,
   DEFAULT_KEY_PAIR,
   GET_FLAVORS_FOR_TENANT,
   GET_IMAGES_FOR_TENANT,
@@ -97,6 +98,7 @@ export default {
       keyPairs: (state) => state.keyPairs.all,
     }),
     ...mapGetters({
+      defaultTenant: DEFAULT_TENANT,
       tenants: TENANTS,
       getTenantById: GET_TENANT_BY_ID,
       getRegionNameForTenant: GET_REGION_NAME_FOR_TENANT,
@@ -115,7 +117,9 @@ export default {
       return this.tenants.map((tenant) => {
         return {
           value: tenant.id,
-          label: this.getRegionNameForTenant(tenant),
+          label: `${this.getRegionNameForTenant(tenant)}${
+            tenant === this.defaultTenant ? " (default)" : ""
+          }`,
         };
       });
     },
@@ -181,6 +185,8 @@ export default {
       this.form.fields.tenant.value = this.filterTenantId;
     } else if (this.tenants.length === 1) {
       this.form.fields.tenant.value = this.tenants[0].id;
+    } else if (this.defaultTenant) {
+      this.form.fields.tenant.value = this.defaultTenant.id;
     }
   },
 

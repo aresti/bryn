@@ -69,7 +69,6 @@
 <script>
 import { minutesSince } from "@/utils";
 import { formatDistanceToNow } from "date-fns";
-import { TYPE } from "vue-toastification";
 
 import { mapActions, mapGetters } from "vuex";
 import { DELETE_INSTANCE, TRANSITION_INSTANCE } from "@/store/action-types";
@@ -84,13 +83,6 @@ const statusColorMap = {
   ACTIVE: "success",
   SHUTDOWN: "grey-light",
   SHELVED: "grey-lighter",
-};
-
-const colorToastTypeMap = {
-  danger: TYPE.ERROR,
-  success: TYPE.SUCCESS,
-  warning: TYPE.WARNING,
-  info: TYPE.INFO,
 };
 
 /*
@@ -232,7 +224,7 @@ export default {
           });
         }
         const toastMsg = `${action.presentParticiple} ${this.instance.name}`;
-        this.toast(toastMsg, { type: colorToastTypeMap[action.color] });
+        this.toast(toastMsg);
       } catch (err) {
         this.toast.error(
           `Failed to ${action.verb} ${this.instance.name}: ${
