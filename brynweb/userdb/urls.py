@@ -48,4 +48,9 @@ urlpatterns = [
         views.EmailValidationConfirmView.as_view(),
         name="validate_email",
     ),
+    path(
+        "validate-email-change/<uidb64>/<token>/",
+        views.EmailChangeConfirmView.as_view(),
+        name="validate_email_change",
+    ),
 ]

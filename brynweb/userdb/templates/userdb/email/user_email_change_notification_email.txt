@@ -1,0 +1,12 @@
+Hi {{ user.first_name }}!
+
+This is a notification that you (or someone with access to your CLIMB-BIG-DATA Bryn account), has requested a change of email address to {{ user.profile.new_email_pending_verification }}
+
+You should have received a verification email at the new address, containing a link to verify the change.
+
+Please note, that the new email address is only effective once verified.
+
+If you didn't request this change, then someone else may have gained access to your account. Please reset your password immediately and contact support for further assistance.
+
+Best regards,
+The CLIMB-BIG-DATA project

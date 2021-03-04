@@ -132,6 +132,32 @@ class EmailValidationConfirmView(RedirectView):
         return super().get_redirect_url(*args, **kwargs)
 
 
+class EmailChangeConfirmView(RedirectView):
+    """Confirm email change and redirect to home"""
+
+    pattern_name = "home:home"
+
+    def get_redirect_url(self, *args, **kwargs):
+        """Check activation token"""
+        try:
+            user_id = urlsafe_base64_decode(kwargs.pop("uidb64"))
+            user = User.objects.get(pk=user_id)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            raise Http404
+
+        if account_activation_token.check_token(user, kwargs.pop("token")):
+            user.profile.confirm_email_change()
+            messages.success(self.request, "Your new email address has been verified.")
+        else:
+            messages.error(
+                self.request,
+                "Your email verification link has expired. We've sent you a new one!",
+            )
+            user.profile.send_email_change_verification(self.request)
+
+        return super().get_redirect_url(*args, **kwargs)
+
+
 def accept_invitation_view(request, uuid):
     """Accept invitation / user signup view"""
     # Confirm invitation is valid, and has not been accepted already

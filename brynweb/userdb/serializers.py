@@ -10,8 +10,12 @@ from .models import Invitation, TeamMember, Team, Profile
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ["default_keypair", "email_validated"]
-        read_only_fields = ["email_validated"]
+        fields = [
+            "default_keypair",
+            "email_validated",
+            "new_email_pending_verification",
+        ]
+        read_only_fields = ["email_validated", "new_email_pending_verification"]
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -28,23 +32,25 @@ class UserSerializer(serializers.ModelSerializer):
 
         instance.first_name = validated_data.get("first_name", instance.first_name)
         instance.last_name = validated_data.get("last_name", instance.last_name)
-        instance.email = validated_data.get("email", instance.email)
         instance.save()
 
+        profile = instance.profile
         profile_data = validated_data.get("profile", None)
+
         if profile_data:
-            profile = instance.profile
             profile.default_keypair = profile_data.get(
                 "default_keypair", profile.default_keypair
             )
             profile.save()
 
         if is_new_email:
-            # Not ideal having this logic here, but since project was started without custom User model,
-            # we can't just override model save()
-            instance.profile.email_validated = False
-            instance.profile.save()
-            instance.profile.send_validation_link()
+            try:
+                new_email = validated_data.get("email")
+                profile.initiate_email_change(self.context["request"], new_email)
+            except ValueError:
+                raise serializers.ValidationError(
+                    "An existing account is already associated with the new email address."
+                )
 
         return instance
 

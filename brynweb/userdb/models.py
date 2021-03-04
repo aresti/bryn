@@ -1,5 +1,6 @@
 import uuid
 
+from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import models
@@ -12,6 +13,8 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 from core import hashids
 from .tokens import account_activation_token
+
+User = get_user_model()
 
 
 class Region(models.Model):
@@ -32,9 +35,7 @@ class Team(models.Model):
     name = models.CharField(
         max_length=50, verbose_name="Group or team name", unique=True,
     )
-    creator = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL
-    )
+    creator = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
     position = models.CharField(
         max_length=50, verbose_name="Position (e.g. Professor)"
@@ -63,9 +64,7 @@ class Team(models.Model):
         Region, null=True, blank=True, on_delete=models.SET_NULL
     )
     tenants_available = models.BooleanField(default=False)
-    users = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, through="TeamMember", related_name="teams"
-    )
+    users = models.ManyToManyField(User, through="TeamMember", related_name="teams")
 
     @property
     def hashid(self):
@@ -140,7 +139,7 @@ class Team(models.Model):
 
 class TeamMember(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     is_admin = models.BooleanField(default=False)
 
     @property
@@ -164,7 +163,7 @@ class Invitation(models.Model):
         verbose_name="Team to invite user to",
         related_name="invitations",
     )
-    made_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    made_by = models.ForeignKey(User, on_delete=models.CASCADE)
     email = models.EmailField()
     message = models.TextField()
     accepted = models.BooleanField(default=False)
@@ -211,6 +210,7 @@ class Profile(models.Model):
     default_keypair = models.ForeignKey(
         "openstack.KeyPair", on_delete=models.SET_NULL, blank=True, null=True
     )
+    new_email_pending_verification = models.EmailField(blank=True, null=True)
 
     def send_validation_link(self):
         user = self.user
@@ -243,6 +243,90 @@ class Profile(models.Model):
             fail_silently=False,
         )
 
+    def initiate_email_change(self, request, new_email):
+        """Initiate an email addres change"""
+        # Check email is unique
+        if User.objects.filter(email=new_email).count():
+            raise ValueError(
+                "There is already a user account associated with this email"
+            )
+
+        # Temporarily store the new email on the users profile record, pending verificaction
+        self.new_email_pending_verification = new_email
+        self.save()
+
+        # Notifiy existing email
+        self.send_email_change_notification(request)
+
+        # Send verification email to new email
+        self.send_email_change_verification(request)
+
+    def confirm_email_change(self):
+        """Confirm a change of email address (updating username where appropriate)"""
+        new_email = self.new_email_pending_verification
+        self.new_email_pending_verification = None
+        if self.user.username == self.user.email:
+            self.user.username = new_email
+        self.user.email = new_email
+        self.user.save()  # signal will save profile
+
+    def send_email_change_verification(self, request):
+        """Send a verification email to the new email address"""
+        user = self.user
+        context = {
+            "user": user,
+            "validation_link": request.build_absolute_uri(
+                reverse(
+                    "user:validate_email_change",
+                    kwargs={
+                        "uidb64": urlsafe_base64_encode(force_bytes(user.id)),
+                        "token": account_activation_token.make_token(user),
+                    },
+                )
+            ),
+        }
+        subject = render_to_string(
+            "userdb/email/user_email_change_verification_subject.txt", context
+        )
+        text_content = render_to_string(
+            "userdb/email/user_email_change_verification_email.txt", context
+        )
+        html_content = render_to_string(
+            "userdb/email/user_email_change_verification_email.html", context
+        )
+        send_mail(
+            subject,
+            text_content,
+            settings.DEFAULT_FROM_EMAIL,
+            [self.new_email_pending_verification],
+            html_message=html_content,
+            fail_silently=False,
+        )
+
+    def send_email_change_notification(self, request):
+        """Send an email change notification to the existing/previous email address"""
+        user = self.user
+        context = {
+            "user": user,
+        }
+        subject = render_to_string(
+            "userdb/email/user_email_change_notification_subject.txt", context
+        )
+        text_content = render_to_string(
+            "userdb/email/user_email_change_notification_email.txt", context
+        )
+        html_content = render_to_string(
+            "userdb/email/user_email_change_notification_email.html", context
+        )
+        send_mail(
+            subject,
+            text_content,
+            settings.DEFAULT_FROM_EMAIL,
+            [self.user.email],
+            html_message=html_content,
+            fail_silently=False,
+        )
+
     def mark_email_validated(self):
         self.email_validated = True
         self.user.is_active = True
@@ -255,7 +339,7 @@ class Profile(models.Model):
 # Legacy user profile (uneditable due complex migration issues after 3.1 upgrade)
 # TODO: delete model after data copied over
 class UserProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,)
+    user = models.OneToOneField(User, on_delete=models.CASCADE,)
     validation_link = models.UUIDField(
         default=uuid.uuid4, editable=False, primary_key=True
     )

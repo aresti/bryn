@@ -12,6 +12,7 @@
     <div v-if="newsAnnouncements.length">
       <hr class="has-background-grey-lighter" />
       <h4 class="is-size-3 mb-4">Latest news</h4>
+
       <news-announcement
         v-for="announcement in newsAnnouncements"
         :key="announcement.id"
