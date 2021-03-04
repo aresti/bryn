@@ -27,7 +27,12 @@ export const getters = {
     return state.teams.find((team) => team.id === state.activeTeamId);
   },
   [TENANTS](state, getters) {
-    return state.activeTeamId ? getters[TEAM].tenants : [];
+    return state.activeTeamId
+      ? getters[TEAM].tenants.filter((tenant) => {
+          const region = getters[GET_REGION_FOR_TENANT](tenant);
+          return !region.disabled;
+        })
+      : [];
   },
   [DEFAULT_TENANT](_state, getters) {
     return getters[TENANTS].find(

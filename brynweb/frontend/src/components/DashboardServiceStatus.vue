@@ -8,7 +8,7 @@
           <th>Capacity?</th>
           <th>VMs</th>
           <th class="has-text-centered">vCPUs</th>
-          <th class="has-text-centered">RAM</th>
+          <th class="has-text-centered">Memory</th>
           <th class="has-text-centered is-hidden-mobile">Storage</th>
         </tr>
       </thead>
