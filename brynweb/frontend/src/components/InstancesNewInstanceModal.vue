@@ -36,6 +36,7 @@ import { CREATE_INSTANCE } from "@/store/action-types";
 import {
   DEFAULT_TENANT,
   DEFAULT_KEY_PAIR,
+  FILTER_TENANT,
   GET_FLAVORS_FOR_TENANT,
   GET_IMAGES_FOR_TENANT,
   GET_INSTANCES_FOR_TENANT,
@@ -94,18 +95,18 @@ export default {
 
   computed: {
     ...mapState({
-      filterTenantId: (state) => state.filterTenantId,
       keyPairs: (state) => state.keyPairs.all,
     }),
     ...mapGetters({
       defaultTenant: DEFAULT_TENANT,
-      tenants: TENANTS,
+      filterTenant: FILTER_TENANT,
       getTenantById: GET_TENANT_BY_ID,
       getRegionNameForTenant: GET_REGION_NAME_FOR_TENANT,
       getFlavorsForTenant: GET_FLAVORS_FOR_TENANT,
       getImagesForTenant: GET_IMAGES_FOR_TENANT,
       getInstancesForTenant: GET_INSTANCES_FOR_TENANT,
       defaultKeyPair: DEFAULT_KEY_PAIR,
+      tenants: TENANTS,
     }),
 
     selectedTenant() {
@@ -113,8 +114,11 @@ export default {
         ? this.getTenantById(this.form.fields.tenant.value)
         : null;
     },
+    tenantsLaunchingEnabled() {
+      return this.tenants.filter((tenant) => !tenant.disableNewInstances);
+    },
     tenantOptions() {
-      return this.tenants.map((tenant) => {
+      return this.tenantsLaunchingEnabled.map((tenant) => {
         return {
           value: tenant.id,
           label: `${this.getRegionNameForTenant(tenant)}${
@@ -181,11 +185,11 @@ export default {
 
   mounted() {
     this.form.fields.tenant.options = this.tenantOptions;
-    if (this.filterTenantId) {
-      this.form.fields.tenant.value = this.filterTenantId;
-    } else if (this.tenants.length === 1) {
-      this.form.fields.tenant.value = this.tenants[0].id;
-    } else if (this.defaultTenant) {
+    if (this.filterTenant && !this.filterTenant.disableNewInstances) {
+      this.form.fields.tenant.value = this.filterTenant.id;
+    } else if (this.tenantsLaunchingEnabled.length === 1) {
+      this.form.fields.tenant.value = this.tenantsLaunchingEnabled[0].id;
+    } else if (this.defaultTenant && !this.defaultTenant.disableNewInstances) {
       this.form.fields.tenant.value = this.defaultTenant.id;
     }
   },

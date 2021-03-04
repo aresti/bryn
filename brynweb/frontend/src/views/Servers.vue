@@ -27,7 +27,10 @@
             </base-button>
           </base-level-item>
           <base-level-item>
-            <base-button-create @click="onNewServerClick">
+            <base-button-create
+              @click="onNewServerClick"
+              :disabled="launchingDisabledAllTenants"
+            >
               New server
             </base-button-create>
           </base-level-item>
@@ -36,11 +39,19 @@
     </div>
 
     <div v-if="!loading" class="box">
+      <!-- Launching disabled message -->
+      <base-message v-if="launchingDisabledAllTenants" color="warning">
+        Launching new instances is currently disabled for all regions, due to
+        capacity issues.
+      </base-message>
+
+      <!-- Instances table -->
       <instances-table
         v-if="instancesForFilterTenant.length"
         :instances="filteredInstances"
       />
 
+      <!-- No instances message -->
       <div v-else class="content has-text-centered">
         <h4 class="subtitle mb-0">{{ noItemsMessage }}</h4>
       </div>
@@ -126,6 +137,9 @@ export default {
       } else {
         return "You haven't created any servers yet";
       }
+    },
+    launchingDisabledAllTenants() {
+      return this.tenants.every((tenant) => tenant.disableNewInstances);
     },
   },
 

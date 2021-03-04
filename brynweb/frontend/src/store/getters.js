@@ -28,10 +28,16 @@ export const getters = {
   },
   [TENANTS](state, getters) {
     return state.activeTeamId
-      ? getters[TEAM].tenants.filter((tenant) => {
-          const region = getters[GET_REGION_FOR_TENANT](tenant);
-          return !region.disabled;
-        })
+      ? getters[TEAM].tenants
+          .filter((tenant) => {
+            const region = getters[GET_REGION_FOR_TENANT](tenant);
+            return !region.disabled; // Exclude tenants at disabled regions
+          })
+          .map((tenant) => {
+            const region = getters[GET_REGION_FOR_TENANT](tenant);
+            tenant.disableNewInstances = region.disableNewInstances; // Convenience disableNewInstances property
+            return tenant;
+          })
       : [];
   },
   [DEFAULT_TENANT](_state, getters) {
