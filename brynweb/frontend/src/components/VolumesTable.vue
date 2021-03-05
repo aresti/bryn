@@ -75,10 +75,10 @@
         </td>
 
         <td>
-          <div v-if="!volume.bootable" class="buttons is-right">
+          <div class="buttons is-right">
             <!-- Attach button -->
             <base-button
-              v-if="isAvailable(volume)"
+              v-if="isAvailable(volume) && !volume.bootable"
               size="small"
               color="success"
               outlined
@@ -93,7 +93,7 @@
 
             <!-- Detach button -->
             <base-button
-              v-if="isInUse(volume)"
+              v-if="isInUse(volume) && !volume.bootable"
               size="small"
               outlined
               rounded

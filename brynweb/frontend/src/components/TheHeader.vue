@@ -5,7 +5,7 @@
         <base-level>
           <template v-slot:left>
             <base-level-item>
-              <h1 class="title">
+              <h1 class="is-size-3">
                 {{ team.name }}
               </h1>
             </base-level-item>

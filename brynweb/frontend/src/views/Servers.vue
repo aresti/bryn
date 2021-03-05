@@ -14,7 +14,11 @@
         <template v-slot:right>
           <base-mini-loader :loading="loading" />
           <base-level-item v-if="hasShelved">
-            <base-button rounded @click="showShelved = !showShelved"
+            <base-button
+              rounded
+              @click="showShelved = !showShelved"
+              color="primary"
+              outlined
               ><template v-slot:icon-before>
                 <base-icon
                   :icon="['fas', showShelved ? 'eye-slash' : 'eye']"

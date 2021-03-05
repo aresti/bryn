@@ -4,7 +4,7 @@
       <p>
         <strong class="has-text-white">Bryn</strong> v2.0, the management
         interface for
-        <a href="https://www.climb.ac.uk/" class="has-text-info"
+        <a href="https://www.climb.ac.uk/" class="has-text-white"
           >CLIMB-BIG-DATA</a
         >
       </p>

@@ -26,6 +26,8 @@
               class="mr-2"
               rounded
               @click="showBootable = !showBootable"
+              color="primary"
+              outlined
               ><template v-slot:icon-before>
                 <base-icon
                   :icon="['fas', showBootable ? 'eye-slash' : 'eye']"

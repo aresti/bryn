@@ -59,7 +59,7 @@ export default {
           iconClasses: ["fas", "hdd"],
           value: this.totalTeamVolumes,
         },
-        Capacity: {
+        Storage: {
           iconClasses: ["fas", "box"],
           value: formatBytes(this.totalTeamCapacity * Math.pow(1000, 3)),
         },
