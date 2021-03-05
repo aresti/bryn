@@ -9,7 +9,12 @@
         <font-awesome-icon :icon="['fas', 'user']" aria-hidden="true" />
       </span>
       <p class="is-flex-grow-1">
-        {{ teamMember.user.firstName }} {{ teamMember.user.lastName }}
+        <strong
+          >{{ teamMember.user.firstName }}
+          {{ teamMember.user.lastName }}</strong
+        >
+        -
+        <span class="is-italic is-size-6">{{ teamMember.user.email }}</span>
       </p>
       <base-tag v-if="teamMember.isAdmin" class="ml-3" color="dark" rounded
         >Admin</base-tag

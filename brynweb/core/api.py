@@ -36,73 +36,87 @@ urlpatterns = [
     ),
     # {%url "api:messages" % }
     path("messages/", core_views.MessagesListView.as_view(), name="messages"),
+    # {% url "api:tenants" team_id=team.hashid %}
     path(
         "teams/<hashids:team_id>/tenants/",
         openstack_views.TenantListView.as_view(),
         name="tenants",
     ),
+    # {% url "api:instances" team_id=team.hashid tenant_id=tenant.hashid %}
     path(
         "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/instances/",
         openstack_views.InstanceListView.as_view(),
         name="instances",
     ),
+    # {% url "api:instances" team_id=team.hashid tenant_id=tenant.hashid pk=instance.id %}
     path(
         "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/instances/<str:pk>",
         openstack_views.InstanceDetailView.as_view(),
         name="instances",
     ),
+    # {% url "api:flavors" team_id=team.hashid tenant_id=tenant.hashid %}
     path(
         "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/flavors/",
         openstack_views.FlavorListView.as_view(),
         name="flavors",
     ),
+    # {% url "api:images" team_id=team.hashid tenant_id=tenant.hashid %}
     path(
         "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/images/",
         openstack_views.ImageListView.as_view(),
         name="images",
     ),
+    # {% url "api:volumes" team_id=team.hashid tenant_id=tenant.hashid %}
     path(
         "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/volumes/",
         openstack_views.VolumeListView.as_view(),
         name="volumes",
     ),
+    # {% url "api:volumes" team_id=team.hashid tenant_id=tenant.hashid pk=volume.id %}
     path(
         "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/volumes/<str:pk>",
         openstack_views.VolumeDetailView.as_view(),
         name="volumes",
     ),
+    # {% url "api:volume_types" team_id=team.hashid tenant_id=tenant.hashid %}
     path(
         "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/volumetypes/",
         openstack_views.VolumeTypeListView.as_view(),
         name="volume_types",
     ),
-    # {% url "api:team" team_id=team.id %}
+    # {% url "api:team" team_id=team.hashid %}
     path(
         "teams/<hashids:team_id>", userdb_views.TeamDetailView.as_view(), name="teams",
     ),
-    # {% url "api:team_members" team_id=team.id%}
-    path(
-        "teams/<hashids:team_id>/members/",
-        userdb_views.TeamMemberListView.as_view(),
-        name="team_members",
-    ),
-    # {% url "api:team_members" team_id=team.id pk=teammember.pk %}
-    path(
-        "teams/<hashids:team_id>/members/<hashids:pk>",
-        userdb_views.TeamMemberDetailView.as_view(),
-        name="team_members",
-    ),
-    # {% url "api:invitations" team_id=team.id %}
+    # {% url "api:invitations" team_id=team.hashid %}
     path(
         "teams/<hashids:team_id>/invitations/",
         userdb_views.InvitationListView.as_view(),
         name="invitations",
     ),
-    # {% url "api:invitations" team_id=team.id pk=invitation.pk %}
+    # {% url "api:invitations" team_id=team.hashid pk=invitation.pk %}
     path(
         "teams/<hashids:team_id>/invitations/<uuid:pk>",
         userdb_views.InvitationDetailView.as_view(),
         name="invitations",
+    ),
+    # {% url "api:licence-acceptances" team_id=team.hashid %}
+    path(
+        "teams/<hashids:team_id>/licence-acceptances/",
+        userdb_views.LicenceAcceptanceListView.as_view(),
+        name="licence_acceptances",
+    ),
+    # {% url "api:team_members" team_id=team.hashid %}
+    path(
+        "teams/<hashids:team_id>/members/",
+        userdb_views.TeamMemberListView.as_view(),
+        name="team_members",
+    ),
+    # {% url "api:team_members" team_id=team.hashid pk=teammember.hashid %}
+    path(
+        "teams/<hashids:team_id>/members/<hashids:pk>",
+        userdb_views.TeamMemberDetailView.as_view(),
+        name="team_members",
     ),
     # {% url "api:userprofile" %}
     path(

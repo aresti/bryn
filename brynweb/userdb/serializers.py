@@ -4,7 +4,17 @@ from django.shortcuts import get_object_or_404
 
 from core.serializers import HashidsIntegerField
 from openstack.serializers import TenantSerializer
-from .models import Invitation, TeamMember, Team, Profile
+from .models import (
+    Invitation,
+    LicenceAcceptance,
+    LicenceVersion,
+    TeamMember,
+    Team,
+    Profile,
+)
+
+
+User = get_user_model()
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -23,7 +33,7 @@ class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(many=False, read_only=False)
 
     class Meta:
-        model = get_user_model()
+        model = User
         fields = ["id", "username", "first_name", "last_name", "email", "profile"]
         read_only_fields = ["id", "username"]
 
@@ -114,5 +124,36 @@ class TeamSerializer(serializers.ModelSerializer):
             "default_region",
             "tenants_available",
             "tenants",
+            "licence_expiry",
+            "licence_is_valid",
         ]
-        read_only_fields = ["id", "name", "verified", "tenants_available"]
+        read_only_fields = [
+            "id",
+            "name",
+            "verified",
+            "tenants_available",
+            "tenants",
+            "licence_expiry",
+            "licence_is_valid",
+        ]
+
+
+class LicenceVersionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LicenceVersion
+        fields = ["version_number", "effective_date", "validity_period_days"]
+
+
+class LicenceAcceptanceSerializer(serializers.ModelSerializer):
+    team = serializers.PrimaryKeyRelatedField(
+        read_only=True, pk_field=HashidsIntegerField()
+    )
+    user = serializers.PrimaryKeyRelatedField(
+        read_only=True, pk_field=HashidsIntegerField()
+    )
+    version = LicenceVersionSerializer(read_only=True)
+
+    class Meta:
+        model = LicenceAcceptance
+        fields = ["team", "user", "version", "accepted_at", "expiry"]
+        read_only_fields = ["team", "user", "accepted_at", "version", "expiry"]

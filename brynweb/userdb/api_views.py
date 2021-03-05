@@ -3,13 +3,14 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import exceptions, generics, permissions
 
-from .models import Team, TeamMember, Invitation
+from .models import Invitation, LicenceAcceptance, Team, TeamMember
 from .permissions import (
     IsTeamAdminForUnsafePermission,
     IsTeamMemberPermission,
 )
 from .serializers import (
     InvitationSerializer,
+    LicenceAcceptanceSerializer,
     TeamSerializer,
     TeamMemberSerializer,
     UserSerializer,
@@ -151,3 +152,29 @@ class OwnUserDetailView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class LicenceAcceptanceListView(generics.ListCreateAPIView):
+    """
+    API detail endpoint for LicenceAcceptance.
+    """
+
+    serializer_class = LicenceAcceptanceSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsTeamMemberPermission,
+        IsTeamAdminForUnsafePermission,
+    ]
+
+    def get_queryset(self):
+        team_id = self.kwargs.get("team_id")
+        teams = get_teams_for_user(self.request.user, team=team_id)
+        return LicenceAcceptance.objects.filter(team__in=teams)
+
+    def perform_create(self, serializer):
+        """
+        Set team from url resolver, user from request
+        Send email after creation
+        """
+        team = get_object_or_404(Team, pk=self.request.resolver_match.kwargs["team_id"])
+        serializer.save(team=team, user=self.request.user)

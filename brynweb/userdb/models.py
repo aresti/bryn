@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.template.loader import render_to_string
@@ -85,6 +86,24 @@ class Team(models.Model):
         Return users with regular privileges for this team (queryset)
         """
         return self.users.filter(teammember__is_admin=False)
+
+    @property
+    def latest_licence_acceptance(self):
+        if self.licence_acceptances.count():
+            return self.licence_acceptances.latest("accepted_at")
+        return None
+
+    @property
+    def licence_expiry(self):
+        if self.latest_licence_acceptance:
+            return self.latest_licence_acceptance.expiry
+        return None
+
+    @property
+    def licence_is_valid(self):
+        if self.latest_licence_acceptance:
+            return not self.latest_licence_acceptance.has_expired
+        return False
 
     def send_new_team_admin_email(self):
         if not settings.NEW_REGISTRATION_ADMIN_EMAILS:
@@ -340,7 +359,7 @@ class Profile(models.Model):
 
 class LicenceVersionManager(models.Manager):
     def current(self):
-        now = datetime.datetime.now()
+        now = timezone.now()
         return (
             super()
             .get_queryset()
@@ -352,7 +371,7 @@ class LicenceVersionManager(models.Manager):
 class LicenceVersion(models.Model):
     version_number = models.CharField(max_length=15, unique=True)
     licence_terms = tinymce_models.HTMLField()
-    effective_date = models.DateField(default=datetime.datetime.now)
+    effective_date = models.DateField(default=timezone.now)
     validity_period_days = models.IntegerField(default="90")
 
     objects = LicenceVersionManager()
@@ -380,11 +399,13 @@ class LicenceAcceptance(models.Model):
 
     @property
     def expiry(self):
-        return self.accepted_at + self.version.validity_period
+        return self.accepted_at + datetime.timedelta(
+            days=self.version.validity_period_days
+        )
 
     @property
     def has_expired(self):
-        return datetime.datetime.now() > self.expiry
+        return timezone.now() > self.expiry
 
 
 # Legacy user profile (uneditable due complex migration issues after 3.1 upgrade)
