@@ -15,7 +15,7 @@ from .forms import (
     RegistrationScreeningForm,
     TeamForm,
 )
-from .models import TeamMember, Invitation
+from .models import LicenceVersion, Invitation, TeamMember
 from .tokens import account_activation_token
 
 User = get_user_model()
@@ -55,6 +55,11 @@ class RegistrationScreeningView(FormView):
     template_name = "userdb/register.html"
     form_class = RegistrationScreeningForm
     success_url = reverse_lazy("user:register_team")
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context["licence_terms"] = LicenceVersion.objects.current().licence_terms
+        return context
 
 
 def team_registration_view(request):
@@ -205,8 +210,15 @@ def accept_invitation_view(request, uuid):
             return HttpResponseRedirect(reverse("home:home"))
 
     login_url = f"{reverse('user:login')}?next={request.path}"
+    licence_terms = LicenceVersion.objects.current().licence_terms
+
     return render(
         request,
         "userdb/accept_invitation_register.html",
-        {"form": form, "login_url": login_url, "to_team": invitation.to_team},
+        {
+            "form": form,
+            "licence_terms": licence_terms,
+            "login_url": login_url,
+            "to_team": invitation.to_team,
+        },
     )

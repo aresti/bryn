@@ -30,7 +30,7 @@
                   <p class="title has-text-dark is-size-4">Terms and Conditions</p>
 
                   <div class="box content" style="max-height: 30vh; overflow-y: auto;">
-                    {% include "userdb/register_terms.html" %}
+                    {{ licence_terms|safe }} 
                   </div>
 
                   <div class="content">                    

@@ -4,7 +4,15 @@ from django.contrib.auth.admin import UserAdmin
 from django.http import HttpResponseRedirect
 
 from openstack.models import Region
-from .models import Team, Invitation, TeamMember, Profile, UserProfile
+from .models import (
+    LicenceVersion,
+    LicenceAcceptance,
+    Team,
+    Invitation,
+    TeamMember,
+    Profile,
+    UserProfile,
+)
 
 from scripts.setup_team import setup_tenant
 
@@ -116,6 +124,24 @@ class LegacyCustomUserAdmin(UserAdmin):
         self.message_user(request, "Validation links resent.")
 
 
+def model_str(obj):
+    """Custom callable to enable use of model __str__ in list display"""
+    return str(obj)
+
+
+model_str.short_description = "Description"
+
+
+class LicenceVersionAdmin(admin.ModelAdmin):
+    list_display = (
+        model_str,
+        "effective_date",
+        "validity_period_days",
+    )
+
+
+admin.site.register(LicenceVersion, LicenceVersionAdmin)
+admin.site.register(LicenceAcceptance)
 admin.site.register(Team, TeamAdmin)
 admin.site.register(TeamMember)
 admin.site.register(Invitation, InvitationAdmin)

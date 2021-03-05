@@ -41,7 +41,7 @@
       <div class="column is-half">
         <h3 class="title has-text-dark is-size-4">Terms and Conditions</h3>
         <div class="box content" style="max-height: 300px; overflow-y: auto;">
-          {% include "userdb/register_terms.html" %}
+          {{ licence_terms|safe }} 
         </div>
         <p class="ml-5">
           <label class="checkbox">

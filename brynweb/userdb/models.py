@@ -1,3 +1,4 @@
+import datetime
 import uuid
 
 from django.contrib.auth import get_user_model
@@ -10,6 +11,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.template.loader import render_to_string
 
 from phonenumber_field.modelfields import PhoneNumberField
+from tinymce import models as tinymce_models
 
 from core import hashids
 from .tokens import account_activation_token
@@ -334,6 +336,55 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{str(self.user)} profile"
+
+
+class LicenceVersionManager(models.Manager):
+    def current(self):
+        now = datetime.datetime.now()
+        return (
+            super()
+            .get_queryset()
+            .filter(effective_date__lte=now)
+            .latest("effective_date")
+        )
+
+
+class LicenceVersion(models.Model):
+    version_number = models.CharField(max_length=15, unique=True)
+    licence_terms = tinymce_models.HTMLField()
+    effective_date = models.DateField(default=datetime.datetime.now)
+    validity_period_days = models.IntegerField(default="90")
+
+    objects = LicenceVersionManager()
+
+    def __str__(self):
+        return f"Licence Version {self.version_number}"
+
+
+class LicenceAcceptance(models.Model):
+    version = models.ForeignKey(
+        LicenceVersion,
+        default=LicenceVersion.objects.current,
+        on_delete=models.PROTECT,
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.PROTECT, related_name="licence_acceptances"
+    )
+    team = models.ForeignKey(
+        Team, on_delete=models.CASCADE, related_name="licence_acceptances"
+    )
+    accepted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Licence acceptance for team {self.team.name}, by {self.user.email}"
+
+    @property
+    def expiry(self):
+        return self.accepted_at + self.version.validity_period
+
+    @property
+    def has_expired(self):
+        return datetime.datetime.now() > self.expiry
 
 
 # Legacy user profile (uneditable due complex migration issues after 3.1 upgrade)
