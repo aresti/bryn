@@ -10,6 +10,7 @@ import {
   REMOVE_INVITATION_BY_ID,
   SET_INVITATIONS,
 } from "@/store/mutation-types";
+import { updateTeamCollection } from "@/utils/store";
 
 const state = () => {
   return {
@@ -22,8 +23,8 @@ const mutations = {
     state.all.unshift(invitation);
   },
 
-  [SET_INVITATIONS](state, invitations) {
-    state.all = invitations;
+  [SET_INVITATIONS](state, { invitations, team }) {
+    updateTeamCollection(state.all, invitations, team);
   },
 
   [REMOVE_INVITATION_BY_ID](state, uuid) {
@@ -43,11 +44,12 @@ const getters = {
 };
 
 const actions = {
-  async [FETCH_INVITATIONS]({ commit, rootState }) {
+  async [FETCH_INVITATIONS]({ commit, rootGetters, rootState }) {
     const url = getAPIRoute("invitations", rootState.activeTeamId);
+    const team = rootGetters[TEAM];
     const response = await axios.get(url);
     const invitations = response.data;
-    commit(SET_INVITATIONS, invitations);
+    commit(SET_INVITATIONS, { invitations, team });
   },
 
   async [CREATE_INVITATION](

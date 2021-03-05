@@ -7,7 +7,7 @@ from humps import camelize
 from openstack.models import Region
 from openstack.serializers import RegionSerializer
 from userdb.serializers import TeamSerializer, UserSerializer
-from userdb.models import Invitation
+from userdb.models import Invitation, LicenceVersion
 
 
 class FrontendView(LoginRequiredMixin, TemplateView):
@@ -23,8 +23,14 @@ class FrontendView(LoginRequiredMixin, TemplateView):
         user_teams = user.teams.all()
         team_data = camelize(TeamSerializer(user_teams, many=True).data)
         region_data = camelize(RegionSerializer(Region.objects.all(), many=True).data)
+        licence_terms = LicenceVersion.objects.current().licence_terms
 
-        return {"regions": region_data, "teams": team_data, "user": user_data}
+        return {
+            "regions": region_data,
+            "teams": team_data,
+            "user": user_data,
+            "licence_terms": licence_terms,
+        }
 
     def dispatch(self, request, *args, **kwargs):
         """Handle edge case where use logs in with no team, but pending invite"""

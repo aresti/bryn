@@ -1,13 +1,14 @@
 /* -- ROOT STORE -- */
 
+export const INIT_LICENCE_TERMS = "INIT_LICENCE_TERMS";
 export const INIT_REGIONS = "INIT_REGIONS";
 export const INIT_TEAMS = "INIT_TEAMS";
 export const INIT_USER = "INIT_USER";
+export const MODIFY_TEAM = "MODIFY_TEAM";
 export const SET_ACTIVE_TEAM_ID = "SET_ACTIVE_TEAM_ID";
 export const SET_FILTER_TENANT_ID = "SET_FILTER_TENANT_ID";
 export const SET_HYPERVISOR_STATS = "SET_HYPERVISOR_STATS";
 export const SET_TEAM_INITIALIZED = "SET_TEAM_INITIALIZED";
-export const MODIFY_TEAM = "UPDATE_TEAM";
 export const SET_USER = "UPDATE_USER";
 
 /* -- MODULES (not namespaced) -- */

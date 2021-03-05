@@ -22,6 +22,7 @@ const state = {
   activeTeamId: null,
   hypervisorStats: [],
   filterTenantId: null,
+  licenceTerms: null,
   regions: [],
   teams: [],
   user: null,

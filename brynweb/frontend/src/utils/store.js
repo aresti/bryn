@@ -11,7 +11,7 @@ function updateTeamCollection(
   collection,
   values,
   { id: teamId },
-  { id: tenantId }
+  { id: tenantId } = { id: undefined }
 ) {
   // Replace existing values matching tenant or team (maintain ref to original array)
   const filtered = collection.filter((value) =>

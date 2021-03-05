@@ -1,16 +1,20 @@
 import {
+  INIT_LICENCE_TERMS,
   INIT_REGIONS,
   INIT_TEAMS,
   INIT_USER,
+  MODIFY_TEAM,
   SET_ACTIVE_TEAM_ID,
   SET_FILTER_TENANT_ID,
   SET_HYPERVISOR_STATS,
   SET_TEAM_INITIALIZED,
-  MODIFY_TEAM,
   SET_USER,
 } from "@/store/mutation-types";
 
 const mutations = {
+  [INIT_LICENCE_TERMS](state) {
+    state.licenceTerms = document.getElementById("licenceTerms").innerHTML;
+  },
   [INIT_REGIONS](state) {
     state.regions = JSON.parse(
       document.getElementById("regionsData").textContent
@@ -23,6 +27,11 @@ const mutations = {
 
   [INIT_USER](state) {
     state.user = JSON.parse(document.getElementById("userData").textContent);
+  },
+
+  [MODIFY_TEAM](state, teamData) {
+    const team = state.teams.find((team) => team.id === state.activeTeamId);
+    Object.assign(team, teamData);
   },
 
   [SET_ACTIVE_TEAM_ID](state, id) {
@@ -41,11 +50,6 @@ const mutations = {
     state.teams.find(
       (team) => team.id === state.activeTeamId
     ).initialized = true;
-  },
-
-  [MODIFY_TEAM](state, teamData) {
-    const team = state.teams.find((team) => team.id === state.activeTeamId);
-    Object.assign(team, teamData);
   },
 
   [SET_USER](state, user) {

@@ -1,6 +1,7 @@
 import { axios, getAPIRoute } from "@/api";
 
 import {
+  CREATE_LICENCE_ACCEPTANCE,
   FETCH_ALL_TENANT_DATA,
   FETCH_ANNOUNCEMENTS,
   FETCH_HYPERVISOR_STATS,
@@ -8,6 +9,7 @@ import {
   FETCH_KEY_PAIRS,
   FETCH_TENANT_FLAVORS,
   FETCH_TENANT_IMAGES,
+  FETCH_TEAM,
   FETCH_TEAM_MEMBERS,
   FETCH_TEAM_SPECIFIC_DATA,
   FETCH_TENANT_INSTANCES,
@@ -23,6 +25,7 @@ import {
 } from "./action-types";
 import { GET_REGION_NAME_FOR_TENANT, TEAM, TENANTS } from "./getter-types";
 import {
+  INIT_LICENCE_TERMS,
   INIT_REGIONS,
   INIT_TEAMS,
   INIT_USER,
@@ -37,9 +40,10 @@ import {
 const actions = {
   async [INIT_STORE]({ commit, dispatch }) {
     /* Initialise store from embedded Django template json */
-    commit(INIT_USER);
+    commit(INIT_LICENCE_TERMS);
     commit(INIT_REGIONS);
     commit(INIT_TEAMS);
+    commit(INIT_USER);
     await Promise.all([
       dispatch(FETCH_KEY_PAIRS),
       dispatch(FETCH_HYPERVISOR_STATS),
@@ -57,11 +61,24 @@ const actions = {
     commit(SET_FILTER_TENANT_ID, tenant?.id);
   },
 
+  async [CREATE_LICENCE_ACCEPTANCE]({ dispatch, state }) {
+    const url = getAPIRoute("licenceAcceptances", state.activeTeamId);
+    await axios.post(url);
+    dispatch(FETCH_TEAM);
+  },
+
   async [FETCH_HYPERVISOR_STATS]({ commit }) {
     const url = getAPIRoute("hypervisorStats");
     const response = await axios.get(url);
     const hypervisorStats = response.data;
     commit(SET_HYPERVISOR_STATS, hypervisorStats);
+  },
+
+  async [FETCH_TEAM]({ commit, state }) {
+    const url = getAPIRoute("teams") + state.activeTeamId;
+    const response = await axios.get(url);
+    const team = response.data;
+    commit(MODIFY_TEAM, team);
   },
 
   async [FETCH_TENANT_SPECIFIC_DATA]({ dispatch, getters }, tenant) {

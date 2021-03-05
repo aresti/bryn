@@ -12,7 +12,7 @@
         </base-message>
       </base-flex-centered>
 
-      <base-flex-centered v-if="allTenantsErroredOnGet">
+      <base-flex-centered v-else-if="allTenantsErroredOnGet">
         <base-message color="danger" light>
           All of your tenants were unreachable, there may be a temporary issue
           on our end. Please try again shortly.

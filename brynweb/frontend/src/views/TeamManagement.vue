@@ -23,10 +23,11 @@
         </div>
       </div>
       <div class="column">
+        <!-- Team members panel -->
         <team-members-panel :teamMembers="allTeamMembers" />
-        <base-notification color="success">
-          Your team licence is valid until 28/01/2021
-        </base-notification>
+
+        <!-- Licencing -->
+        <team-licence-panel />
       </div>
     </div>
 
@@ -38,6 +39,7 @@
 </template>
 
 <script>
+import TeamLicencePanel from "@/components/TeamLicencePanel";
 import TeamMembersPanel from "@/components/TeamMembersPanel";
 import TeamNewInvitationModal from "@/components/TeamNewInvitationModal";
 import TeamProfile from "@/components/TeamProfile";
@@ -47,6 +49,7 @@ import { ALL_TEAM_MEMBERS, TEAM, USER_IS_ADMIN } from "@/store/getter-types";
 
 export default {
   components: {
+    TeamLicencePanel,
     TeamMembersPanel,
     TeamNewInvitationModal,
     TeamProfile,
