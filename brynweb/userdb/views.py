@@ -15,7 +15,7 @@ from .forms import (
     RegistrationScreeningForm,
     TeamForm,
 )
-from .models import LicenceVersion, Invitation, TeamMember
+from .models import LicenceAcceptance, LicenceVersion, Invitation, TeamMember
 from .tokens import account_activation_token
 
 User = get_user_model()
@@ -84,6 +84,10 @@ def team_registration_view(request):
             # create team member
             member = TeamMember(team=team, user=user, is_admin=True)
             member.save()
+
+            # create initial licence  acceptance
+            licence_acceptance = LicenceAcceptance(user=user, team=team)
+            licence_acceptance.save()
 
             return HttpResponseRedirect(reverse("user:register_team_done"))
     else:
