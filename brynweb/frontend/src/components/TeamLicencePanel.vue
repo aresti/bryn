@@ -1,23 +1,37 @@
 <template>
   <base-notification
-    v-if="team.licenceIsValid"
+    v-if="team.licenceIsValid && (!hideValid || isRenewable)"
     :color="isRenewable ? 'warning' : 'success'"
     class="has-text-centered"
   >
-    Your team licence is valid until {{ licenceExpiryFormatted }}
+    <p>
+      <strong
+        >Your team licence is valid until {{ licenceExpiryFormatted }}</strong
+      >
+    </p>
 
-    <base-button
-      v-if="isRenewable && userIsAdmin"
-      class="mt-5"
-      color="white"
-      rounded
-      outlined
-      @click="showLicenceAgreementModal = true"
-      >Renew Licence</base-button
-    >
+    <template v-if="isRenewable">
+      <base-button
+        v-if="userIsAdmin"
+        class="mt-5"
+        color="white"
+        rounded
+        outlined
+        @click="showLicenceAgreementModal = true"
+        >Renew Licence</base-button
+      >
+      <p v-else>
+        To retain access to compute resources, please ask your team's primary
+        user to renew before this date.
+      </p>
+    </template>
   </base-notification>
 
-  <base-notification v-else color="danger" class="has-text-centered">
+  <base-notification
+    v-if="!team.licenceIsValid"
+    color="danger"
+    class="has-text-centered"
+  >
     <p><strong>Your team licence has expired.</strong></p>
 
     <template v-if="userIsAdmin">
@@ -56,6 +70,13 @@ import TeamLicenceAgreementModal from "@/components/TeamLicenceAgreementModal";
 export default {
   components: {
     TeamLicenceAgreementModal,
+  },
+
+  props: {
+    hideValid: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   data() {

@@ -1,12 +1,15 @@
 <template>
   <div>
     <h3 class="is-size-3 mb-5">Welcome back, {{ user.firstName }}</h3>
+    <team-licence-panel hideValid />
     <service-announcement
       v-for="announcement in serviceAnnouncements"
       :key="announcement.id"
       :announcement="announcement"
     />
+
     <dashboard-team-tiles />
+
     <dashboard-service-status />
 
     <div v-if="newsAnnouncements.length">
@@ -27,6 +30,7 @@ import DashboardServiceStatus from "@/components/DashboardServiceStatus.vue";
 import DashboardTeamTiles from "@/components/DashboardTeamTiles.vue";
 import NewsAnnouncement from "@/components/NewsAnnouncement";
 import ServiceAnnouncement from "@/components/ServiceAnnouncement";
+import TeamLicencePanel from "@/components/TeamLicencePanel";
 
 import { mapGetters, mapState } from "vuex";
 import {
@@ -40,6 +44,7 @@ export default {
     DashboardTeamTiles,
     NewsAnnouncement,
     ServiceAnnouncement,
+    TeamLicencePanel,
   },
 
   computed: {
