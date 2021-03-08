@@ -2,7 +2,7 @@
   <aside class="menu">
     <the-side-menu-list :routes="generalRoutes" label="General" />
     <the-side-menu-list
-      v-if="tenants.length"
+      v-if="tenants.length && team.licenceIsValid"
       :routes="computeRoutes"
       label="Compute"
     />
@@ -12,7 +12,7 @@
 
 <script>
 import { mapGetters } from "vuex";
-import { TENANTS } from "@/store/getter-types";
+import { TEAM, TENANTS } from "@/store/getter-types";
 
 import TheSideMenuList from "@/components/TheSideMenuList";
 
@@ -39,6 +39,7 @@ export default {
   },
 
   computed: mapGetters({
+    team: TEAM,
     tenants: TENANTS,
   }),
 };

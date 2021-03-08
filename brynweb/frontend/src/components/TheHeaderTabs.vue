@@ -24,19 +24,20 @@
 
 <script>
 import { mapGetters } from "vuex";
-import { TENANTS } from "@/store/getter-types";
+import { TEAM, TENANTS } from "@/store/getter-types";
 
 export default {
   computed: {
     ...mapGetters({
+      team: TEAM,
       tenants: TENANTS,
     }),
 
     teamRoutes() {
-      const touchRoutes = this.$router.options.routes
-        .find((route) => route.name === "teamHome")
-        .children.filter((route) => route.name !== "dashboard");
-      if (this.tenants.length === 0) {
+      const touchRoutes = this.$router.options.routes.find(
+        (route) => route.name === "teamHome"
+      ).children;
+      if (this.tenants.length === 0 || !this.team.licenceIsValid) {
         return touchRoutes.filter(
           (route) => route.meta.menuSection !== "compute"
         );
@@ -47,3 +48,10 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.hero.is-primary .tabs.is-boxed li.is-active a,
+.hero.is-primary .tabs.is-boxed li.is-active a:hover {
+  background-color: hsl(0, 0%, 96%);
+}
+</style>
