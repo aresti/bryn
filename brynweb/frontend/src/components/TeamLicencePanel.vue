@@ -1,6 +1,20 @@
 <template>
-  <base-notification v-if="team.licenceIsValid" color="success">
+  <base-notification
+    v-if="team.licenceIsValid"
+    :color="isRenewable ? 'warning' : 'success'"
+    class="has-text-centered"
+  >
     Your team licence is valid until {{ licenceExpiryFormatted }}
+
+    <base-button
+      v-if="isRenewable && userIsAdmin"
+      class="mt-5"
+      color="white"
+      rounded
+      outlined
+      @click="showLicenceAgreementModal = true"
+      >Renew Licence</base-button
+    >
   </base-notification>
 
   <base-notification v-else color="danger" class="has-text-centered">
@@ -55,8 +69,17 @@ export default {
       team: TEAM,
       userIsAdmin: USER_IS_ADMIN,
     }),
+    expiryDate() {
+      return new Date(this.team.licenceExpiry);
+    },
+    isRenewable() {
+      const earliestRenewalDate = new Date(this.expiryDate).setDate(
+        this.expiryDate.getDate() - 30
+      );
+      return Date.now() >= earliestRenewalDate;
+    },
     licenceExpiryFormatted() {
-      return new Date(this.team.licenceExpiry).toUTCString();
+      return this.expiryDate.toUTCString();
     },
   },
 };
