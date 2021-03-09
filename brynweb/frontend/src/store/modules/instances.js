@@ -12,6 +12,7 @@ import {
   FETCH_INSTANCE,
   FETCH_TENANT_INSTANCES,
   REMOVE_INSTANCE_BY_ID,
+  RENEW_INSTANCE_LEASE,
   TRANSITION_INSTANCE,
 } from "../action-types";
 import {
@@ -191,6 +192,15 @@ const actions = {
     const instances = response.data;
     commit(SET_INSTANCES, { instances, team, tenant });
     commit(SET_INSTANCES_LOADING, false);
+  },
+
+  async [RENEW_INSTANCE_LEASE]({ commit }, instance) {
+    const response = await axios.post(instance.leaseRenewalUrl);
+    commit(MODIFY_INSTANCE, {
+      id: instance.id,
+      leaseExpiry: response.data.expiry,
+      leaseRenewalUrl: response.data.renewalUrl,
+    });
   },
 };
 

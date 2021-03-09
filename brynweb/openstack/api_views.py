@@ -9,7 +9,7 @@ from rest_framework import exceptions as drf_exceptions
 from rest_framework.response import Response
 
 from .service import OpenstackService, ServiceUnavailable, OpenstackException
-from .models import KeyPair, Tenant, HypervisorStats
+from .models import HypervisorStats, KeyPair, ServerLease, Tenant
 from .serializers import (
     AttachmentSerializer,
     FlavorSerializer,
@@ -197,7 +197,7 @@ class TenantListView(generics.ListAPIView):
 
 def get_instance_transform_func(self, tenant):
     """
-    Transform function factory for Instance views
+    Transform function factory for Instance views.
     """
     public_netname = tenant.region.regionsettings.public_network_name
 
@@ -205,6 +205,20 @@ def get_instance_transform_func(self, tenant):
         obj.tenant = tenant.pk
         obj.team = tenant.team.pk
         obj.flavor = obj.flavor["id"]
+
+        lease_defaults = {
+            "server_id": obj.id,
+            "server_name": obj.name,
+            "tenant": tenant,
+        }
+        lease, _created = ServerLease.objects.get_or_create(
+            server_id=obj.id, defaults=lease_defaults
+        )
+        obj.leaseExpiry = lease.expiry
+        obj.leaseRenewalUrl = lease.renewal_url
+        obj.leaseUserFullName = (
+            f"{lease.user.first_name} {lease.user.last_name}" if lease.user else None
+        )
 
         if public_netname in obj.addresses.keys():
             obj.ip = obj.addresses[public_netname][0]["addr"]
@@ -239,7 +253,7 @@ class InstanceDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
     # top level is current status, 1st level is target status
     state_transitions = {
         "ACTIVE": {"ACTIVE": "reboot", "SHUTOFF": "stop"},
-        "SHUTOFF": {"ACTIVE": "start"},
+        "SHUTOFF": {"ACTIVE": "start", "SHELVED": "shelve"},
         "SHELVED": {"SHUTOFF": "unshelve"},
     }
 

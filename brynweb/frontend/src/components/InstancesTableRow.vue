@@ -6,7 +6,7 @@
       <span class="is-size-7">{{ regionName }}</span>
     </td>
 
-    <td>
+    <td class="is-hidden-touch">
       <span class="has-text-weight-semibold">{{
         flavor.name || "[legacy flavor]"
       }}</span
@@ -35,7 +35,33 @@
       <span class="is-family-monospace is-size-7">{{ instance.ip }}</span>
     </td>
 
-    <td class="is-hidden-touch">{{ timeSinceCreated }}</td>
+    <td class="is-hidden-mobile">
+      <template v-if="displayLease">
+        <template v-if="leaseHasExpired">
+          <base-tag color="danger has-text-weight-semibold">
+            Lease expired</base-tag
+          ><br />
+        </template>
+
+        <base-tag-control v-else-if="leaseExpiry">
+          <base-tag color="dark" class="is-hidden-touch">Expires in</base-tag>
+          <base-tag :color="leaseTagColor" class="has-text-weight-semibold">
+            {{ timeUntilLeaseExpiry }}
+          </base-tag>
+        </base-tag-control>
+
+        <base-tag v-else color="success">Indefinite lease</base-tag>
+
+        <a v-if="leaseIsRenewable" class="is-size-7" @click="onRenewClick"
+          >Renew lease</a
+        >
+        <span
+          v-else-if="instance.leaseUserFullName"
+          class="is-size-7 is-hidden-mobile"
+          >Last renewed by: {{ instance.leaseUserFullName }}</span
+        >
+      </template>
+    </td>
 
     <td class="actions-cell">
       <base-buttons v-if="!isPolling" class="is-right">
@@ -71,7 +97,11 @@ import { minutesSince } from "@/utils";
 import { formatDistanceToNow } from "date-fns";
 
 import { mapActions, mapGetters } from "vuex";
-import { DELETE_INSTANCE, TRANSITION_INSTANCE } from "@/store/action-types";
+import {
+  DELETE_INSTANCE,
+  RENEW_INSTANCE_LEASE,
+  TRANSITION_INSTANCE,
+} from "@/store/action-types";
 import {
   GET_FLAVOR_BY_ID,
   GET_INSTANCE_IS_POLLING,
@@ -127,7 +157,7 @@ const stateTransitions = {
       targetStatus: "SHUTOFF",
       verb: "Unshelve",
       presentParticiple: "Unshelving",
-      color: "info",
+      color: "success",
       confirm: false,
     },
   ],
@@ -160,26 +190,70 @@ export default {
       getRegionNameForTenant: GET_REGION_NAME_FOR_TENANT,
       getTenantById: GET_TENANT_BY_ID,
     }),
+
     isNew() {
       return minutesSince(this.instance.created) < 3;
     },
+
     isPolling() {
       return this.getInstanceIsPolling(this.instance);
     },
+
     regionName() {
       const tenant = this.getTenantById(this.instance.tenant);
       return this.getRegionNameForTenant(tenant);
     },
+
     flavor() {
       return this.getFlavorById(this.instance.flavor);
     },
-    timeSinceCreated() {
-      return formatDistanceToNow(new Date(this.instance.created)) + " ago";
+
+    timeUntilLeaseExpiry() {
+      return formatDistanceToNow(new Date(this.instance.leaseExpiry));
     },
+
+    displayLease() {
+      return !["SHELVED", "SHELVED_OFFLOADED"].includes(this.instance.status);
+    },
+
+    leaseExpiry() {
+      if (this.instance.leaseExpiry == null) {
+        return null;
+      } else {
+        return new Date(this.instance.leaseExpiry);
+      }
+    },
+
+    leaseIsRenewable() {
+      if (
+        this.leaseExpiry == null ||
+        ["SHELVED", "SHELVED_OFFLOADED"].includes(this.instance.status)
+      )
+        return false;
+
+      const earliestRenewalDate = new Date(this.leaseExpiry).setDate(
+        this.leaseExpiry.getDate() - 7
+      );
+      return Date.now() >= earliestRenewalDate;
+    },
+
+    leaseHasExpired() {
+      return Date.now() >= this.leaseExpiry;
+    },
+
+    leaseTagColor() {
+      if (this.leaseIsRenewable) {
+        return "warning";
+      } else {
+        return "success";
+      }
+    },
+
     statusColor() {
       const { [this.instance.status]: color } = statusColorMap;
       return color;
     },
+
     stateTransitionActions() {
       return stateTransitions[this.instance.status];
     },
@@ -189,10 +263,28 @@ export default {
   methods: {
     ...mapActions({
       deleteInstance: DELETE_INSTANCE,
+      renewInstanceLease: RENEW_INSTANCE_LEASE,
       transitionInstance: TRANSITION_INSTANCE,
     }),
 
-    onActionClick(action) {
+    async onRenewClick() {
+      try {
+        await this.renewInstanceLease(this.instance);
+        this.toast.success(
+          `The lease for server '${this.instance.name}' has been renewed`
+        );
+      } catch (err) {
+        this.toast.error(
+          `Failed to renew lease for '${this.instance.name}': ${
+            err.response?.data.detail ?? "unexpected error"
+          }`
+        );
+      } finally {
+        this.actionProcessing = false;
+      }
+    },
+
+    async onActionClick(action) {
       if (action.confirm) {
         this.confirmAction = action;
       } else {

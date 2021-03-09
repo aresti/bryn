@@ -5,7 +5,7 @@
       <thead>
         <tr>
           <th>Region</th>
-          <th>Capacity?</th>
+          <th class="is-hidden-mobile">Capacity?</th>
           <th>VMs</th>
           <th class="has-text-centered">vCPUs</th>
           <th class="has-text-centered">Memory</th>

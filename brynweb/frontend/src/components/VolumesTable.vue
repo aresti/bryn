@@ -5,7 +5,7 @@
       <tr>
         <th>Name</th>
         <th class="is-hidden-touch">Type</th>
-        <th>Size</th>
+        <th class="is-hidden-mobile">Size</th>
         <th>Status</th>
         <th class="is-hidden-touch">Attached To</th>
         <th class="is-hidden-touch">Created</th>
@@ -31,7 +31,7 @@
           <span v-if="volume.bootable" class="is-size-7">Bootable</span>
         </td>
 
-        <td>{{ formatSize(volume.size) }}</td>
+        <td class="is-hidden-mobile">{{ formatSize(volume.size) }}</td>
 
         <!-- Status & polling spinner -->
         <td>

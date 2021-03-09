@@ -9,6 +9,7 @@ urlpatterns = [
     path("api/", include("core.api")),
     path("admin/", admin.site.urls),
     path("discourse/", include("discourse.urls")),
+    path("service/", include("openstack.urls")),
     path("user/", include("userdb.urls")),
     path("", include("home.urls")),
 ]

@@ -199,6 +199,10 @@ LOGGING = {
 SLACK_FAIL_SILENTLY = True
 SLACK_BACKEND = "django_slack.backends.UrllibBackend"
 
+# Lease
+
+SERVER_LEASE_DEFAULT_DAYS = 14
+
 # Local secrets
 
 try:

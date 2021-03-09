@@ -15,6 +15,7 @@
           <base-mini-loader :loading="loading" />
           <base-level-item v-if="hasShelved">
             <base-button
+              class="mr-2"
               rounded
               @click="showShelved = !showShelved"
               color="primary"
@@ -29,8 +30,6 @@
                 showShelved ? "Hide shelved" : "Show shelved"
               }}</template>
             </base-button>
-          </base-level-item>
-          <base-level-item>
             <base-button-create
               @click="onNewServerClick"
               :disabled="launchingDisabledAllTenants"

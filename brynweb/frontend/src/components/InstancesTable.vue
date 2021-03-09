@@ -3,9 +3,9 @@
     <template v-slot:head>
       <tr>
         <th>Name</th>
-        <th>Flavor</th>
+        <th class="is-hidden-touch">Flavor</th>
         <th>Status</th>
-        <th class="is-hidden-touch">Created</th>
+        <th class="is-hidden-mobile">Lease</th>
         <th><!-- Action buttons --></th>
       </tr>
     </template>

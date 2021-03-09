@@ -1,7 +1,11 @@
+import datetime
 import uuid
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
+from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from django_slack import slack_message
@@ -10,6 +14,8 @@ from sshpubkeys import SSHKey
 from .validators import validate_public_key
 from userdb.models import Team, Region
 
+
+User = get_user_model()
 
 # Region model would ideally be in this app, but to avoid legacy migration issues it remains in userdb
 
@@ -43,7 +49,7 @@ class Tenant(models.Model):
 class KeyPair(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         related_name="keypairs",
         related_query_name="keypair",
         on_delete=models.CASCADE,
@@ -65,11 +71,60 @@ class KeyPair(models.Model):
         return self.name
 
 
+def get_default_server_lease_expiry():
+    return timezone.now() + datetime.timedelta(days=settings.SERVER_LEASE_DEFAULT_DAYS)
+
+
+class ServerLease(models.Model):
+    server_id = models.UUIDField(unique=True, editable=False)
+    server_name = models.CharField(max_length=255, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    last_renewed_at = models.DateTimeField(auto_now=True, editable=False)
+    expiry = models.DateTimeField(
+        default=get_default_server_lease_expiry, blank=True, null=True
+    )
+    renewal_count = models.PositiveIntegerField(default=0, editable=False)
+    tenant = models.ForeignKey(
+        Tenant, on_delete=models.CASCADE, related_name="server_leases", editable=False
+    )
+    user = models.ForeignKey(
+        User,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="server_leases",
+    )
+
+    @property
+    def has_expired(self):
+        if self.expiry is None:
+            return False
+        return timezone.now() > self.expiry
+
+    @property
+    def renewal_url(self):
+        return reverse(
+            "openstack:server_lease_renewal",
+            kwargs={"server_id": self.server_id, "renewal_count": self.renewal_count},
+        )
+
+    def renew_lease(self, days=settings.SERVER_LEASE_DEFAULT_DAYS, user=None):
+        self.expiry = timezone.now() + datetime.timedelta(days=days)
+        self.renewal_count += 1
+        if user:
+            self.user = user
+        self.save()
+
+    def __str__(self):
+        return (
+            f"Lease for server '{self.server_name}', belonging to '{self.tenant.team.name}' "
+            f"at {self.tenant.region.name}"
+        )
+
+
 class ActionLog(models.Model):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, default=None, null=True, on_delete=models.CASCADE
-    )
+    user = models.ForeignKey(User, default=None, null=True, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
     message = models.TextField()
     error = models.BooleanField()

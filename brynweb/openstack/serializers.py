@@ -2,7 +2,14 @@ from rest_framework import serializers
 
 from core.serializers import HashidsIntegerField
 from . import INSTANCE_STATUS_VALUES
-from .models import KeyPair, Tenant, Region, RegionSettings, HypervisorStats
+from .models import (
+    HypervisorStats,
+    KeyPair,
+    Region,
+    RegionSettings,
+    ServerLease,
+    Tenant,
+)
 
 
 class RegionSettingsSerializer(serializers.ModelSerializer):
@@ -56,6 +63,15 @@ class InstanceSerializer(OpenstackBaseSerializer):
     status = serializers.ChoiceField(choices=INSTANCE_STATUS_VALUES, required=False)
     ip = serializers.IPAddressField(read_only=True, required=False, allow_null=True)
     created = serializers.DateTimeField(read_only=True)
+    leaseExpiry = serializers.DateTimeField(
+        read_only=True, required=False, allow_null=True
+    )
+    leaseRenewalUrl = serializers.URLField(
+        read_only=True, required=False, allow_null=True
+    )
+    leaseUserFullName = serializers.CharField(
+        read_only=True, required=False, allow_null=True
+    )
 
 
 class ImageSerializer(OpenstackBaseSerializer):
@@ -111,3 +127,37 @@ class HypervisorStatsSerializer(serializers.ModelSerializer):
     class Meta:
         model = HypervisorStats
         exclude = ["id"]
+
+
+class ServerLeaseSerializer(serializers.ModelSerializer):
+    tenant = serializers.PrimaryKeyRelatedField(
+        read_only=True, pk_field=HashidsIntegerField()
+    )
+    user = serializers.PrimaryKeyRelatedField(
+        read_only=True, pk_field=HashidsIntegerField()
+    )
+
+    class Meta:
+        model = ServerLease
+        fields = [
+            "server_id",
+            "server_name",
+            "tenant",
+            "user",
+            "created_at",
+            "last_renewed_at",
+            "expiry",
+            "renewal_count",
+            "renewal_url",
+        ]
+        read_only_fields = [
+            "server_id",
+            "server_name",
+            "tenant",
+            "user",
+            "created_at",
+            "last_renewed_at",
+            "expiry",
+            "renewal_count",
+            "renewal_url",
+        ]

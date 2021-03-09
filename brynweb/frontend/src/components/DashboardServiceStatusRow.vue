@@ -8,7 +8,7 @@
       >
       <span v-else class="is-size-7 has-text-success">Available</span>
     </td>
-    <td>
+    <td class="is-hidden-mobile">
       <base-icon
         v-if="region.disableNewInstances"
         color="danger"

@@ -286,7 +286,7 @@ class ServersService:
         self.cinder.volumes.set_bootable(volume, True)
 
         # Wait for boot volume availability
-        for n in range(20):
+        for n in range(60):
             # TODO: move volume creation to frontend, otherwise tidy up a bit
             v = self.cinder.volumes.get(volume.id)
             if v.status == "available":
@@ -328,6 +328,9 @@ class ServersService:
 
     def start(self, server):
         server.start()
+
+    def shelve(self, server):
+        server.shelve()
 
     def unshelve(self, server):
         server.unshelve()

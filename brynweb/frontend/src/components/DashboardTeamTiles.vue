@@ -1,6 +1,11 @@
 <template>
-  <div class="columns is-touch is-hidden-mobile">
-    <div v-for="(obj, key) in tiles" :key="key" class="column">
+  <div class="columns is-mobile">
+    <div
+      v-for="(obj, key) in tiles"
+      :key="key"
+      class="column"
+      :class="{ 'is-hidden-mobile': !obj.mobile }"
+    >
       <dashboard-stats-tile
         :description="key"
         :iconClasses="obj.iconClasses"
@@ -46,22 +51,27 @@ export default {
         Servers: {
           iconClasses: ["fas", "server"],
           value: this.totalTeamInstances,
+          mobile: false,
         },
         vCPUs: {
           iconClasses: ["fas", "microchip"],
           value: this.totalTeamVCPUs,
+          mobile: true,
         },
         Memory: {
           iconClasses: ["fas", "memory"],
           value: formatBytes(this.totalTeamRamGb * Math.pow(1000, 3)),
+          mobile: true,
         },
         Volumes: {
           iconClasses: ["fas", "hdd"],
           value: this.totalTeamVolumes,
+          mobile: false,
         },
         Storage: {
           iconClasses: ["fas", "box"],
           value: formatBytes(this.totalTeamCapacity * Math.pow(1000, 3)),
+          mobile: true,
         },
       };
     },
