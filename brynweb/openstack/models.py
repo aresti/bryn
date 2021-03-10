@@ -12,7 +12,7 @@ from django_slack import slack_message
 from sshpubkeys import SSHKey
 
 from .validators import validate_public_key
-from userdb.models import Team, Region
+from userdb.models import Region, Team, TeamMember
 
 
 User = get_user_model()
@@ -55,10 +55,11 @@ class KeyPair(models.Model):
         on_delete=models.CASCADE,
     )
     name = models.CharField(_("Keypair name"), max_length=50, unique=True)
-    public_key = models.TextField(
-        _("SSH public key"), unique=True, validators=[validate_public_key]
-    )
+    public_key = models.TextField(_("SSH public key"), validators=[validate_public_key])
     fingerprint = models.CharField(max_length=47, editable=False)
+
+    class Meta:
+        unique_together = [["user", "public_key"]]
 
     def save(self, *args, **kwargs):
         # Set fingerprint
@@ -87,13 +88,11 @@ class ServerLease(models.Model):
     tenant = models.ForeignKey(
         Tenant, on_delete=models.CASCADE, related_name="server_leases", editable=False
     )
-    user = models.ForeignKey(
-        User,
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-        related_name="server_leases",
+    assigned_teammember = models.ForeignKey(
+        TeamMember, on_delete=models.PROTECT, related_name="server_leases",
     )
+    shelved = models.BooleanField(default=False)
+    deleted = models.BooleanField(default=False)
 
     @property
     def has_expired(self):

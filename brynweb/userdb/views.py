@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views, get_user_model, login
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.utils.http import urlsafe_base64_decode
+from django.views.decorators.http import require_http_methods
 from django.views.generic import RedirectView, TemplateView
 from django.views.generic.edit import FormView
 
@@ -167,6 +168,7 @@ class EmailChangeConfirmView(RedirectView):
         return super().get_redirect_url(*args, **kwargs)
 
 
+@require_http_methods(["GET", "POST"])
 def accept_invitation_view(request, uuid):
     """Accept invitation / user signup view"""
     # Confirm invitation is valid, and has not been accepted already

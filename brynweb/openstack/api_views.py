@@ -2,14 +2,19 @@ from operator import methodcaller
 
 from django.contrib.auth import get_user_model
 from django.db.models import QuerySet
+from django.shortcuts import get_object_or_404
 
 from rest_framework.views import APIView
 from rest_framework import permissions, generics, status
 from rest_framework import exceptions as drf_exceptions
 from rest_framework.response import Response
 
+from core import hashids
+from core.permissions import IsOwner
+from userdb.models import TeamMember
+
 from .service import OpenstackService, ServiceUnavailable, OpenstackException
-from .models import HypervisorStats, KeyPair, ServerLease, Tenant
+from .models import HypervisorStats, ServerLease, Tenant
 from .serializers import (
     AttachmentSerializer,
     FlavorSerializer,
@@ -48,6 +53,7 @@ def get_tenant_for_user(user: User, tenant_id: int, team_id: int = None) -> Tena
     """
     Return a tenant for a given user, only if that user is a team member.
     If team_id is specified: will raise if the specified tenant does not belong to this team.
+    If admin is specified: will raise if the user is not a team admin.
     """
     tenant = get_tenants_for_user(user, tenant_id=tenant_id, team_id=team_id).first()
 
@@ -64,10 +70,6 @@ class OpenstackAPIView(APIView):
     """
     Base class for openstack api views.
     """
-
-    permission_classes = [
-        permissions.IsAuthenticated,
-    ]
 
     # You'll need to set these attributes on subclass
     service = None
@@ -206,19 +208,29 @@ def get_instance_transform_func(self, tenant):
         obj.team = tenant.team.pk
         obj.flavor = obj.flavor["id"]
 
+        if self.request.method == "GET":
+            # 'Missing' lease for a legacy server: assign team admin member
+            assigned_teammember = TeamMember.objects.filter(
+                team=tenant.team, is_admin=True
+            ).first()
+        else:
+            # New server: assign logged in user's team membership
+            assigned_teammember = TeamMember.objects.get(
+                team=tenant.team, user=self.request.user
+            )
+
         lease_defaults = {
             "server_id": obj.id,
             "server_name": obj.name,
             "tenant": tenant,
+            "assigned_teammember": assigned_teammember,
         }
         lease, _created = ServerLease.objects.get_or_create(
             server_id=obj.id, defaults=lease_defaults
         )
-        obj.leaseExpiry = lease.expiry
-        obj.leaseRenewalUrl = lease.renewal_url
-        obj.leaseUserFullName = (
-            f"{lease.user.first_name} {lease.user.last_name}" if lease.user else None
-        )
+        obj.lease_expiry = lease.expiry
+        obj.lease_renewal_url = lease.renewal_url
+        obj.lease_assigned_teammember = lease.assigned_teammember
 
         if public_netname in obj.addresses.keys():
             obj.ip = obj.addresses[public_netname][0]["addr"]
@@ -257,28 +269,67 @@ class InstanceDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
         "SHELVED": {"SHUTOFF": "unshelve"},
     }
 
+    def delete(self, request, team_id, tenant_id, pk):
+        # Update lease before delete
+        lease = get_object_or_404(ServerLease, server_id=pk)
+        lease.deleted = True
+        lease.save()
+        return super().delete(request, team_id, tenant_id, pk)
+
     def patch(self, request, team_id, tenant_id, pk):
-        tenant = get_tenant_for_user(
-            request.user, team_id=team_id, tenant_id=tenant_id
-        )  # may raise
-
-        openstack = OpenstackService(tenant=tenant)
-        service = getattr(openstack, self.service.value)
-
+        # Check for allowed updates
         target_status = request.data.get("status")
-        if not target_status:
-            raise drf_exceptions.BadRequest
+        lease_assigned_teammember = request.data.get("lease_assigned_teammember")
 
-        try:
-            server = service.get(pk)
-            current_status = server.status
-            method_name = self.state_transitions[current_status][target_status]
-            methodcaller(method_name, server)(service)
-        except Exception as e:
-            if getattr(e, "code", None) == 404:
-                raise drf_exceptions.NotFound
-            raise OpenstackException(detail=str(e))
+        if not (target_status or lease_assigned_teammember):
+            raise drf_exceptions.ValidationError(
+                "Only 'status' and 'leaseAssignedTeammember' fields can be updated via PATCH."
+            )
 
+        # Status transition
+        if target_status:
+            tenant = get_tenant_for_user(
+                request.user, team_id=team_id, tenant_id=tenant_id
+            )  # may raise
+            openstack = OpenstackService(tenant=tenant)
+            service = getattr(openstack, self.service.value)
+            try:
+                server = service.get(pk)
+                current_status = server.status
+                method_name = self.state_transitions[current_status][target_status]
+                methodcaller(method_name, server)(service)
+            except Exception as e:
+                if getattr(e, "code", None) == 404:
+                    raise drf_exceptions.NotFound
+                raise OpenstackException(detail=str(e))
+
+            if target_status == "SHELVED":
+                # Update lease
+                lease = get_object_or_404(ServerLease, server_id=pk)
+                lease.shelved = True
+                lease.save()
+
+        # Lease TeamMember assignment
+        if lease_assigned_teammember:
+            # Check request user is team admin
+            if not request.user.teams.filter(teammember__is_admin=True):
+                raise drf_exceptions.PermissionDenied
+
+            # Check assigned user is team member
+            try:
+                teammember_id = hashids.decode(lease_assigned_teammember)
+                teammember = TeamMember.objects.get(pk=teammember_id)
+            except TeamMember.DoesNotExist:
+                raise drf_exceptions.ValidationError(
+                    "Not a member of the team to which this server belongs"
+                )
+
+            # Update lease
+            lease = ServerLease.objects.get(server_id=pk)
+            lease.assigned_teammember = teammember
+            lease.save()
+
+        # Don't return detail representation, to avoid extra openstack api call
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -317,8 +368,12 @@ class KeyPairDetailView(generics.RetrieveDestroyAPIView):
     SSH key pair detail view.
     """
 
+    permission_classes = [permissions.IsAuthenticated, IsOwner]
     serializer_class = KeyPairSerializer
-    queryset = KeyPair.objects.all()
+
+    def get_queryset(self):
+        user = self.request.user
+        return user.keypairs.all()
 
 
 def get_volume_transform_func(self, tenant):

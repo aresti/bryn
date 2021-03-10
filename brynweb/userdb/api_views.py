@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import exceptions, generics, permissions
 
-from .models import Invitation, LicenceAcceptance, Team, TeamMember
+from .models import Invitation, LicenceAcceptance, LicenceVersion, Team, TeamMember
 from .permissions import (
     IsTeamAdminForUnsafePermission,
     IsTeamMemberPermission,
@@ -15,22 +15,9 @@ from .serializers import (
     TeamMemberSerializer,
     UserSerializer,
 )
+from .helpers import get_teams_for_user
 
 User = get_user_model()
-
-
-def get_teams_for_user(user, team=None, admin=None):
-    """
-    Return queryset for all teams that an authenticated user is a member of.
-    If team is specified, returns a queryset with only that team, if the user is a member.
-    If team & admin are specified, returns a query set with only that team, if the user is an admin.
-    """
-    if team:
-        if admin:
-            return user.teams.filter(teammember__is_admin=True)
-        return user.teams.filter(pk=team)
-    else:
-        return user.teams.all()
 
 
 class TeamDetailView(generics.RetrieveUpdateAPIView):
@@ -177,4 +164,7 @@ class LicenceAcceptanceListView(generics.ListCreateAPIView):
         Send email after creation
         """
         team = get_object_or_404(Team, pk=self.request.resolver_match.kwargs["team_id"])
-        serializer.save(team=team, user=self.request.user)
+        licence_version = LicenceVersion.objects.current()
+        serializer.save(
+            licence_version=licence_version, team=team, user=self.request.user
+        )

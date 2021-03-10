@@ -29,6 +29,8 @@ class ServerLeaseAdmin(admin.ModelAdmin):
         "renewal_count",
         "tenant",
         "user",
+        "deleted",
+        "shelved",
     )
 
     search_fields = ("server_id", "server_name")
@@ -42,6 +44,8 @@ class ServerLeaseAdmin(admin.ModelAdmin):
         "team",
         "region",
         "renewal_url",
+        "deleted",
+        "shelved",
     )
 
     actions = ("grant_perpetual_lease", "renew_lease")
@@ -51,6 +55,9 @@ class ServerLeaseAdmin(admin.ModelAdmin):
 
     def team(self, obj):
         return obj.tenant.team
+
+    def user(self, obj):
+        return obj.assigned_teammember.user
 
     def region(self, obj):
         return obj.tenant.region

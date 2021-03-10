@@ -107,6 +107,7 @@ import {
   FILTER_TENANT,
   VOLUMES_FOR_FILTER_TENANT,
   GET_REGION_NAME_FOR_TENANT,
+  TEAM,
   TENANTS,
 } from "@/store/getter-types";
 
@@ -172,10 +173,13 @@ export default {
   beforeRouteEnter(to, _from, next) {
     next((vm) => {
       const hasTenants = vm.$store.getters[TENANTS].length;
-      const hasLicense = true; // TODO: after licensing
+      const hasLicense = vm.$store.getters[TEAM].licenceIsValid;
       if (!(hasTenants && hasLicense)) {
         // No tenants or no license, redirect to team admin view
-        vm.$router.push({ name: "team", params: { teamId: to.params.teamId } });
+        vm.$router.push({
+          name: "teamManagement",
+          params: { teamId: to.params.teamId },
+        });
       }
     });
   },

@@ -47,8 +47,9 @@ export const GET_KEY_PAIR_IS_DEFAULT = "GET_KEY_PAIR_IS_DEFAULT";
 export const DEFAULT_KEY_PAIR = "DEFAULT_KEY_PAIR";
 
 // Team members
-export const ALL_TEAM_MEMBERS = "ALL_TEAM_MEMBERS";
 export const ADMIN_TEAM_MEMBERS = "ADMIN_TEAM_MEMBERS";
+export const ALL_TEAM_MEMBERS = "ALL_TEAM_MEMBERS";
+export const GET_TEAM_MEMBER_BY_ID = "GET_TEAM_MEMBER_BY_ID";
 
 // Volumes
 export const ALL_VOLUMES = "ALL_VOLUMES";

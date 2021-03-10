@@ -14,6 +14,7 @@ import {
   REMOVE_INSTANCE_BY_ID,
   RENEW_INSTANCE_LEASE,
   TRANSITION_INSTANCE,
+  UPDATE_INSTANCE_ASSIGNED_TEAM_MEMBER,
 } from "../action-types";
 import {
   ALL_INSTANCES,
@@ -200,6 +201,19 @@ const actions = {
       id: instance.id,
       leaseExpiry: response.data.expiry,
       leaseRenewalUrl: response.data.renewalUrl,
+    });
+  },
+
+  async [UPDATE_INSTANCE_ASSIGNED_TEAM_MEMBER](
+    { commit },
+    { instance, teamMember }
+  ) {
+    const payload = { leaseAssignedTeammember: teamMember.id };
+    const uri = getInstanceDetailUri(instance);
+    await axios.patch(uri, payload);
+    commit(MODIFY_INSTANCE, {
+      id: instance.id,
+      leaseAssignedTeammember: teamMember.id,
     });
   },
 };

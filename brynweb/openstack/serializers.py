@@ -63,14 +63,14 @@ class InstanceSerializer(OpenstackBaseSerializer):
     status = serializers.ChoiceField(choices=INSTANCE_STATUS_VALUES, required=False)
     ip = serializers.IPAddressField(read_only=True, required=False, allow_null=True)
     created = serializers.DateTimeField(read_only=True)
-    leaseExpiry = serializers.DateTimeField(
+    lease_expiry = serializers.DateTimeField(
         read_only=True, required=False, allow_null=True
     )
-    leaseRenewalUrl = serializers.URLField(
+    lease_renewal_url = serializers.URLField(
         read_only=True, required=False, allow_null=True
     )
-    leaseUserFullName = serializers.CharField(
-        read_only=True, required=False, allow_null=True
+    lease_assigned_teammember = serializers.PrimaryKeyRelatedField(
+        pk_field=HashidsIntegerField(), read_only=True
     )
 
 

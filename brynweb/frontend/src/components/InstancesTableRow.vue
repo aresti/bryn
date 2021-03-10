@@ -55,11 +55,13 @@
         <a v-if="leaseIsRenewable" class="is-size-7" @click="onRenewClick"
           >Renew lease</a
         >
-        <span
-          v-else-if="instance.leaseUserFullName"
-          class="is-size-7 is-hidden-mobile"
-          >Last renewed by: {{ instance.leaseUserFullName }}</span
-        >
+        <span v-else class="is-size-7 is-hidden-mobile"
+          >Assigned user:
+          <a v-if="userIsAdmin" @click="$emit('assign-teammember', instance)">{{
+            leaseTeamMemberName
+          }}</a>
+          <template v-else>{{ leaseTeamMemberName }}</template>
+        </span>
       </template>
     </td>
 
@@ -106,7 +108,9 @@ import {
   GET_FLAVOR_BY_ID,
   GET_INSTANCE_IS_POLLING,
   GET_REGION_NAME_FOR_TENANT,
+  GET_TEAM_MEMBER_BY_ID,
   GET_TENANT_BY_ID,
+  USER_IS_ADMIN,
 } from "@/store/getter-types";
 
 const statusColorMap = {
@@ -175,6 +179,16 @@ export default {
     },
   },
 
+  emits: {
+    "assign-teammember": ({ id, leaseAssignedTeammember }) => {
+      if (id && leaseAssignedTeammember) {
+        return true;
+      }
+      console.warn("Invalid assign-teammember event payload");
+      return false;
+    },
+  },
+
   // Local state
   data() {
     return {
@@ -188,7 +202,9 @@ export default {
       getFlavorById: GET_FLAVOR_BY_ID,
       getInstanceIsPolling: GET_INSTANCE_IS_POLLING,
       getRegionNameForTenant: GET_REGION_NAME_FOR_TENANT,
+      getTeamMemberById: GET_TEAM_MEMBER_BY_ID,
       getTenantById: GET_TENANT_BY_ID,
+      userIsAdmin: USER_IS_ADMIN,
     }),
 
     isNew() {
@@ -247,6 +263,14 @@ export default {
       } else {
         return "success";
       }
+    },
+
+    leaseTeamMember() {
+      return this.getTeamMemberById(this.instance.leaseAssignedTeammember);
+    },
+
+    leaseTeamMemberName() {
+      return `${this.leaseTeamMember.user.firstName} ${this.leaseTeamMember.user.lastName}`;
     },
 
     statusColor() {

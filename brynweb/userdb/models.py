@@ -381,11 +381,7 @@ class LicenceVersion(models.Model):
 
 
 class LicenceAcceptance(models.Model):
-    version = models.ForeignKey(
-        LicenceVersion,
-        default=LicenceVersion.objects.current,
-        on_delete=models.PROTECT,
-    )
+    licence_version = models.ForeignKey(LicenceVersion, on_delete=models.PROTECT,)
     user = models.ForeignKey(
         User, on_delete=models.PROTECT, related_name="licence_acceptances"
     )
@@ -394,13 +390,19 @@ class LicenceAcceptance(models.Model):
     )
     accepted_at = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        """Set the current licence version if not specified"""
+        if not self.licence_version:
+            self.licence_version = LicenceVersion.objects.current()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"Licence acceptance for team {self.team.name}, by {self.user.email}"
 
     @property
     def expiry(self):
         return self.accepted_at + datetime.timedelta(
-            days=self.version.validity_period_days
+            days=self.licence_version.validity_period_days
         )
 
     @property

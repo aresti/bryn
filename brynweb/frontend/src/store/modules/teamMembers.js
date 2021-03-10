@@ -1,13 +1,17 @@
 import { axios, getAPIRoute } from "@/api";
 import { collectionForTeamId } from "@/utils/store";
 import { DELETE_TEAM_MEMBER, FETCH_TEAM_MEMBERS } from "@/store/action-types";
-import { ADMIN_TEAM_MEMBERS, ALL_TEAM_MEMBERS } from "@/store/getter-types";
-import { TEAM } from "@/store/getter-types";
+import {
+  ADMIN_TEAM_MEMBERS,
+  ALL_TEAM_MEMBERS,
+  GET_TEAM_MEMBER_BY_ID,
+  TEAM,
+} from "@/store/getter-types";
 import {
   REMOVE_TEAM_MEMBER_BY_ID,
   SET_TEAM_MEMBERS,
 } from "@/store/mutation-types";
-import { updateTeamCollection } from "@/utils/store";
+import { createFindByIdGetter, updateTeamCollection } from "@/utils/store";
 
 const state = () => {
   return {
@@ -33,6 +37,9 @@ const getters = {
   },
   [ADMIN_TEAM_MEMBERS](_state, getters) {
     return getters[ALL_TEAM_MEMBERS].filter((member) => member.isAdmin);
+  },
+  [GET_TEAM_MEMBER_BY_ID](state) {
+    return createFindByIdGetter(state.all);
   },
 };
 

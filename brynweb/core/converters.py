@@ -10,5 +10,4 @@ class HashidsConverter:
         return hashids.decode(value)
 
     def to_url(self, value):
-
         return hashids.encode(value)
