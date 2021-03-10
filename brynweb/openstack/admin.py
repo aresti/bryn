@@ -48,7 +48,7 @@ class ServerLeaseAdmin(admin.ModelAdmin):
         "shelved",
     )
 
-    actions = ("grant_perpetual_lease", "renew_lease")
+    actions = ("grant_perpetual_lease", "renew_lease", "send_renewal_reminder_email")
 
     def has_add_permission(self, request):
         return False
@@ -66,6 +66,10 @@ class ServerLeaseAdmin(admin.ModelAdmin):
         for server_lease in queryset:
             server_lease.expiry = None
             server_lease.save()
+
+    def send_renewal_reminder_email(self, request, queryset):
+        for server_lease in queryset:
+            server_lease.send_email_renewal_reminder(request)
 
     def renew_lease(self, request, queryset):
         for server_lease in queryset:

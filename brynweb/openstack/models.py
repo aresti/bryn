@@ -3,7 +3,9 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
 from django.db import models
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -113,6 +115,34 @@ class ServerLease(models.Model):
         if user:
             self.user = user
         self.save()
+
+    def send_email_renewal_reminder(self, request):
+        """Send an email renewal reminder"""
+        user = self.assigned_teammember.user
+        expiry_days = (self.expiry - timezone.now()).days
+        context = {
+            "user": user,
+            "server_name": self.server_name,
+            "renewal_link": request.build_absolute_uri(self.renewal_url),
+            "expiry_days": expiry_days,
+        }
+        subject = render_to_string(
+            "openstack/email/server_lease_expiry_reminder_subject.txt", context
+        )
+        text_content = render_to_string(
+            "openstack/email/server_lease_expiry_reminder_email.txt", context
+        )
+        html_content = render_to_string(
+            "openstack/email/server_lease_expiry_reminder_email.html", context
+        )
+        send_mail(
+            subject,
+            text_content,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            html_message=html_content,
+            fail_silently=False,
+        )
 
     def __str__(self):
         return (

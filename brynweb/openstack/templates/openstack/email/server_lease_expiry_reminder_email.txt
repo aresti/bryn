@@ -1,0 +1,11 @@
+Hi {{ user.first_name }}!
+
+The lease for your server '{{ server_name }}' is due to expire in {{ expiry_days }} days.
+
+If you do not renew your lease, this server may be automatically shelved to free up capacity.
+
+If you are still using this server, you can renew your lease by clicking the following link:
+{{ renewal_link }}
+
+Best regards,
+The CLIMB Project
