@@ -1,5 +1,6 @@
 <template>
   <div class="level">
+    <slot name="default"></slot>
     <div class="level-left">
       <slot name="left"></slot>
     </div>
