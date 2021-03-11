@@ -22,7 +22,7 @@ DEFAULT_FROM_EMAIL = "noreply@discourse.climb.ac.uk"
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    "brynweb.apps.BrynAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
