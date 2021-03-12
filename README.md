@@ -1,4 +1,5 @@
 # bryn
+
 The CLIMB management web interface
 
 ## setting up virtualenv
@@ -9,6 +10,6 @@ pip install -r requirements.txt
 
 ### Deploying updates
 
-* Commit and push changes to repo
-* ensure local settings files are present
-* from `deploy_tools` dir on local machine: `fab deploy:host=ubuntu@bryn.climb.ac.uk`
+- Commit and push changes to repo
+- ensure local settings files are present
+- from `deploy_tools` dir on local machine: `fab -H ubuntu@bryn.climb.ac.uk deploy`

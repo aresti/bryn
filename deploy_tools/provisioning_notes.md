@@ -71,7 +71,7 @@ Make sure 443 is open in security group for new server.
 - from local deploy_tools dir:
   - **If DNS still points at previous server, add new ip to your hosts file before proceeding**
   - Don't just use the ip of the new server, since the fabric script makes use of the hostname
-  - `fab -H ubuntu@wbryn.climb.ac.uk deploy`
+  - `fab -H ubuntu@bryn.climb.ac.uk deploy`
   - This should clone repo to remote machine, setup venv, install requirements, build frontend, consolidate static files etc.
 
 ##### On server:

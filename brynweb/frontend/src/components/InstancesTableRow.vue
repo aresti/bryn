@@ -50,7 +50,9 @@
           </base-tag>
         </base-tag-control>
 
-        <base-tag v-else color="success">Indefinite lease</base-tag>
+        <template v-else>
+          <base-tag color="success">Indefinite lease</base-tag><br />
+        </template>
 
         <a v-if="leaseIsRenewable" class="is-size-7" @click="onRenewClick"
           >Renew lease</a
