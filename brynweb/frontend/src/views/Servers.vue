@@ -60,6 +60,27 @@
       </div>
     </div>
 
+    <base-message color="primary">
+      <h4 class="subtitle">What is a server lease?</h4>
+      <p class="has-text-primary">
+        In order to better use the limited capacity accross our CLIMB-BIG-DATA
+        infrastructure, we have introduced the concept of server leases. By
+        default, leases will last 2 weeks and can be easily renewed. Upon
+        expiry, a server is liable to be shelved without notice.
+      </p>
+      <p class="has-text-primary mt-2">
+        If you are running a webserver, or have some other special case, you can
+        <a @click="showInstancesIndefiniteLeaseRequestModal = true"
+          >request an indefinite lease</a
+        >.
+      </p>
+    </base-message>
+
+    <instances-indefinite-lease-request-modal
+      v-if="showInstancesIndefiniteLeaseRequestModal"
+      @close-modal="showInstancesIndefiniteLeaseRequestModal = false"
+    />
+
     <instances-new-instance-modal
       v-if="showInstancesNewInstanceModal"
       @close-modal="showInstancesNewInstanceModal = false"
@@ -84,6 +105,7 @@ import {
   TENANTS,
 } from "@/store/getter-types";
 
+import InstancesIndefiniteLeaseRequestModal from "@/components/InstancesIndefiniteLeaseRequestModal";
 import InstancesNewInstanceModal from "@/components/InstancesNewInstanceModal";
 import InstancesTable from "@/components/InstancesTable";
 import KeyPairsNewKeyPairModal from "@/components/KeyPairsNewKeyPairModal";
@@ -92,6 +114,7 @@ import TenantFilterTabs from "@/components/TenantFilterTabs";
 export default {
   // Template dependencies
   components: {
+    InstancesIndefiniteLeaseRequestModal,
     InstancesTable,
     InstancesNewInstanceModal,
     KeyPairsNewKeyPairModal,
@@ -105,6 +128,7 @@ export default {
   data() {
     return {
       showShelved: false,
+      showInstancesIndefiniteLeaseRequestModal: false,
       showKeyPairsNewKeyPairModal: false,
       showInstancesNewInstanceModal: false,
     };

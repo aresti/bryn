@@ -18,6 +18,7 @@ import {
   FETCH_TENANT_VOLUMES,
   FETCH_USER,
   INIT_STORE,
+  SEND_INDEFINITE_SERVER_LEASE_REQUEST,
   SET_ACTIVE_TEAM,
   SET_FILTER_TENANT,
   UPDATE_TEAM,
@@ -161,6 +162,11 @@ const actions = {
     const response = await axios.patch(url, userData);
     const user = response.data;
     commit(SET_USER, user);
+  },
+
+  async [SEND_INDEFINITE_SERVER_LEASE_REQUEST]({ instance, message }) {
+    console.log(instance);
+    console.log(message);
   },
 };
 
