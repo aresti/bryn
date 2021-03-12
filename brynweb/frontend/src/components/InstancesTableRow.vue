@@ -254,7 +254,7 @@ export default {
     },
 
     leaseHasExpired() {
-      return Date.now() >= this.leaseExpiry;
+      return this.leaseExpiry != null && Date.now() >= this.leaseExpiry;
     },
 
     leaseTagColor() {
