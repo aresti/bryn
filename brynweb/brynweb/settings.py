@@ -33,12 +33,13 @@ INSTALLED_APPS = [
     "coverage",
     "rest_framework",
     "widget_tweaks",
+    "tinymce",
+    "inline_actions",
     "core",
     "userdb",
     "home",
     "openstack",
     "discourse",
-    "tinymce",
 ]
 
 MIDDLEWARE = [

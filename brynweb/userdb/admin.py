@@ -1,9 +1,13 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
 from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.utils.html import format_html, mark_safe
 
-from openstack.models import Region
+from inline_actions.admin import InlineActionsMixin, InlineActionsModelAdminMixin
+
+from openstack.models import Region, Tenant
 from .models import (
     LicenceVersion,
     LicenceAcceptance,
@@ -17,7 +21,126 @@ from .models import (
 from scripts.setup_team import setup_tenant
 
 
-class TeamAdmin(admin.ModelAdmin):
+class InvitationInline(InlineActionsMixin, admin.TabularInline):
+    model = Invitation
+    fields = ("email", "date", "made_by", "accepted")
+    readonly_fields = ("email", "date", "made_by", "accepted")
+    ordering = ["accepted", "-date"]
+
+    def get_inline_actions(self, request, obj=None):
+        actions = super().get_inline_actions(request, obj)
+        if obj and not obj.accepted:
+            actions.append("resend_invitation")
+        return actions
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def resend_invitation(self, request, obj, parent_obj):
+        obj.send_invitation_email()
+        messages.success(request, f"Resent invitation ({obj})")
+        return None  # return to current changeform
+
+
+class LicenceAcceptanceInline(admin.TabularInline):
+    model = LicenceAcceptance
+    readonly_fields = ["licence_version", "user", "accepted_at", "expiry"]
+    ordering = ["-accepted_at"]
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class TenantInline(admin.TabularInline):
+    model = Tenant
+    fields = ["tenant_link", "created_tenant_id", "server_lease_links"]
+    readonly_fields = ["tenant_link", "created_tenant_id", "server_lease_links"]
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def tenant_link(self, instance):
+        url = reverse("admin:openstack_tenant_change", args=(instance.pk,))
+        return format_html('<a href="{}">{}</a>', url, f"{instance.region.name} tenant")
+
+    def server_lease_links(self, instance):
+        links = []
+        url_name = "admin:openstack_serverlease_change"
+        for server_lease in instance.server_leases.filter(deleted=False, shelved=False):
+            url = reverse(url_name, args=(server_lease.pk,))
+            links.append(
+                format_html('<a href="{}">{}</a>', url, f"{server_lease.server_name}")
+            )
+        return mark_safe("<br>".join(links))
+
+    tenant_link.short_description = "Tenant"
+
+
+class TeamMemberInline(admin.TabularInline):
+    model = TeamMember
+    fields = [
+        "team_link",
+        "user_link",
+        "is_admin",
+    ]
+    readonly_fields = ["team_link", "user_link"]
+    ordering = ["-is_admin"]
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def team_link(self, instance):
+        url = reverse("admin:userdb_team_change", args=(instance.team.id,))
+        return format_html('<a href="{}">{}</a>', url, instance.team.name)
+
+    team_link.short_description = "Team"
+
+    def user_link(self, instance):
+        url = reverse("admin:auth_user_change", args=(instance.user.id,))
+        return format_html('<a href="{}">{}</a>', url, instance.user.username)
+
+    user_link.short_description = "User"
+
+
+class TeamAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "name",
+                    "creator",
+                    "institution",
+                    "phone_number",
+                    "default_region",
+                    "verified",
+                    "tenants_available",
+                ),
+            },
+        ),
+        (
+            "Registration info",
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    "position",
+                    "department",
+                    "research_interests",
+                    "intended_climb_use",
+                    "held_mrc_grants",
+                ),
+            },
+        ),
+    )
+
+    readonly_fields = ("creator",)
+
     list_display = (
         "name",
         "institution",
@@ -28,13 +151,20 @@ class TeamAdmin(admin.ModelAdmin):
     )
     list_filter = ("verified",)
 
-    actions = [
+    actions = (
         "verify_and_send_notification_email",
         "create_warwick_tenant",
         "create_bham_tenant",
         "create_cardiff_tenant",
         "create_swansea_tenant",
-    ]
+    )
+
+    inlines = (
+        TenantInline,
+        TeamMemberInline,
+        InvitationInline,
+        LicenceAcceptanceInline,
+    )
 
     def verify_and_send_notification_email(self, request, queryset):
         n = 0
@@ -70,19 +200,6 @@ class TeamAdmin(admin.ModelAdmin):
         return HttpResponseRedirect("/setup/?ids=%s" % (",".join(teams)))
 
 
-class InvitationAdmin(admin.ModelAdmin):
-    list_filter = ("accepted",)
-
-    actions = ["resend_invitation"]
-
-    def resend_invitation(self, request, queryset):
-        n = 0
-        for i in queryset:
-            i.send_invitation(i.made_by)
-            n += 1
-        self.message_user(request, "%s invitations resent" % (n,))
-
-
 class ProfileInline(admin.StackedInline):
     model = Profile
     can_delete = False
@@ -91,9 +208,9 @@ class ProfileInline(admin.StackedInline):
 class CustomUserAdmin(UserAdmin):
     list_filter = ("profile__email_validated",)
 
-    actions = ["resend_email_activation_link"]
+    actions = ("resend_email_activation_link",)
 
-    inlines = (ProfileInline,)
+    inlines = (ProfileInline, TeamMemberInline)
 
     def resend_email_activation_link(self, request, queryset):
         for u in queryset:
@@ -110,7 +227,7 @@ class UserProfileInline(admin.StackedInline):
 class LegacyCustomUserAdmin(UserAdmin):
     list_filter = ("userprofile__email_validated",)
 
-    actions = ["copy_to_new_profile_table"]
+    actions = ("copy_to_new_profile_table",)
 
     inlines = (UserProfileInline,)
 
@@ -141,9 +258,6 @@ class LicenceVersionAdmin(admin.ModelAdmin):
 
 
 admin.site.register(LicenceVersion, LicenceVersionAdmin)
-admin.site.register(LicenceAcceptance)
 admin.site.register(Team, TeamAdmin)
-admin.site.register(TeamMember)
-admin.site.register(Invitation, InvitationAdmin)
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
