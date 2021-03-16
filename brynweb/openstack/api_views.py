@@ -224,6 +224,7 @@ def get_instance_transform_func(self, tenant):
             "server_name": obj.name,
             "tenant": tenant,
             "assigned_teammember": assigned_teammember,
+            "shelved": True if "SHELVED" in obj.status else False,
         }
         lease, _created = ServerLease.objects.get_or_create(
             server_id=obj.id, defaults=lease_defaults
