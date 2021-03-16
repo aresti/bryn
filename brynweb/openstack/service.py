@@ -316,8 +316,8 @@ class ServersService:
 
     def delete(self, server_id):
         server = self.get(server_id)
-        if server.status != "SHUTOFF":
-            raise OpenstackException("Only SHUTOFF servers can be deleted.")
+        if server.status not in ["SHELVED", "SHELVED_OFFLOADED"]:
+            raise OpenstackException("Only SHELVED servers can be deleted via Bryn.")
         server.delete()
 
     def reboot(self, server):

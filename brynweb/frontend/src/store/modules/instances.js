@@ -164,12 +164,16 @@ const actions = {
   async [TRANSITION_INSTANCE]({ dispatch, state }, { instance, status }) {
     const payload = { status };
     const uri = getInstanceDetailUri(instance);
+    const targetStatuses = [status];
+    if (status === "SHELVED") {
+      targetStatuses.push("SHELVED_OFFLOADED"); // Transition from shelved -> shelved_offloaded may be immediate
+    }
     await axios.patch(uri, payload);
     dispatch(CREATE_POLLING_TARGET, {
       collection: state.all,
       item: instance,
       fetchAction: FETCH_INSTANCE,
-      targetStatuses: [status],
+      targetStatuses: targetStatuses,
     });
   },
 

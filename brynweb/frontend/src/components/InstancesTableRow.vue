@@ -68,19 +68,21 @@
     </td>
 
     <td class="actions-cell">
-      <base-buttons v-if="!isPolling" class="is-right">
-        <base-button
-          v-for="action in stateTransitionActions"
-          :key="action"
-          :color="action.color"
-          size="small"
-          outlined
-          rounded
-          @click="onActionClick(action)"
-        >
-          {{ action.verb }}
-        </base-button>
-      </base-buttons>
+      <base-dropdown-list
+        v-if="!isPolling"
+        @itemSelected="onActionClick"
+        title="Actions"
+        :items="stateTransitionActions"
+        right
+        size="small"
+      >
+        <template v-slot:title>Actions</template>
+        <template v-slot:item="{ item: action }">
+          <span :class="`has-text-weight-semibold has-text-${action.color}`">{{
+            action.verb
+          }}</span>
+        </template>
+      </base-dropdown-list>
     </td>
 
     <!-- Confirm action modal -->
@@ -131,13 +133,20 @@ const stateTransitions = {
       targetStatus: "ACTIVE",
       verb: "Reboot",
       presentParticiple: "Rebooting",
-      color: "warning",
+      color: "primary",
       confirm: true,
     },
     {
       targetStatus: "SHUTOFF",
-      verb: "Stop",
+      verb: "Shutdown",
       presentParticiple: "Stopping",
+      color: "primary",
+      confirm: true,
+    },
+    {
+      targetStatus: "SHELVED",
+      verb: "Shelve",
+      presentParticiple: "Shelving",
       color: "danger",
       confirm: true,
     },
@@ -151,20 +160,36 @@ const stateTransitions = {
       confirm: false,
     },
     {
-      targetStatus: "DELETED",
-      verb: "Delete",
-      presentParticiple: "Deleting",
+      targetStatus: "SHELVED",
+      verb: "Shelve",
+      presentParticiple: "Shelving",
       color: "danger",
       confirm: true,
     },
   ],
   SHELVED: [
     {
-      targetStatus: "SHUTOFF",
+      targetStatus: "ACTIVE",
       verb: "Unshelve",
       presentParticiple: "Unshelving",
       color: "success",
       confirm: false,
+    },
+  ],
+  SHELVED_OFFLOADED: [
+    {
+      targetStatus: "ACTIVE",
+      verb: "Unshelve",
+      presentParticiple: "Unshelving",
+      color: "success",
+      confirm: false,
+    },
+    {
+      targetStatus: "DELETED",
+      verb: "Delete",
+      presentParticiple: "Deleting",
+      color: "danger",
+      confirm: true,
     },
   ],
 };

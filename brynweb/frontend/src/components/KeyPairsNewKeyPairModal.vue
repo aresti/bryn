@@ -17,7 +17,6 @@
     </template>
     <template v-slot:right>
       <div v-html="guidanceHTML"></div>
-      >
     </template>
   </base-modal-split>
 </template>

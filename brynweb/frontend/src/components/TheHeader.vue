@@ -19,6 +19,7 @@
                 :activeItem="team"
                 hoverable
                 right
+                color="white"
               >
                 <template v-slot:title>Switch team</template>
                 <template v-slot:item="{ item: team }">

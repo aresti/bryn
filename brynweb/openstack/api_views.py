@@ -265,9 +265,10 @@ class InstanceDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
     # Define allowed state transitions & associated method names
     # top level is current status, 1st level is target status
     state_transitions = {
-        "ACTIVE": {"ACTIVE": "reboot", "SHUTOFF": "stop"},
+        "ACTIVE": {"ACTIVE": "reboot", "SHUTOFF": "stop", "SHELVED": "shelve"},
         "SHUTOFF": {"ACTIVE": "start", "SHELVED": "shelve"},
-        "SHELVED": {"SHUTOFF": "unshelve"},
+        "SHELVED": {"ACTIVE": "unshelve"},
+        "SHELVED_OFFLOADED": {"ACTIVE": "unshelve"},
     }
 
     def delete(self, request, team_id, tenant_id, pk):
@@ -304,11 +305,14 @@ class InstanceDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
                     raise drf_exceptions.NotFound
                 raise OpenstackException(detail=str(e))
 
-            if target_status == "SHELVED":
+            if "SHELVED" in target_status or "SHELVED" in current_status:
                 # Update lease
                 lease = get_object_or_404(ServerLease, server_id=pk)
-                lease.shelved = True
+                lease.shelved = "SHELVED" in target_status
                 lease.save()
+                if "SHELVED" in current_status:
+                    # Renew lease on unshelve
+                    lease.renew_lease(user=request.user)
 
         # Lease TeamMember assignment
         if lease_assigned_teammember:

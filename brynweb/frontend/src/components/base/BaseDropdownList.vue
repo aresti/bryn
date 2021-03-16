@@ -6,7 +6,8 @@
         rounded
         dropdown
         outlined
-        color="white"
+        :color="color"
+        :size="size"
       >
         <slot name="title"></slot>
       </base-button>
@@ -43,7 +44,17 @@ export default {
     },
     activeItem: {
       type: Object,
-      required: true,
+      required: false,
+    },
+    color: {
+      type: String,
+      required: false,
+      default: "primary",
+    },
+    size: {
+      type: String,
+      required: false,
+      default: "normal",
     },
   },
   methods: {
