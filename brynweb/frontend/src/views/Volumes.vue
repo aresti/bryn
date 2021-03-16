@@ -177,7 +177,7 @@ export default {
       if (!(hasTenants && hasLicense)) {
         // No tenants or no license, redirect to team admin view
         vm.$router.push({
-          name: "teamManagement",
+          name: "dashboard",
           params: { teamId: to.params.teamId },
         });
       }

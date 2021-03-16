@@ -109,9 +109,20 @@ export default {
   },
 
   beforeRouteUpdate(to, from) {
-    /* Update activeTeamId on route change (since Vue component instance is reused) */
     if (to.params.teamId !== from.params.teamId) {
+      // Update activeTeamId on route change (since Vue component instance is reused)
       this.setTeamForRoute(to);
+    }
+    if (to.meta.menuSection === "compute") {
+      const hasTenants = this.tenants.length;
+      const hasLicense = this.team.licenceIsValid;
+      if (!(hasTenants && hasLicense)) {
+        // No tenants or no license, redirect to team admin view
+        this.$router.push({
+          name: "dashboard",
+          params: { teamId: to.params.teamId },
+        });
+      }
     }
   },
 
