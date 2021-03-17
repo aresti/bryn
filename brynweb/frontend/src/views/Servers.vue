@@ -65,13 +65,18 @@
 
     <base-message color="primary">
       <h4 class="subtitle">What is a server lease?</h4>
-      <p class="has-text-primary">
+      <p class="has-text-primary block">
         In order to better use the limited capacity accross our CLIMB-BIG-DATA
         infrastructure, we have introduced the concept of server leases. By
-        default, leases will last 2 weeks and can be easily renewed. Upon
-        expiry, a server is liable to be shelved without notice.
+        default, leases will last 2 weeks and can be easily renewed.
       </p>
-      <p class="has-text-primary mt-2">
+
+      <p class="has-text-primary block has-text-weight-semibold">
+        Upon expiry, servers may be shelved without notice. You can restore
+        shelved servers by unshelving them at a later date.
+      </p>
+
+      <p class="has-text-primary block">
         If you are running a webserver, or have some other special case, you can
         <a @click="showInstancesIndefiniteLeaseRequestModal = true"
           >request an indefinite lease</a
