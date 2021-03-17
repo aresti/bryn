@@ -38,7 +38,8 @@
                 showBootable ? "Hide boot volumes" : "Show boot volumes"
               }}</template>
             </base-button>
-
+          </base-level-item>
+          <base-level-item>
             <base-button-create @click="showNewVolumeModal = true">
               New volume
             </base-button-create>

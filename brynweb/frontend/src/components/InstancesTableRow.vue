@@ -32,7 +32,9 @@
           />
         </base-tag>
       </base-tag-control>
-      <span class="is-family-monospace is-size-7">{{ instance.ip }}</span>
+      <span class="is-family-monospace is-size-7 is-hidden-mobile">{{
+        instance.ip
+      }}</span>
     </td>
 
     <td class="is-hidden-mobile">
@@ -76,7 +78,9 @@
         right
         size="small"
       >
-        <template v-slot:title>Actions</template>
+        <template v-slot:title
+          ><span class="is-hidden-mobile">Actions</span></template
+        >
         <template v-slot:item="{ item: action }">
           <span :class="`has-text-weight-semibold has-text-${action.color}`">{{
             action.verb

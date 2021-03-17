@@ -31,6 +31,8 @@
                 showShelved ? "Hide shelved" : "Show shelved"
               }}</template>
             </base-button>
+          </base-level-item>
+          <base-level-item>
             <base-button-create
               @click="onNewServerClick"
               :disabled="launchingDisabledAllTenants"

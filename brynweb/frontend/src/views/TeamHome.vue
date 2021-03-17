@@ -187,6 +187,10 @@ export default {
 </script>
 
 <style scoped>
+.container {
+  max-width: 100%;
+}
+
 .loader {
   height: 200px;
   width: 200px;
