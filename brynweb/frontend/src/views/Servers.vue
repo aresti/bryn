@@ -13,8 +13,9 @@
         </template>
         <template v-slot:right>
           <base-mini-loader :loading="loading" />
-          <base-level-item v-if="hasShelved">
+          <base-level-item>
             <base-button
+              v-if="hasShelved"
               class="mr-2"
               rounded
               @click="showShelved = !showShelved"
