@@ -1,5 +1,5 @@
 <template>
-  <base-modal>
+  <base-modal @close-modal="closeModal">
     <base-card class="content is-size-5 has-text-centered">
       <p>
         Are you sure you want to {{ verb.toLowerCase() }} this {{ type }}:<br />
