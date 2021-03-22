@@ -3,7 +3,7 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from openstack.models import KeyPair
-from .models import Profile, Team
+from .models import LicenceAcceptance, Profile, Team
 
 
 @receiver(post_save, sender=User)
@@ -15,6 +15,17 @@ def update_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
     instance.profile.save()
+
+
+@receiver(post_save, sender=LicenceAcceptance)
+def update_team_licence_expiry(sender, instance, created, **kwargs):
+    """
+    Update team.licence_expiry on LicenceAcceptance save.
+    De-normalized to allow for more convenient querying.
+    """
+    if created:
+        instance.team.licence_expiry = instance.expiry
+        instance.team.save()
 
 
 @receiver(post_save, sender=Profile)

@@ -121,6 +121,8 @@ class TeamAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                     "default_region",
                     "verified",
                     "tenants_available",
+                    "licence_expiry",
+                    "licence_last_reminder_sent_at",
                 ),
             },
         ),
@@ -139,13 +141,13 @@ class TeamAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         ),
     )
 
-    readonly_fields = ("creator",)
+    readonly_fields = ("creator", "licence_last_reminder_sent_at")
 
     list_display = (
         "name",
         "institution",
         "creator",
-        "created_at",
+        "licence_expiry",
         "verified",
         "tenants_available",
     )
@@ -153,6 +155,7 @@ class TeamAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
     actions = (
         "verify_and_send_notification_email",
+        "send_licence_renewal_reminder_emails",
         "create_warwick_tenant",
         "create_bham_tenant",
         "create_cardiff_tenant",
@@ -198,6 +201,14 @@ class TeamAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     def setup_teams(self, request, queryset):
         teams = [str(t.pk) for t in queryset]
         return HttpResponseRedirect("/setup/?ids=%s" % (",".join(teams)))
+
+    def send_licence_renewal_reminder_emails(self, request, queryset):
+        for team in queryset:
+            team.send_team_licence_reminder_emails()
+            self.message_user(
+                request,
+                f"Licence renewal reminder emails sent for {queryset.count()} team(s)",
+            )
 
 
 class ProfileInline(admin.StackedInline):

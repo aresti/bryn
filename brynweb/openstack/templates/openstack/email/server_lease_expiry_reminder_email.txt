@@ -1,11 +1,11 @@
 Hi {{ user.first_name }}!
 
-The lease for your server '{{ server_name }}' is due to expire in {{ expiry_days }} days.
+The lease for your server '{{ server_name }}' is due to expire in {% if hours_remaining <= 24 %}{{ hours_remaining }} hours{% else %}{{ days_remaining }} days{% endif %} ({{ expiry }}).
 
 If you do not renew your lease, this server may be automatically shelved to free up capacity.
 
-If you are still using this server, you can renew your lease by clicking the following link:
-{{ renewal_link }}
+If you are still using this server, you can renew your lease by following the following link:
+{{ renewal_url }}
 
 Best regards,
 The CLIMB Project

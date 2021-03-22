@@ -228,3 +228,12 @@ def accept_invitation_view(request, uuid):
             "to_team": invitation.to_team,
         },
     )
+
+
+class CurrentUserLicenceView(TemplateView):
+    template_name = "userdb/user_licence.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["licence_version"] = LicenceVersion.objects.current()
+        return context

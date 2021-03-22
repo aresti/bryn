@@ -3,17 +3,16 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.mail import send_mail
 from django.db import models
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from django_slack import slack_message
 from sshpubkeys import SSHKey
 
 from .validators import validate_public_key
+from core.tasks import send_mail
 from userdb.models import Region, Team, TeamMember
 
 
@@ -78,6 +77,23 @@ def get_default_server_lease_expiry():
     return timezone.now() + datetime.timedelta(days=settings.SERVER_LEASE_DEFAULT_DAYS)
 
 
+class ServerLeaseManager(models.Manager):
+    def all_active(self):
+        return super().get_queryset().filter(deleted=False, shelved=False)
+
+    def active_with_expiry(self):
+        return self.all_active().filter(expiry__isnull=False)
+
+    def active_overdue(self):
+        return self.active_with_expiry().filter(expiry__lte=timezone.now())
+
+    def active_due(self):
+        return self.active_with_expiry().filter(expiry__gte=timezone.now())
+
+    def active_indefinite(self):
+        return self.all_active().filter(expiry__isnull=True)
+
+
 class ServerLease(models.Model):
     server_id = models.UUIDField(unique=True, editable=False)
     server_name = models.CharField(max_length=255, editable=False)
@@ -95,6 +111,15 @@ class ServerLease(models.Model):
     )
     shelved = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)
+    last_reminder_sent_at = models.DateTimeField(blank=True, null=True, editable=False)
+
+    objects = ServerLeaseManager()
+
+    @property
+    def time_remaining(self):
+        if self.expiry:
+            return self.expiry - timezone.now()
+        return None
 
     @property
     def has_expired(self):
@@ -109,22 +134,31 @@ class ServerLease(models.Model):
             kwargs={"server_id": self.server_id, "renewal_count": self.renewal_count},
         )
 
+    @property
+    def time_since_last_reminder(self):
+        if self.last_reminder_sent_at:
+            return self.expiry - self.last_reminder_sent_at
+        return None
+
     def renew_lease(self, days=settings.SERVER_LEASE_DEFAULT_DAYS, user=None):
         self.expiry = timezone.now() + datetime.timedelta(days=days)
         self.renewal_count += 1
         if user:
             self.user = user
+        self.last_reminder_sent_at = None
         self.save()
 
-    def send_email_renewal_reminder(self, request):
+    def send_email_renewal_reminder(self):
         """Send an email renewal reminder"""
         user = self.assigned_teammember.user
-        expiry_days = (self.expiry - timezone.now()).days
         context = {
             "user": user,
             "server_name": self.server_name,
-            "renewal_link": request.build_absolute_uri(self.renewal_url),
-            "expiry_days": expiry_days,
+            "renewal_url": settings.DEFAULT_DOMAIN + self.renewal_url,
+            "expiry": self.expiry,
+            "days_remaining": self.time_remaining.days,
+            "hours_remaining": self.time_remaining.days * 24
+            + self.time_remaining.seconds // 3600,
         }
         subject = render_to_string(
             "openstack/email/server_lease_expiry_reminder_subject.txt", context
@@ -143,6 +177,8 @@ class ServerLease(models.Model):
             html_message=html_content,
             fail_silently=False,
         )
+        self.last_reminder_sent_at = timezone.now()
+        self.save()
 
     def __str__(self):
         return (
@@ -157,13 +193,6 @@ class ActionLog(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     message = models.TextField()
     error = models.BooleanField()
-
-    def save(self, *args, **kwargs):
-        super(ActionLog, self).save(self, *args, **kwargs)
-        if self.error:
-            slack_message("openstack/error.slack", {"log": self})
-        else:
-            slack_message("openstack/success.slack", {"log": self})
 
     def __str__(self):
         if self.error:

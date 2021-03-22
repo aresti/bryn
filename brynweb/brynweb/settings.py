@@ -14,11 +14,6 @@ ALLOWED_HOSTS = []
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-ADMINS = [("Nick", "n.j.loman.bham.ac.uk")]
-ADMIN_EMAIL = "Lisa.Marchioretto@quadram.ac.uk"
-SERVER_EMAIL = "noreply@discourse.climb.ac.uk"
-DEFAULT_FROM_EMAIL = "noreply@discourse.climb.ac.uk"
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -29,8 +24,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_extensions",
-    "django_slack",
     "coverage",
+    "huey.contrib.djhuey",
     "rest_framework",
     "widget_tweaks",
     "tinymce",
@@ -187,22 +182,17 @@ LOGGING = {
             "class": "logging.FileHandler",
             "filename": BASE_DIR + "/../logfile",
         },
-        "slack_admins": {
-            "level": "ERROR",
-            "filters": ["require_debug_false"],
-            "class": "django_slack.log.SlackExceptionHandler",
-        },
     },
-    "loggers": {"django": {"level": "ERROR", "handlers": ["slack_admins"]}},
     "root": {"level": "INFO", "handlers": ["console", "logfile"]},
 }
 
-SLACK_FAIL_SILENTLY = True
-SLACK_BACKEND = "django_slack.backends.UrllibBackend"
-
-# Lease
+# Lease & Licencing
 
 SERVER_LEASE_DEFAULT_DAYS = 14
+SERVER_LEASE_REMINDER_DAYS = [0, 1, 3, 7]
+LICENCE_TERMINATION_DAYS = 90
+LICENCE_RENEWAL_REMINDER_DAYS = [3, 7, 14, 28]
+LICENCE_EMAIL_SIGNATORIES = "Lisa Marchioretto"
 
 # Local secrets
 
@@ -214,6 +204,15 @@ except ImportError:
 # Hashids
 
 HASHIDS = {"SALT": HASHIDS_SALT, "MIN_LENGTH": 11}  # noqa: F405
+
+# HUEY Task Scheduler
+
+HUEY = {
+    "huey_class": "huey.RedisHuey",
+    "name": "bryn-huey",
+    "immediate": False,
+    "consumer": {"workers": 2},
+}
 
 if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

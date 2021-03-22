@@ -3,7 +3,6 @@ import uuid
 
 from django.contrib.auth import get_user_model
 from django.conf import settings
-from django.core.mail import send_mail
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -15,6 +14,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from tinymce import models as tinymce_models
 
 from core import hashids
+from core.tasks import send_mail
 from .tokens import account_activation_token
 
 User = get_user_model()
@@ -32,6 +32,10 @@ class Region(models.Model):
 
 class Institution(models.Model):
     name = models.CharField(max_length=100)
+
+
+def licence_expiry_default():
+    return timezone.now() + datetime.timedelta(days=30)
 
 
 class Team(models.Model):
@@ -68,9 +72,16 @@ class Team(models.Model):
     )
     tenants_available = models.BooleanField(default=False)
     users = models.ManyToManyField(User, through="TeamMember", related_name="teams")
+    licence_expiry = models.DateTimeField(default=licence_expiry_default)
+    licence_last_reminder_sent_at = models.DateTimeField(
+        blank=True, null=True, editable=False
+    )
 
     @property
     def hashid(self):
+        """
+        Hashid used for urls
+        """
         return hashids.encode(self.id)
 
     @property
@@ -89,23 +100,24 @@ class Team(models.Model):
 
     @property
     def latest_licence_acceptance(self):
+        """
+        Latest licence acceptance
+        """
         if self.licence_acceptances.count():
             return self.licence_acceptances.latest("accepted_at")
         return None
 
     @property
-    def licence_expiry(self):
-        if self.latest_licence_acceptance:
-            return self.latest_licence_acceptance.expiry
-        return None
-
-    @property
     def licence_is_valid(self):
-        if self.latest_licence_acceptance:
-            return not self.latest_licence_acceptance.has_expired
-        return False
+        """
+        Licence is valid/not expired
+        """
+        return timezone.now() <= self.licence_expiry
 
     def send_new_team_admin_email(self):
+        """
+        Notify admin(s) of new team registration
+        """
         if not settings.NEW_REGISTRATION_ADMIN_EMAILS:
             return
 
@@ -130,7 +142,9 @@ class Team(models.Model):
         )
 
     def verify_and_send_notification_email(self):
-        """Admin script: mark team as verified and notify the primary user"""
+        """
+        Admin script: mark team as verified and notify the primary user
+        """
         context = {"user": self.creator, "team": self}
         subject = render_to_string(
             "userdb/email/notify_team_verified_subject.txt", context
@@ -152,6 +166,56 @@ class Team(models.Model):
         )
 
         self.verified = True
+        self.save()
+
+    def send_team_licence_reminder_emails(self):
+        """
+        Send team licence expiry reminder emails to primary and secondary users
+        """
+        context = {
+            "team": self,
+            "team_management_url": f"{settings.DEFAULT_DOMAIN}/teams/{self.hashid}/team",
+            "time_remaining": (self.licence_expiry - timezone.now()),
+            "termination_date": self.licence_expiry
+            + datetime.timedelta(days=settings.LICENCE_TERMINATION_DAYS),
+            "licence_terms_url": settings.DEFAULT_DOMAIN + reverse("user:licence"),
+            "licence_email_signatories": settings.LICENCE_EMAIL_SIGNATORIES,
+        }
+
+        # Email each team member
+        for user in self.users.all():
+            context["user"] = user
+            subject = render_to_string(
+                "userdb/email/team_licence_reminder_subject.txt", context
+            )
+            if user in self.admin_users.all():
+                text_content = render_to_string(
+                    "userdb/email/team_licence_reminder_primary_user_email.txt", context
+                )
+                html_content = render_to_string(
+                    "userdb/email/team_licence_reminder_primary_user_email.html",
+                    context,
+                )
+            else:
+                text_content = render_to_string(
+                    "userdb/email/team_licence_reminder_secondary_user_email.txt",
+                    context,
+                )
+                html_content = render_to_string(
+                    "userdb/email/team_licence_reminder_secondary_user_email.html",
+                    context,
+                )
+            send_mail(
+                subject,
+                text_content,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                html_message=html_content,
+                fail_silently=True,
+            )
+
+        # Update team
+        self.licence_last_reminder_sent_at = timezone.now()
         self.save()
 
     def __str__(self):
@@ -391,7 +455,9 @@ class LicenceAcceptance(models.Model):
     accepted_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        """Set the current licence version if not specified"""
+        """
+        Set the current licence version if not specified.
+        """
         if not self.licence_version:
             self.licence_version = LicenceVersion.objects.current()
         super().save(*args, **kwargs)

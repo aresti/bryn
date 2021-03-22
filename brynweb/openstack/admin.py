@@ -25,6 +25,7 @@ class ServerLeaseAdmin(admin.ModelAdmin):
         "team",
         "region",
         "last_renewed_at",
+        "last_reminder_sent_at",
         "expiry",
         "renewal_count",
         "tenant",
@@ -39,6 +40,7 @@ class ServerLeaseAdmin(admin.ModelAdmin):
         "server_id",
         "server_name",
         "last_renewed_at",
+        "last_reminder_sent_at",
         "renewal_count",
         "tenant",
         "team",
@@ -69,7 +71,7 @@ class ServerLeaseAdmin(admin.ModelAdmin):
 
     def send_renewal_reminder_email(self, request, queryset):
         for server_lease in queryset:
-            server_lease.send_email_renewal_reminder(request)
+            server_lease.send_email_renewal_reminder()
 
     def renew_lease(self, request, queryset):
         for server_lease in queryset:
