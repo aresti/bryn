@@ -78,9 +78,16 @@ class ServerLeaseAdmin(admin.ModelAdmin):
             server_lease.renew_lease()
 
 
+class RegionSettingsInline(admin.StackedInline):
+    model = RegionSettings
+
+
+class RegionAdmin(admin.ModelAdmin):
+    inlines = (RegionSettingsInline,)
+
+
 admin.site.register(Tenant, TenantAdmin)
-admin.site.register(Region)
-admin.site.register(RegionSettings)
+admin.site.register(Region, RegionAdmin)
 admin.site.register(ActionLog, ActionLogAdmin)
 admin.site.register(HypervisorStats)
 admin.site.register(ServerLease, ServerLeaseAdmin)

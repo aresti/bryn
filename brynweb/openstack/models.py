@@ -219,6 +219,9 @@ class HypervisorStats(models.Model):
     vcpus = models.IntegerField()
     vcpus_used = models.IntegerField()
 
+    class Meta:
+        verbose_name_plural = "Hypervisor Stats"
+
 
 class RegionSettings(models.Model):
     region = models.OneToOneField(Region, on_delete=models.CASCADE)
@@ -230,6 +233,9 @@ class RegionSettings(models.Model):
     max_volume_size_gb = models.IntegerField(
         _("Maximum allowed volume size in GB"), default=5000
     )
+
+    class Meta:
+        verbose_name_plural = "Region Settings"
 
     def __str__(self):
         return str(self.region)
