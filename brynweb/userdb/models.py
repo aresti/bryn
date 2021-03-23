@@ -39,9 +39,7 @@ def licence_expiry_default():
 
 
 class Team(models.Model):
-    name = models.CharField(
-        max_length=50, verbose_name="Group or team name", unique=True,
-    )
+    name = models.CharField(max_length=50, verbose_name="Group or team name")
     creator = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
     position = models.CharField(
