@@ -23,7 +23,10 @@ class FrontendView(LoginRequiredMixin, TemplateView):
         user_teams = user.teams.all()
         team_data = camelize(TeamSerializer(user_teams, many=True).data)
         region_data = camelize(RegionSerializer(Region.objects.all(), many=True).data)
-        licence_terms = LicenceVersion.objects.current().licence_terms
+        try:
+            licence_terms = LicenceVersion.objects.current().licence_terms
+        except LicenceVersion.DoesNotExist:
+            licence_terms = None
 
         return {
             "regions": region_data,

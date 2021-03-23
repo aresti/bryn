@@ -164,7 +164,13 @@ class LicenceAcceptanceListView(generics.ListCreateAPIView):
         Send email after creation
         """
         team = get_object_or_404(Team, pk=self.request.resolver_match.kwargs["team_id"])
-        licence_version = LicenceVersion.objects.current()
+        try:
+            licence_version = LicenceVersion.objects.current()
+        except LicenceVersion.DoesNotExist:
+            raise exceptions.APIException(
+                code=500, detail="No current Licence version exists."
+            )
+
         serializer.save(
             licence_version=licence_version, team=team, user=self.request.user
         )

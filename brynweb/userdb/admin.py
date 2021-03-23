@@ -15,7 +15,6 @@ from .models import (
     Invitation,
     TeamMember,
     Profile,
-    UserProfile,
 )
 
 from scripts.setup_team import setup_tenant
@@ -226,29 +225,6 @@ class CustomUserAdmin(UserAdmin):
     def resend_email_activation_link(self, request, queryset):
         for u in queryset:
             u.profile.send_validation_link()
-        self.message_user(request, "Validation links resent.")
-
-
-# TODO delete legacy UserProfile admin after data transfer
-class UserProfileInline(admin.StackedInline):
-    model = UserProfile
-    can_delete = False
-
-
-class LegacyCustomUserAdmin(UserAdmin):
-    list_filter = ("userprofile__email_validated",)
-
-    actions = ("copy_to_new_profile_table",)
-
-    inlines = (UserProfileInline,)
-
-    def copy_to_new_profile_table(modeladmin, request, queryset):
-        for user in queryset:
-            user.userprofile.copy_to_new_profile()
-
-    def resend_email_activation_link(self, request, queryset):
-        for u in queryset:
-            u.profile.send_validation_link(u)
         self.message_user(request, "Validation links resent.")
 
 

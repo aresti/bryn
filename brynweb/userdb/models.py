@@ -421,13 +421,13 @@ class Profile(models.Model):
 
 class LicenceVersionManager(models.Manager):
     def current(self):
-        now = timezone.now()
+        today = timezone.now().date()
         return (
             super()
             .get_queryset()
-            .filter(effective_date__lte=now)
+            .filter(effective_date__lte=today)
             .latest("effective_date")
-        )
+        )  # may raise LicenceVersion.DoesNotExist
 
 
 class LicenceVersion(models.Model):
@@ -472,54 +472,3 @@ class LicenceAcceptance(models.Model):
     @property
     def has_expired(self):
         return timezone.now() > self.expiry
-
-
-# Legacy user profile (uneditable due complex migration issues after 3.1 upgrade)
-# TODO: delete model after data copied over
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE,)
-    validation_link = models.UUIDField(
-        default=uuid.uuid4, editable=False, primary_key=True
-    )
-    email_validated = models.BooleanField(default=False)
-    current_region = models.ForeignKey(Region, on_delete=models.CASCADE)
-
-    def copy_to_new_profile(self):
-        # Check for existing Profile row
-        if len(Profile.objects.filter(user=self.user)) == 1:
-            return
-        Profile.objects.create(
-            user=self.user,
-            validation_link=self.validation_link,
-            email_validated=self.email_validated,
-        )
-
-    def send_validation_link(self, user):
-        self.user = user
-        self.email_validated = False
-        self.save()
-
-        context = {
-            "user": user,
-            "validation_link": reverse(
-                "user:validate_email", args=[self.validation_link]
-            ),
-        }
-        subject = render_to_string(
-            "userdb/email/user_verification_subject.txt", context
-        )
-        text_content = render_to_string(
-            "userdb/email/user_verification_email.txt", context
-        )
-        html_content = render_to_string(
-            "userdb/email/user_verification_email.html", context
-        )
-
-        send_mail(
-            subject,
-            text_content,
-            settings.DEFAULT_FROM_EMAIL,
-            [user.email],
-            html_message=html_content,
-            fail_silently=False,
-        )

@@ -53,5 +53,5 @@ urlpatterns = [
         views.EmailChangeConfirmView.as_view(),
         name="validate_email_change",
     ),
-    path("licence", views.CurrentUserLicenceView.as_view(), name="licence",),
+    path("licence/", views.CurrentUserLicenceView.as_view(), name="licence",),
 ]

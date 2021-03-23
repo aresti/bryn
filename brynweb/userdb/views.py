@@ -59,7 +59,11 @@ class RegistrationScreeningView(FormView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        context["licence_terms"] = LicenceVersion.objects.current().licence_terms
+        try:
+            licence_terms = LicenceVersion.objects.current().licence_terms
+        except LicenceVersion.DoesNotExist:
+            licence_terms = None
+        context["licence_terms"] = licence_terms
         return context
 
 
@@ -216,7 +220,11 @@ def accept_invitation_view(request, uuid):
             return HttpResponseRedirect(reverse("home:home"))
 
     login_url = f"{reverse('user:login')}?next={request.path}"
-    licence_terms = LicenceVersion.objects.current().licence_terms
+
+    try:
+        licence_terms = LicenceVersion.objects.current().licence_terms
+    except LicenceVersion.DoesNotExist:
+        licence_terms = None
 
     return render(
         request,
@@ -235,5 +243,9 @@ class CurrentUserLicenceView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["licence_version"] = LicenceVersion.objects.current()
+        try:
+            licence_version = LicenceVersion.objects.current()
+        except LicenceVersion.DoesNotExist:
+            licence_version = None
+        context["licence_version"] = licence_version
         return context
