@@ -7,9 +7,7 @@
     </td>
 
     <td class="is-hidden-touch">
-      <span class="has-text-weight-semibold">{{
-        flavor.name || "[legacy flavor]"
-      }}</span
+      <span class="has-text-weight-semibold">{{ flavorName }}</span
       ><br />
       <span v-if="flavor" class="is-size-7"
         >{{ flavor.vcpus }} vCPUs : {{ flavor.ram / 1024 }} GB RAM</span
@@ -253,6 +251,10 @@ export default {
 
     flavor() {
       return this.getFlavorById(this.instance.flavor);
+    },
+
+    flavorName() {
+      return this.flavor ? this.flavor.name : "[legacy flavor]";
     },
 
     timeUntilLeaseExpiry() {
