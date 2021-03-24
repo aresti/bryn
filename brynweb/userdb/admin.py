@@ -258,5 +258,6 @@ class LicenceVersionAdmin(admin.ModelAdmin):
 
 admin.site.register(LicenceVersion, LicenceVersionAdmin)
 admin.site.register(Team, TeamAdmin)
+admin.site.register(TeamMember)
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
