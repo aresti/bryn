@@ -1,6 +1,6 @@
 <template>
   <div
-    class="page-content pb-5 is-flex is-flex-direction-column is-align-items-stretch is-flex-grow-1 has-background-light"
+    class="page-content pb-5 is-flex is-flex-direction-column is-align-items-stretch is-flex-grow-1 has-background-lighter"
   >
     <the-header />
 

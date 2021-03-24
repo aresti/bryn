@@ -63,26 +63,29 @@
       </div>
     </div>
 
-    <base-message color="primary">
-      <h4 class="subtitle">What is a server lease?</h4>
-      <p class="has-text-primary block">
-        In order to better use the limited capacity accross our CLIMB-BIG-DATA
-        infrastructure, we have introduced the concept of server leases. By
-        default, leases will last 2 weeks and can be easily renewed.
+    <!-- FAQS -->
+    <template v-if="faqsServers.length">
+      <hr />
+
+      <p
+        v-if="!showFaqs"
+        class="block has-text-centered has-text-link has-text-underlined is-clickable is-size-5"
+        @click="showFaqs = true"
+      >
+        Show Server FAQs
       </p>
 
-      <p class="has-text-primary block has-text-weight-semibold">
-        Upon expiry, servers may be shelved without notice. You can restore
-        shelved servers by unshelving them at a later date.
-      </p>
-
-      <p class="has-text-primary block">
-        If you are running a webserver, or have some other special case, you can
-        <a @click="showInstancesIndefiniteLeaseRequestModal = true"
-          >request an indefinite lease</a
-        >.
-      </p>
-    </base-message>
+      <div class="block" v-if="showFaqs">
+        <h4
+          class="subtitle is-clickable is-size-4 has-text-centered"
+          @click="showFaqs = false"
+        >
+          Frequently Asked Questions
+          <span class="has-text-link is-size-5">(hide)</span>
+        </h4>
+        <frequently-asked-questions :faqs="faqsServers" />
+      </div>
+    </template>
 
     <instances-indefinite-lease-request-modal
       v-if="showInstancesIndefiniteLeaseRequestModal"
@@ -105,6 +108,7 @@
 <script>
 import { mapGetters, mapState } from "vuex";
 import {
+  FAQS_SERVERS,
   FILTER_TENANT,
   GET_REGION_NAME_FOR_TENANT,
   INSTANCES_FOR_FILTER_TENANT,
@@ -113,6 +117,7 @@ import {
   TENANTS,
 } from "@/store/getter-types";
 
+import FrequentlyAskedQuestions from "@/components/FrequentlyAskedQuestions";
 import InstancesIndefiniteLeaseRequestModal from "@/components/InstancesIndefiniteLeaseRequestModal";
 import InstancesNewInstanceModal from "@/components/InstancesNewInstanceModal";
 import InstancesTable from "@/components/InstancesTable";
@@ -122,6 +127,7 @@ import TenantFilterTabs from "@/components/TenantFilterTabs";
 export default {
   // Template dependencies
   components: {
+    FrequentlyAskedQuestions,
     InstancesIndefiniteLeaseRequestModal,
     InstancesTable,
     InstancesNewInstanceModal,
@@ -135,6 +141,7 @@ export default {
   // Local state
   data() {
     return {
+      showFaqs: false,
       showShelved: false,
       showInstancesIndefiniteLeaseRequestModal: false,
       showKeyPairsNewKeyPairModal: false,
@@ -148,6 +155,7 @@ export default {
       keyPairs: (state) => state.keyPairs.all,
     }),
     ...mapGetters({
+      faqsServers: FAQS_SERVERS,
       filterTenant: FILTER_TENANT,
       getRegionNameForTenant: GET_REGION_NAME_FOR_TENANT,
       instancesForFilterTenant: INSTANCES_FOR_FILTER_TENANT,

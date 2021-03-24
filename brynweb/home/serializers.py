@@ -1,7 +1,7 @@
 from rest_framework.serializers import ModelSerializer
 
 from core.serializers import HashidsIntegerField
-from .models import Announcement
+from .models import Announcement, FrequentlyAskedQuestion
 
 
 class AnnouncementSerializer(ModelSerializer):
@@ -16,4 +16,17 @@ class AnnouncementSerializer(ModelSerializer):
             "category",
             "created_at",
             "updated_at",
+        ]
+
+
+class FrequentlyAskedQuestionSerializer(ModelSerializer):
+    id = HashidsIntegerField(read_only=True)
+
+    class Meta:
+        model = FrequentlyAskedQuestion
+        fields = [
+            "id",
+            "title",
+            "content",
+            "category",
         ]

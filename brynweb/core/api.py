@@ -20,6 +20,8 @@ urlpatterns = [
         home_views.AnnouncementListView.as_view(),
         name="announcements",
     ),
+    # {% url "api:faqs" %}
+    path("faqs/", home_views.FrequentlyAskedQuestionListView.as_view(), name="faqs",),
     # {% url "api:hypervisor-stats" %}
     path(
         "hypervisor-stats/",

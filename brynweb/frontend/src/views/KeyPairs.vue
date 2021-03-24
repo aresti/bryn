@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- Top filter / buttons level -->
     <div class="block mb-5">
       <base-level>
         <template v-slot:left>
@@ -17,6 +18,7 @@
       </base-level>
     </div>
 
+    <!-- Boxed KeyPairs table -->
     <div class="box">
       <key-pairs-table
         v-if="keyPairs.length"
@@ -29,6 +31,31 @@
       </div>
     </div>
 
+    <!-- FAQs -->
+    <template v-if="faqsKeypairs.length">
+      <hr />
+
+      <p
+        v-if="!showFaqs"
+        class="block has-text-centered has-text-link has-text-underlined is-clickable is-size-5"
+        @click="showFaqs = true"
+      >
+        Show Key Pair FAQs
+      </p>
+
+      <div class="block" v-if="showFaqs">
+        <h4
+          class="subtitle is-clickable is-size-4 has-text-centered"
+          @click="showFaqs = false"
+        >
+          Frequently Asked Questions
+          <span class="has-text-link is-size-5">(hide)</span>
+        </h4>
+        <frequently-asked-questions :faqs="faqsKeypairs" />
+      </div>
+    </template>
+
+    <!-- Modals -->
     <key-pairs-new-key-pair-modal
       v-if="showNewKeyPairModal"
       @close-modal="showNewKeyPairModal = false"
@@ -47,15 +74,18 @@
 </template>
 
 <script>
-import { mapActions, mapState } from "vuex";
+import { mapActions, mapGetters, mapState } from "vuex";
 import { DELETE_KEY_PAIR, SET_DEFAULT_KEY_PAIR } from "@/store/action-types";
+import { FAQS_KEYPAIRS } from "@/store/getter-types";
 
+import FrequentlyAskedQuestions from "@/components/FrequentlyAskedQuestions";
 import KeyPairsNewKeyPairModal from "@/components/KeyPairsNewKeyPairModal";
 import KeyPairsTable from "@/components/KeyPairsTable";
 
 export default {
   // Template dependencies
   components: {
+    FrequentlyAskedQuestions,
     KeyPairsNewKeyPairModal,
     KeyPairsTable,
   },
@@ -66,15 +96,21 @@ export default {
   // Local state
   data() {
     return {
+      showFaqs: false,
       showNewKeyPairModal: false,
       confirmDeleteKeyPair: null,
       deleteProcessing: false,
     };
   },
 
-  computed: mapState({
-    keyPairs: (state) => state.keyPairs.all,
-  }),
+  computed: {
+    ...mapState({
+      keyPairs: (state) => state.keyPairs.all,
+    }),
+    ...mapGetters({
+      faqsKeypairs: FAQS_KEYPAIRS,
+    }),
+  },
 
   // Non-reactive
   methods: {

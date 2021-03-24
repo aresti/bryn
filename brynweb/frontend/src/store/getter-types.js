@@ -10,6 +10,9 @@ export const TEAM = "TEAM";
 export const TENANTS = "TENANTS";
 export const USER_IS_ADMIN = "USER_IS_ADMIN";
 export const USER_FULL_NAME = "USER_FULL_NAME";
+export const FAQS_KEYPAIRS = "FAQS_KEYPAIRS";
+export const FAQS_SERVERS = "FAQS_SERVERS";
+export const FAQS_VOLUMES = "FAQS_VOLUMES";
 
 /* -- MODULES (not namespaced) -- */
 

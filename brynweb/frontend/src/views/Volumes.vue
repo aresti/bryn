@@ -64,6 +64,30 @@
       </div>
     </div>
 
+    <!-- FAQS -->
+    <template v-if="faqsVolumes.length">
+      <hr />
+
+      <p
+        v-if="!showFaqs"
+        class="block has-text-centered has-text-link has-text-underlined is-clickable is-size-5"
+        @click="showFaqs = true"
+      >
+        Show Volume FAQs
+      </p>
+
+      <div class="block" v-if="showFaqs">
+        <h4
+          class="subtitle is-clickable is-size-4 has-text-centered"
+          @click="showFaqs = false"
+        >
+          Frequently Asked Questions
+          <span class="has-text-link is-size-5">(hide)</span>
+        </h4>
+        <frequently-asked-questions :faqs="faqsVolumes" />
+      </div>
+    </template>
+
     <!-- New volume modal -->
     <volumes-new-volume-modal
       v-if="showNewVolumeModal"
@@ -105,6 +129,7 @@
 import { mapActions, mapGetters, mapState } from "vuex";
 import { DELETE_VOLUME, DETACH_VOLUME } from "@/store/action-types";
 import {
+  FAQS_VOLUMES,
   FILTER_TENANT,
   VOLUMES_FOR_FILTER_TENANT,
   GET_REGION_NAME_FOR_TENANT,
@@ -112,18 +137,20 @@ import {
   TENANTS,
 } from "@/store/getter-types";
 
+import FrequentlyAskedQuestions from "@/components/FrequentlyAskedQuestions";
+import TenantFilterTabs from "@/components/TenantFilterTabs";
 import VolumesAttachModal from "@/components/VolumesAttachModal";
 import VolumesNewVolumeModal from "@/components/VolumesNewVolumeModal";
 import VolumesTable from "@/components/VolumesTable";
-import TenantFilterTabs from "@/components/TenantFilterTabs";
 
 export default {
   // Template dependencies
   components: {
+    FrequentlyAskedQuestions,
+    TenantFilterTabs,
     VolumesAttachModal,
     VolumesNewVolumeModal,
     VolumesTable,
-    TenantFilterTabs,
   },
 
   // Composition
@@ -138,6 +165,7 @@ export default {
       deleteProcessing: false,
       detachProcessing: false,
       showBootable: false,
+      showFaqs: false,
       showNewVolumeModal: false,
     };
   },
@@ -147,6 +175,7 @@ export default {
       loading: (state) => state.volumes.loading,
     }),
     ...mapGetters({
+      faqsVolumes: FAQS_VOLUMES,
       filterTenant: FILTER_TENANT,
       volumesForFilterTenant: VOLUMES_FOR_FILTER_TENANT,
       getRegionNameForTenant: GET_REGION_NAME_FOR_TENANT,

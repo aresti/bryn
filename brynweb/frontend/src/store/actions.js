@@ -4,6 +4,7 @@ import {
   CREATE_LICENCE_ACCEPTANCE,
   FETCH_ALL_TENANT_DATA,
   FETCH_ANNOUNCEMENTS,
+  FETCH_FAQS,
   FETCH_HYPERVISOR_STATS,
   FETCH_INVITATIONS,
   FETCH_KEY_PAIRS,
@@ -35,6 +36,7 @@ import {
   SET_FILTER_TENANT_ID,
   SET_TEAM_INITIALIZED,
   MODIFY_TEAM,
+  SET_FAQS,
   SET_USER,
 } from "./mutation-types";
 
@@ -49,6 +51,7 @@ const actions = {
       dispatch(FETCH_KEY_PAIRS),
       dispatch(FETCH_HYPERVISOR_STATS),
       dispatch(FETCH_ANNOUNCEMENTS),
+      dispatch(FETCH_FAQS),
     ]);
   },
 
@@ -66,6 +69,12 @@ const actions = {
     const url = getAPIRoute("licenceAcceptances", state.activeTeamId);
     await axios.post(url);
     dispatch(FETCH_TEAM);
+  },
+
+  async [FETCH_FAQS]({ commit }) {
+    const url = getAPIRoute("faqs");
+    const response = await axios.get(url);
+    commit(SET_FAQS, response.data);
   },
 
   async [FETCH_HYPERVISOR_STATS]({ commit }) {

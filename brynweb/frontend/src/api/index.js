@@ -14,6 +14,7 @@ const apiRoutes = {
   images: tenantBase + "images/",
   instances: tenantBase + "instances/",
   invitations: teamBase + "invitations/",
+  faqs: apiBase + "faqs/",
   flavors: tenantBase + "flavors/",
   keyPairs: apiBase + "keypairs/",
   licenceAcceptances: teamBase + "licence-acceptances/",

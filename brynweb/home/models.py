@@ -24,3 +24,22 @@ class Announcement(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     expiry = models.DateTimeField(null=True, blank=True)
+
+
+class FrequentlyAskedQuestion(models.Model):
+    class Category(models.TextChoices):
+        SERVERS = "SV"
+        VOLUMES = "VL"
+        KEYPAIRS = "KP"
+
+    category = models.CharField(
+        max_length=2, choices=Category.choices, default=Category.SERVERS
+    )
+    author = models.ForeignKey(
+        User, editable=False, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    title = models.CharField(max_length=255)
+    content = tinymce_models.HTMLField()
+    published = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

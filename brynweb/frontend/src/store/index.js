@@ -21,6 +21,7 @@ const state = {
   adminEmail: "Lisa.Marchioretto@quadram.ac.uk",
   activeTeamId: null,
   hypervisorStats: [],
+  faqs: [],
   filterTenantId: null,
   licenceTerms: null,
   regions: [],
