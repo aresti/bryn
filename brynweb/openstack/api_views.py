@@ -391,7 +391,9 @@ def get_volume_transform_func(self, tenant):
         as_dict["tenant"] = tenant.pk
         as_dict["team"] = tenant.team.pk
         as_dict["name"] = (
-            obj.name.replace(tenant.get_tenant_name(), "") if obj.name else str(obj.id)
+            obj.name.replace(tenant.created_tenant_name, "")
+            if obj.name
+            else str(obj.id)
         )
         return as_dict
 

@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from slugify import slugify
 from sshpubkeys import SSHKey
 
 from .validators import validate_public_key
@@ -25,16 +26,15 @@ class Tenant(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="tenants")
     region = models.ForeignKey(Region, on_delete=models.CASCADE)
     created_tenant_id = models.CharField(max_length=50)
-    auth_password = models.CharField(max_length=50, blank=True)
+    created_tenant_name = models.CharField(max_length=255, null=True, blank=True)
     created_network_id = models.CharField(max_length=50, blank=True)
 
-    # TODO property decorator
     def get_tenant_name(self):
-        return "bryn:%d_%s" % (self.team.pk, self.team.name)
+        """Generate slugified tenant name to when creating openstack project"""
+        return f"bryn:{self.team.pk}_{slugify(self.team.name)}"
 
-    # TODO property decorator
     def get_tenant_description(self):
-        return "%s (%s)" % (self.team.name, self.team.creator.last_name)
+        return f"{self.get_tenant_name()} ({self.team.creator.last_name})"
 
     def get_network_id(self):
         if self.region.regionsettings.requires_network_setup:
@@ -44,7 +44,7 @@ class Tenant(models.Model):
             return self.region.regionsettings.public_network_id
 
     def __str__(self):
-        return self.get_tenant_name()
+        return self.created_tenant_name
 
 
 class KeyPair(models.Model):

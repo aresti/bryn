@@ -11,7 +11,12 @@ from .models import (
 
 
 class TenantAdmin(admin.ModelAdmin):
-    pass
+    list_display = (
+        "created_tenant_name",
+        "team",
+    )
+
+    search_fields = ("created_tenant_id", "created_tenant_name")
 
 
 class ActionLogAdmin(admin.ModelAdmin):

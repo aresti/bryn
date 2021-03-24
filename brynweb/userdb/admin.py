@@ -55,8 +55,18 @@ class LicenceAcceptanceInline(admin.TabularInline):
 
 class TenantInline(admin.TabularInline):
     model = Tenant
-    fields = ["tenant_link", "created_tenant_id", "server_lease_links"]
-    readonly_fields = ["tenant_link", "created_tenant_id", "server_lease_links"]
+    fields = [
+        "tenant_link",
+        "created_tenant_id",
+        "created_tenant_name",
+        "server_lease_links",
+    ]
+    readonly_fields = [
+        "tenant_link",
+        "created_tenant_id",
+        "created_tenant_name",
+        "server_lease_links",
+    ]
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -151,6 +161,8 @@ class TeamAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         "tenants_available",
     )
     list_filter = ("verified",)
+
+    search_fields = ("name", "institution")
 
     actions = (
         "verify_and_send_notification_email",
