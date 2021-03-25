@@ -6,7 +6,7 @@
           COPYRIGHT © {{ new Date().getFullYear() }} -
           <a href="https://www.climb.ac.uk/" class="has-text-white"
             >CLIMB-BIG-DATA</a
-          >. ALL RIGHTS RESERVED.
+          >.<br />ALL RIGHTS RESERVED.
         </p>
 
         <p class="is-size-7 mt-2">

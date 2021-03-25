@@ -64,29 +64,27 @@
       </div>
     </div>
 
-    <!-- FAQS -->
-    <template v-if="faqsVolumes.length">
-      <hr />
-
-      <p
-        v-if="!showFaqs"
-        class="block has-text-centered has-text-link has-text-underlined is-clickable is-size-5"
-        @click="showFaqs = true"
+    <!-- Below table links --->
+    <base-buttons class="is-justify-content-center">
+      <base-button
+        v-if="faqsVolumes.length"
+        color="ghost"
+        @click="showFaqs = !showFaqs"
+        >{{ showFaqs ? "Hide" : "Show" }} FAQs</base-button
       >
-        Show Volume FAQs
-      </p>
+    </base-buttons>
 
-      <div class="block" v-if="showFaqs">
-        <h4
-          class="subtitle is-clickable is-size-4 has-text-centered"
-          @click="showFaqs = false"
-        >
-          Frequently Asked Questions
-          <span class="has-text-link is-size-5">(hide)</span>
-        </h4>
-        <frequently-asked-questions :faqs="faqsVolumes" />
-      </div>
-    </template>
+    <!-- FAQS -->
+    <div class="block" v-if="showFaqs">
+      <hr />
+      <h4
+        class="subtitle is-clickable is-size-4 has-text-centered"
+        @click="showFaqs = false"
+      >
+        Frequently Asked Questions
+      </h4>
+      <frequently-asked-questions :faqs="faqsVolumes" />
+    </div>
 
     <!-- New volume modal -->
     <volumes-new-volume-modal

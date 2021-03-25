@@ -76,5 +76,10 @@ export default {
     rgba(32, 60, 71, 1) 0%,
     rgba(38, 70, 83, 1) 100%
   );
+  border-top: 1px solid #457b9dff;
+  z-index: 35;
+  -webkit-box-shadow: 0px 3px 5px 0px rgba(50, 50, 50, 0.17);
+  -moz-box-shadow: 0px 3px 5px 0px rgba(50, 50, 50, 0.17);
+  box-shadow: 0px 3px 5px 0px rgba(50, 50, 50, 0.17);
 }
 </style>

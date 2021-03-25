@@ -1,6 +1,7 @@
 <template>
   <div>
     <div class="block mb-5">
+      <!-- Top filter/buttons level -->
       <base-level>
         <template v-slot:left>
           <base-level-item>
@@ -11,11 +12,14 @@
             <h2 v-else class="title">Servers</h2>
           </base-level-item>
         </template>
+
         <template v-slot:right>
+          <!-- Loading indicator -->
           <base-mini-loader :loading="loading" />
-          <base-level-item>
+
+          <!-- Show shelved btn -->
+          <base-level-item v-if="hasShelved">
             <base-button
-              v-if="hasShelved"
               class="mr-2"
               rounded
               @click="showShelved = !showShelved"
@@ -32,6 +36,8 @@
               }}</template>
             </base-button>
           </base-level-item>
+
+          <!-- New server btn -->
           <base-level-item>
             <base-button-create
               @click="onNewServerClick"
@@ -63,33 +69,34 @@
       </div>
     </div>
 
-    <!-- FAQS -->
-    <template v-if="faqsServers.length">
-      <hr />
-
-      <p
-        v-if="!showFaqs"
-        class="block has-text-centered has-text-link has-text-underlined is-clickable is-size-5"
-        @click="showFaqs = true"
+    <!-- Below table links --->
+    <base-buttons class="is-justify-content-center">
+      <base-button
+        v-if="faqsServers.length"
+        color="ghost"
+        @click="showFaqs = !showFaqs"
+        >{{ showFaqs ? "Hide" : "Show" }} FAQs</base-button
       >
-        Show Server FAQs
-      </p>
+      <base-button color="ghost" @click="showIndefiniteLeaseModal = true"
+        >Request Indefinite Server Lease</base-button
+      >
+    </base-buttons>
 
-      <div class="block" v-if="showFaqs">
-        <h4
-          class="subtitle is-clickable is-size-4 has-text-centered"
-          @click="showFaqs = false"
-        >
-          Frequently Asked Questions
-          <span class="has-text-link is-size-5">(hide)</span>
-        </h4>
-        <frequently-asked-questions :faqs="faqsServers" />
-      </div>
-    </template>
+    <!-- FAQs -->
+    <div class="block" v-if="showFaqs">
+      <hr />
+      <h4
+        class="subtitle is-clickable is-size-4 has-text-centered"
+        @click="showFaqs = false"
+      >
+        Frequently Asked Questions
+      </h4>
+      <frequently-asked-questions :faqs="faqsServers" />
+    </div>
 
     <instances-indefinite-lease-request-modal
-      v-if="showInstancesIndefiniteLeaseRequestModal"
-      @close-modal="showInstancesIndefiniteLeaseRequestModal = false"
+      v-if="showIndefiniteLeaseModal"
+      @close-modal="showIndefiniteLeaseModal = false"
     />
 
     <instances-new-instance-modal
@@ -143,7 +150,7 @@ export default {
     return {
       showFaqs: false,
       showShelved: false,
-      showInstancesIndefiniteLeaseRequestModal: false,
+      showIndefiniteLeaseModal: false,
       showKeyPairsNewKeyPairModal: false,
       showInstancesNewInstanceModal: false,
     };

@@ -4,7 +4,7 @@ export default {
       type: String,
       required: false,
       default: "",
-      validator: function (value) {
+      validator: function(value) {
         return (
           [
             "",
@@ -19,6 +19,7 @@ export default {
             "warning",
             "danger",
             "info",
+            "ghost",
           ].indexOf(value) !== -1
         );
       },

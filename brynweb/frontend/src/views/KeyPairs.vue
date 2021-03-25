@@ -31,29 +31,27 @@
       </div>
     </div>
 
-    <!-- FAQs -->
-    <template v-if="faqsKeypairs.length">
-      <hr />
-
-      <p
-        v-if="!showFaqs"
-        class="block has-text-centered has-text-link has-text-underlined is-clickable is-size-5"
-        @click="showFaqs = true"
+    <!-- Below table links --->
+    <base-buttons class="is-justify-content-center">
+      <base-button
+        v-if="faqsKeypairs.length"
+        color="ghost"
+        @click="showFaqs = !showFaqs"
+        >{{ showFaqs ? "Hide" : "Show" }} FAQs</base-button
       >
-        Show Key Pair FAQs
-      </p>
+    </base-buttons>
 
-      <div class="block" v-if="showFaqs">
-        <h4
-          class="subtitle is-clickable is-size-4 has-text-centered"
-          @click="showFaqs = false"
-        >
-          Frequently Asked Questions
-          <span class="has-text-link is-size-5">(hide)</span>
-        </h4>
-        <frequently-asked-questions :faqs="faqsKeypairs" />
-      </div>
-    </template>
+    <!-- FAQs -->
+    <div class="block" v-if="showFaqs">
+      <hr />
+      <h4
+        class="subtitle is-clickable is-size-4 has-text-centered"
+        @click="showFaqs = false"
+      >
+        Frequently Asked Questions
+      </h4>
+      <frequently-asked-questions :faqs="faqsKeypairs" />
+    </div>
 
     <!-- Modals -->
     <key-pairs-new-key-pair-modal

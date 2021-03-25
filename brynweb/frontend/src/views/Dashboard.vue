@@ -8,6 +8,7 @@
       :announcement="announcement"
     />
 
+    <hr />
     <dashboard-team-tiles />
 
     <dashboard-service-status />
