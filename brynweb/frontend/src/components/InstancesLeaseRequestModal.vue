@@ -63,7 +63,9 @@ export default {
       liveInstances: LIVE_INSTANCES,
     }),
     instanceOptions() {
-      return mapToFormOptions(this.liveInstances);
+      return mapToFormOptions(
+        this.liveInstances.filter((instance) => instance.leaseExpiry != null)
+      );
     },
   },
 
