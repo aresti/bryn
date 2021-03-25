@@ -48,10 +48,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.hero.is-primary .tabs.is-boxed li.is-active a,
-.hero.is-primary .tabs.is-boxed li.is-active a:hover {
-  background-color: hsl(0, 0%, 96%);
-}
-</style>

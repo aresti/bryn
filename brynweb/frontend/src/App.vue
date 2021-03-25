@@ -58,3 +58,9 @@ export default {
   },
 };
 </script>
+
+<style>
+.navbar.is-fixed-top {
+  border-bottom: 1px solid #457b9dff;
+}
+</style>

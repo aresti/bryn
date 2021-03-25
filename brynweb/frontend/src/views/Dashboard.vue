@@ -1,20 +1,25 @@
 <template>
   <div>
-    <h3 class="is-size-3 mb-5">Welcome back, {{ user.firstName }}</h3>
+    <template v-if="!serviceAnnouncements.length">
+      <h3 class="is-size-3 mb-5">Welcome back, {{ user.firstName }}</h3>
+      <hr />
+    </template>
+
     <team-licence-panel hideValid />
+
     <service-announcement
       v-for="announcement in serviceAnnouncements"
       :key="announcement.id"
       :announcement="announcement"
     />
 
-    <hr />
     <dashboard-team-tiles />
 
     <dashboard-service-status />
 
+    <hr />
+
     <div v-if="newsAnnouncements.length">
-      <hr class="has-background-grey-lighter" />
       <h4 class="is-size-3 mb-4">Latest news</h4>
 
       <news-announcement

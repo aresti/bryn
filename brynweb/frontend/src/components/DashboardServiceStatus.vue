@@ -1,6 +1,6 @@
 <template>
   <div class="box">
-    <h3 class="subtitle">Service status</h3>
+    <h3 class="subtitle">CLIMB-BIG-DATA - Service status</h3>
     <table class="table is-fullwidth">
       <thead>
         <tr>
