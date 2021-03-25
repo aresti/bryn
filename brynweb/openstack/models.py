@@ -209,7 +209,7 @@ class ServerLeaseRequest(models.Model):
     )
 
     def send_admin_notification_email(self):
-        admin_emails = settings.ADMINS.get(self.server_lease.tenant.region.name)
+        admin_emails = settings.REGION_ADMINS.get(self.server_lease.tenant.region.name)
         if not admin_emails:
             return
         context = {"server_lease_request": self}
