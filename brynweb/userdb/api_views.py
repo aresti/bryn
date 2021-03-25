@@ -100,7 +100,6 @@ class InvitationListView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         """
         Set to_team from url resolver
-        Send email after creation
         """
         team = get_object_or_404(Team, pk=self.request.resolver_match.kwargs["team_id"])
         invitation = serializer.save(to_team=team)
@@ -161,7 +160,6 @@ class LicenceAcceptanceListView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         """
         Set team from url resolver, user from request
-        Send email after creation
         """
         team = get_object_or_404(Team, pk=self.request.resolver_match.kwargs["team_id"])
         try:

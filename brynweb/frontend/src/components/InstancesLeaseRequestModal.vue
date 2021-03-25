@@ -22,8 +22,8 @@
 
 <script>
 import { mapActions, mapGetters } from "vuex";
-import { SEND_INDEFINITE_SERVER_LEASE_REQUEST } from "@/store/action-types";
-import { LIVE_INSTANCES } from "@/store/getter-types";
+import { CREATE_SERVER_LEASE_REQUEST } from "@/store/action-types";
+import { GET_INSTANCE_BY_ID, LIVE_INSTANCES } from "@/store/getter-types";
 
 import useFormValidation from "@/composables/formValidation";
 import { mapToFormOptions } from "@/composables/formValidation/utils";
@@ -59,6 +59,7 @@ export default {
 
   computed: {
     ...mapGetters({
+      getInstanceById: GET_INSTANCE_BY_ID,
       liveInstances: LIVE_INSTANCES,
     }),
     instanceOptions() {
@@ -74,11 +75,13 @@ export default {
   // Non-reactive
   methods: {
     ...mapActions({
-      sendIndefiniteServerLeaseRequest: SEND_INDEFINITE_SERVER_LEASE_REQUEST,
+      createServerLeaseRequest: CREATE_SERVER_LEASE_REQUEST,
     }),
+
     onClose() {
       this.$emit("close-modal");
     },
+
     async onSubmit() {
       this.form.validate();
       if (this.submitted || !this.form.valid) {
@@ -86,8 +89,10 @@ export default {
       }
       this.submitted = true;
       try {
-        await this.sendIndefiniteServerLeaseRequest(this.form.values);
-        this.toast.success(`Indefinite server lease request submitted`);
+        const instance = this.getInstanceById(this.form.values.instance);
+        const message = this.form.values.message;
+        await this.createServerLeaseRequest({ instance, message });
+        this.toast.success(`Server lease request submitted`);
         this.onClose();
       } catch (err) {
         if (err.response?.status === 400) {

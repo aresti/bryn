@@ -1,0 +1,6 @@
+Dear {{ server_lease_request.user.first_name }} {{ server_lease_request.user.last_name }},
+
+Your request for an Indefinite Server Lease for '{{ server_lease_request.server_lease.server_name }}' has been approved.
+
+Kind regards,
+CLIMB-BIG-DATA Team

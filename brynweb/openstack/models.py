@@ -187,6 +187,112 @@ class ServerLease(models.Model):
         )
 
 
+class ServerLeaseRequest(models.Model):
+    server_lease = models.ForeignKey(
+        ServerLease, on_delete=models.CASCADE, editable=False
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="lease_requests", editable=False,
+    )
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    closed = models.BooleanField(default=False)
+    responded_at = models.DateTimeField(null=True, blank=True, editable=False)
+    response = models.TextField()
+    granted = models.BooleanField(default=False, editable=False)
+    actioned_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="lease_request_responses",
+        null=True,
+        editable=False,
+    )
+
+    def send_admin_notification_email(self):
+        admin_emails = settings.ADMINS.get(self.server_lease.tenant.region.name)
+        if not admin_emails:
+            return
+        context = {"server_lease_request": self}
+        subject = render_to_string(
+            "openstack/email/server_lease_request_admin_notification_subject.txt",
+            context,
+        )
+        text_content = render_to_string(
+            "openstack/email/server_lease_request_admin_notification_email.txt", context
+        )
+        send_mail(
+            subject,
+            text_content,
+            settings.DEFAULT_FROM_EMAIL,
+            admin_emails,
+            fail_silently=False,
+        )
+
+    def grant(self, request):
+        lease = self.server_lease
+        lease.expiry = None
+        lease.save()
+
+        self.granted = True
+        self.closed = True
+        self.responded_at = timezone.now()
+        self.actioned_by = request.user
+        self.save()
+
+        self.send_lease_granted_email()
+
+    def send_lease_granted_email(self):
+        context = {"server_lease_request": self}
+        subject = render_to_string(
+            "openstack/email/server_lease_request_granted_subject.txt", context,
+        )
+        text_content = render_to_string(
+            "openstack/email/server_lease_request_granted_email.txt", context
+        )
+        html_content = render_to_string(
+            "openstack/email/server_lease_request_granted_email.html", context
+        )
+        send_mail(
+            subject,
+            text_content,
+            settings.DEFAULT_FROM_EMAIL,
+            [self.user.email],
+            html_message=html_content,
+            fail_silently=False,
+        )
+
+    def reject(self, request):
+        self.closed = True
+        self.responded_at = timezone.now()
+        self.actioned_by = request.user
+        self.save()
+
+        self.send_lease_rejected_email()
+
+    def send_lease_rejected_email(self):
+        context = {"server_lease_request": self}
+        subject = render_to_string(
+            "openstack/email/server_lease_request_rejected_subject.txt", context,
+        )
+        text_content = render_to_string(
+            "openstack/email/server_lease_request_rejected_email.txt", context
+        )
+        html_content = render_to_string(
+            "openstack/email/server_lease_request_rejected_email.html", context
+        )
+        send_mail(
+            subject,
+            text_content,
+            settings.DEFAULT_FROM_EMAIL,
+            [self.user.email],
+            html_message=html_content,
+            fail_silently=False,
+        )
+
+    def __str__(self):
+        return f"Indefinite lease request for {self.server_lease.server_name}"
+
+
 class ActionLog(models.Model):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
     user = models.ForeignKey(User, default=None, null=True, on_delete=models.CASCADE)

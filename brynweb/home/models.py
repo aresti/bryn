@@ -21,8 +21,8 @@ class Announcement(models.Model):
     title = models.CharField(max_length=255)
     content = tinymce_models.HTMLField()
     published = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    updated_at = models.DateTimeField(auto_now=True, editable=False)
     expiry = models.DateTimeField(null=True, blank=True)
 
 
@@ -41,5 +41,5 @@ class FrequentlyAskedQuestion(models.Model):
     title = models.CharField(max_length=255)
     content = tinymce_models.HTMLField()
     published = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    updated_at = models.DateTimeField(auto_now=True, editable=False)

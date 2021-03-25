@@ -7,6 +7,7 @@ axios.defaults.timeout = 30000;
 const apiBase = "/api/";
 const teamBase = apiBase + "teams/TEAM_ID/";
 const tenantBase = teamBase + "tenants/TENANT_ID/";
+const instanceBase = tenantBase + "instances/INSTANCE_ID/";
 
 const apiRoutes = {
   announcements: apiBase + "announcements/",
@@ -19,6 +20,7 @@ const apiRoutes = {
   keyPairs: apiBase + "keypairs/",
   licenceAcceptances: teamBase + "licence-acceptances/",
   messages: apiBase + "messages/",
+  serverLeaseRequest: instanceBase + "lease-requests/",
   teams: apiBase + "teams/",
   teamMembers: teamBase + "members/",
   userProfile: apiBase + "userprofile/",
@@ -26,13 +28,21 @@ const apiRoutes = {
   volumeTypes: tenantBase + "volumetypes/",
 };
 
-const getAPIRoute = (routeName, teamId = null, tenantId = null) => {
+const getAPIRoute = (
+  routeName,
+  teamId = null,
+  tenantId = null,
+  instanceId = null
+) => {
   let route = apiRoutes[routeName];
   if (teamId != null) {
     route = route.replace("TEAM_ID", teamId);
   }
   if (tenantId != null) {
     route = route.replace("TENANT_ID", tenantId);
+  }
+  if (instanceId != null) {
+    route = route.replace("INSTANCE_ID", instanceId);
   }
   return route;
 };

@@ -210,7 +210,7 @@ HASHIDS = {"SALT": HASHIDS_SALT, "MIN_LENGTH": 11}  # noqa: F405
 HUEY = {
     "huey_class": "huey.RedisHuey",
     "name": "bryn-huey",
-    "immediate": False,
+    "immediate": DEBUG,
     "consumer": {"workers": 2},
 }
 

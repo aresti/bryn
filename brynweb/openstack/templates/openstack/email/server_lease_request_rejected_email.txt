@@ -1,0 +1,10 @@
+Dear {{ server_lease_request.user.first_name }} {{ server_lease_request.user.last_name }},
+
+Your request for an Indefinite Server Lease for '{{ server_lease_request.server_lease.server_name }}' has been rejected.
+
+Please see the following response from our sysadmin:
+
+{{ server_lease_request.response }}
+
+Kind regards,
+CLIMB-BIG-DATA Team

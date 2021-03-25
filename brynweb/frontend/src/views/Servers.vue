@@ -77,7 +77,7 @@
         @click="showFaqs = !showFaqs"
         >{{ showFaqs ? "Hide" : "Show" }} FAQs</base-button
       >
-      <base-button color="ghost" @click="showIndefiniteLeaseModal = true"
+      <base-button color="ghost" @click="showLeaseRequestModal = true"
         >Request Indefinite Server Lease</base-button
       >
     </base-buttons>
@@ -94,9 +94,9 @@
       <frequently-asked-questions :faqs="faqsServers" />
     </div>
 
-    <instances-indefinite-lease-request-modal
-      v-if="showIndefiniteLeaseModal"
-      @close-modal="showIndefiniteLeaseModal = false"
+    <instances-lease-request-modal
+      v-if="showLeaseRequestModal"
+      @close-modal="showLeaseRequestModal = false"
     />
 
     <instances-new-instance-modal
@@ -125,7 +125,7 @@ import {
 } from "@/store/getter-types";
 
 import FrequentlyAskedQuestions from "@/components/FrequentlyAskedQuestions";
-import InstancesIndefiniteLeaseRequestModal from "@/components/InstancesIndefiniteLeaseRequestModal";
+import InstancesLeaseRequestModal from "@/components/InstancesLeaseRequestModal";
 import InstancesNewInstanceModal from "@/components/InstancesNewInstanceModal";
 import InstancesTable from "@/components/InstancesTable";
 import KeyPairsNewKeyPairModal from "@/components/KeyPairsNewKeyPairModal";
@@ -135,7 +135,7 @@ export default {
   // Template dependencies
   components: {
     FrequentlyAskedQuestions,
-    InstancesIndefiniteLeaseRequestModal,
+    InstancesLeaseRequestModal,
     InstancesTable,
     InstancesNewInstanceModal,
     KeyPairsNewKeyPairModal,
@@ -150,7 +150,7 @@ export default {
     return {
       showFaqs: false,
       showShelved: false,
-      showIndefiniteLeaseModal: false,
+      showLeaseRequestModal: false,
       showKeyPairsNewKeyPairModal: false,
       showInstancesNewInstanceModal: false,
     };

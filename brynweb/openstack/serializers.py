@@ -8,6 +8,7 @@ from .models import (
     Region,
     RegionSettings,
     ServerLease,
+    ServerLeaseRequest,
     Tenant,
 )
 
@@ -155,9 +156,19 @@ class ServerLeaseSerializer(serializers.ModelSerializer):
             "server_name",
             "tenant",
             "user",
-            "created_at",
-            "last_renewed_at",
             "expiry",
-            "renewal_count",
             "renewal_url",
         ]
+
+
+class ServerLeaseRequestSerializer(serializers.ModelSerializer):
+    server_lease = serializers.PrimaryKeyRelatedField(
+        read_only=True, pk_field=HashidsIntegerField()
+    )
+    user = serializers.PrimaryKeyRelatedField(
+        read_only=True, pk_field=HashidsIntegerField()
+    )
+
+    class Meta:
+        model = ServerLeaseRequest
+        fields = ["server_lease", "message", "user"]

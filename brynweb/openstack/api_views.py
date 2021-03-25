@@ -12,9 +12,10 @@ from rest_framework.response import Response
 from core import hashids
 from core.permissions import IsOwner
 from userdb.models import TeamMember
+from userdb.permissions import IsTeamMemberPermission
 
 from .service import OpenstackService, ServiceUnavailable, OpenstackException
-from .models import HypervisorStats, ServerLease, Tenant
+from .models import HypervisorStats, ServerLease, ServerLeaseRequest, Tenant
 from .serializers import (
     AttachmentSerializer,
     FlavorSerializer,
@@ -22,6 +23,7 @@ from .serializers import (
     ImageSerializer,
     InstanceSerializer,
     KeyPairSerializer,
+    ServerLeaseRequestSerializer,
     TenantSerializer,
     VolumeSerializer,
     VolumeTypeSerializer,
@@ -187,9 +189,6 @@ class TenantListView(generics.ListAPIView):
     """
 
     serializer_class = TenantSerializer
-    permission_classes = [
-        permissions.IsAuthenticated,
-    ]
 
     def get_queryset(self):
         return get_tenants_for_user(
@@ -461,3 +460,26 @@ class HypervisorStatsListView(generics.ListAPIView):
 
     serializer_class = HypervisorStatsSerializer
     queryset = HypervisorStats.objects.all()
+
+
+class ServerLeaseRequestCreateView(generics.CreateAPIView):
+    """
+    ServerListRequest create view.
+    """
+
+    permissions = [permissions.IsAuthenticated, IsTeamMemberPermission]
+    serializer_class = ServerLeaseRequestSerializer
+    queryset = ServerLeaseRequest.objects.all()
+
+    def perform_create(self, serializer):
+        """
+        Set server_lease id from instance_id lookup, user from request.
+        Send admin notification email.
+        """
+        server_lease = get_object_or_404(
+            ServerLease, server_id=self.request.resolver_match.kwargs["instance_id"]
+        )
+        server_lease_request = serializer.save(
+            server_lease=server_lease, user=self.request.user
+        )
+        server_lease_request.send_admin_notification_email()

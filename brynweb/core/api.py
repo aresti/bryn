@@ -56,6 +56,12 @@ urlpatterns = [
         openstack_views.InstanceDetailView.as_view(),
         name="instances",
     ),
+    # {% url "api:lease_requests" team_id=team.id tenant_id=tenant.id instance_id=instance.id  %}
+    path(
+        "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/instances/<str:instance_id>/lease-requests/",
+        openstack_views.ServerLeaseRequestCreateView.as_view(),
+        name="lease_requests",
+    ),
     # {% url "api:flavors" team_id=team.id tenant_id=tenant.id %}
     path(
         "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/flavors/",
