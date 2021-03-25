@@ -51,7 +51,7 @@ export default {
         Servers: {
           iconClasses: ["fas", "server"],
           value: this.totalTeamInstances,
-          mobile: false,
+          mobile: true,
         },
         vCPUs: {
           iconClasses: ["fas", "microchip"],
@@ -61,17 +61,17 @@ export default {
         Memory: {
           iconClasses: ["fas", "memory"],
           value: formatBytes(this.totalTeamRamGb * Math.pow(1000, 3)),
-          mobile: true,
+          mobile: false,
         },
         Volumes: {
           iconClasses: ["fas", "hdd"],
           value: this.totalTeamVolumes,
-          mobile: false,
+          mobile: true,
         },
         Storage: {
           iconClasses: ["fas", "box"],
           value: formatBytes(this.totalTeamCapacity * Math.pow(1000, 3)),
-          mobile: true,
+          mobile: false,
         },
       };
     },
