@@ -462,7 +462,7 @@ class LicenceAcceptance(models.Model):
         """
         Set the current licence version if not specified.
         """
-        if not self.licence_version:
+        if not self.licence_version_id:
             self.licence_version = LicenceVersion.objects.current()
         super().save(*args, **kwargs)
 

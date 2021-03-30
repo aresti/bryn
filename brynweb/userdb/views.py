@@ -1,8 +1,9 @@
-from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.contrib.auth import views as auth_views, get_user_model, login
+from django.db import transaction
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
+from django.urls import reverse, reverse_lazy
 from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.http import require_http_methods
 from django.views.generic import RedirectView, TemplateView
@@ -75,24 +76,25 @@ def team_registration_view(request):
         team_form = TeamForm(request.POST)
 
         if user_form.is_valid() and team_form.is_valid():
-            user = user_form.save(
-                commit=False
-            )  # profile instance is created via. signal
-            user.is_active = False  # pending email validation
-            user.save()
+            with transaction.atomic():
+                user = user_form.save(
+                    commit=False
+                )  # profile instance is created via. signal
+                user.is_active = False  # pending email validation
+                user.save()
 
-            # create team
-            team = team_form.save(commit=False)
-            team.creator = user
-            team.save()
+                # create team
+                team = team_form.save(commit=False)
+                team.creator = user
+                team.save()
 
-            # create team member
-            member = TeamMember(team=team, user=user, is_admin=True)
-            member.save()
+                # create team member
+                member = TeamMember(team=team, user=user, is_admin=True)
+                member.save()
 
-            # create initial licence  acceptance
-            licence_acceptance = LicenceAcceptance(user=user, team=team)
-            licence_acceptance.save()
+                # create initial licence  acceptance
+                licence_acceptance = LicenceAcceptance(user=user, team=team)
+                licence_acceptance.save()
 
             return HttpResponseRedirect(reverse("user:register_team_done"))
     else:
@@ -211,14 +213,15 @@ def accept_invitation_view(request, uuid):
             request.POST, initial={"email": invitation.email}
         )
         if form.is_valid():
-            user = form.save()
-            teammember = invitation.create_team_membership(user)
+            with transaction.atomic():
+                user = form.save()
+                teammember = invitation.create_team_membership(user)
 
-            user.profile.email_validated = True  # Since they received the invite
-            user.profile.default_team_membership = (
-                teammember  # Since it's their first & only team
-            )
-            user.save()
+                user.profile.email_validated = True  # Since they received the invite
+                user.profile.default_team_membership = (
+                    teammember  # Since it's their first & only team
+                )
+                user.save()
 
             messages.success(request, success_message)
             login(
