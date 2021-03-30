@@ -260,6 +260,7 @@ class Invitation(models.Model):
         teammember.save()
         self.accepted = True
         self.save()
+        return teammember
 
     def send_invitation_email(self):
         context = {

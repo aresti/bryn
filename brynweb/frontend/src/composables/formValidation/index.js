@@ -110,7 +110,7 @@ class Form {
      * Should the form submission button be enabled?
      */
     return Object.values(this.fields).every((field) => {
-      return !field.invalid && (field.value.length > 0 || !field.required);
+      return !field.invalid && (field.value?.length > 0 || !field.required);
     });
   }
 

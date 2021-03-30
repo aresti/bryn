@@ -107,7 +107,7 @@ class CustomUserCreationForm(UserCreationForm):
         else:
             return self.cleaned_data["email"]
 
-    def save(self, commit=False):
+    def save(self, commit=True):
         """Use email as username (cannot just change user model due legacy)"""
         user = super().save(commit=False)
         user.username = user.email

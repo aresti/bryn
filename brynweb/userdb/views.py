@@ -202,7 +202,7 @@ def accept_invitation_view(request, uuid):
                 messages.success(request, success_message)
                 return HttpResponseRedirect(reverse("home:home"))
 
-        # Not logged in
+        # Not logged in GET: initialise form
         form = InvitedUserCreationForm(initial={"email": invitation.email})
 
     # POST: Create User and TeamMembership, redirect to login
@@ -212,11 +212,20 @@ def accept_invitation_view(request, uuid):
         )
         if form.is_valid():
             user = form.save()
-            invitation.create_team_membership(user)
+            teammember = invitation.create_team_membership(user)
+
             user.profile.email_validated = True  # Since they received the invite
+            user.profile.default_team_membership = (
+                teammember  # Since it's their first & only team
+            )
             user.save()
+
             messages.success(request, success_message)
-            login(request, user)
+            login(
+                request,
+                user,
+                backend="django.contrib.auth.backends.AllowAllUsersModelBackend",
+            )
             return HttpResponseRedirect(reverse("home:home"))
 
     login_url = f"{reverse('user:login')}?next={request.path}"
