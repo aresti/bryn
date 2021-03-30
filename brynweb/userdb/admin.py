@@ -224,14 +224,17 @@ class TeamAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
 class ProfileInline(admin.StackedInline):
     model = Profile
+    readonly_fields = (
+        "default_keypair",
+        "default_team_membership",
+        "new_email_pending_verification",
+    )
     can_delete = False
 
 
 class CustomUserAdmin(UserAdmin):
     list_filter = ("profile__email_validated",)
-
     actions = ("resend_email_activation_link",)
-
     inlines = (ProfileInline, TeamMemberInline)
 
     def resend_email_activation_link(self, request, queryset):
