@@ -18,24 +18,49 @@ User = get_user_model()
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    default_team_membership = serializers.PrimaryKeyRelatedField(
+        pk_field=HashidsIntegerField(), queryset=TeamMember.objects.all()
+    )
+
     class Meta:
         model = Profile
         fields = [
             "default_keypair",
+            "default_team_membership",
             "email_validated",
             "new_email_pending_verification",
         ]
         read_only_fields = ["email_validated", "new_email_pending_verification"]
 
 
+class UserTeamMembershipsSerializer(serializers.ModelSerializer):
+    id = HashidsIntegerField(read_only=True)
+    team = serializers.PrimaryKeyRelatedField(
+        pk_field=HashidsIntegerField(), read_only=True
+    )
+
+    class Meta:
+        model = TeamMember
+        fields = ["id", "team"]
+
+
 class UserSerializer(serializers.ModelSerializer):
     id = HashidsIntegerField(read_only=True)
     profile = ProfileSerializer(many=False, read_only=False)
+    team_memberships = UserTeamMembershipsSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
-        fields = ["id", "username", "first_name", "last_name", "email", "profile"]
-        read_only_fields = ["id", "username"]
+        fields = [
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "profile",
+            "team_memberships",
+        ]
+        read_only_fields = ["username"]
 
     def update(self, instance, validated_data):
         is_new_email = instance.email != validated_data.get("email", instance.email)
@@ -51,6 +76,9 @@ class UserSerializer(serializers.ModelSerializer):
             profile.default_keypair = profile_data.get(
                 "default_keypair", profile.default_keypair
             )
+            profile.default_team_membership = profile_data.get(
+                "default_team_membership", profile.default_team_membership
+            )
             profile.save()
 
         if is_new_email:
@@ -65,12 +93,20 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
 
+class TeamMemberUserSerializer(serializers.ModelSerializer):
+    id = HashidsIntegerField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name", "email"]
+
+
 class TeamMemberSerializer(serializers.ModelSerializer):
     id = HashidsIntegerField(read_only=True)
     team = serializers.PrimaryKeyRelatedField(
         pk_field=HashidsIntegerField(), read_only=True
     )
-    user = UserSerializer()
+    user = TeamMemberUserSerializer(read_only=True)
 
     class Meta:
         model = TeamMember

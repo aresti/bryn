@@ -1,6 +1,7 @@
 import { createFindByIdGetter } from "@/utils/store";
 import {
   ADMIN_TEAM_MEMBERS,
+  DEFAULT_TEAM_ID,
   DEFAULT_TENANT,
   FILTER_TENANT,
   LOADING,
@@ -8,6 +9,7 @@ import {
   TENANTS,
   USER_IS_ADMIN,
   USER_FULL_NAME,
+  GET_TEAM_BY_ID,
   GET_TENANT_BY_ID,
   GET_REGION_BY_ID,
   GET_REGION_FOR_TENANT,
@@ -18,6 +20,12 @@ import {
 } from "./getter-types";
 
 export const getters = {
+  [DEFAULT_TEAM_ID](state) {
+    return state.user.teamMemberships.find(
+      (membership) => membership.id === state.user.profile.defaultTeamMembership
+    )?.team;
+  },
+
   [DEFAULT_TENANT](_state, getters) {
     return getters[TENANTS].find(
       (tenant) => tenant.region === getters[TEAM].defaultRegion
@@ -40,6 +48,10 @@ export const getters = {
     return getters[TENANTS].find(
       (tenant) => tenant.id === state.filterTenantId
     );
+  },
+
+  [GET_TEAM_BY_ID](state) {
+    return createFindByIdGetter(state.teams);
   },
 
   [GET_TENANT_BY_ID](_state, getters) {

@@ -7,22 +7,30 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapGetters, mapState } from "vuex";
+import { DEFAULT_TEAM_ID } from "@/store/getter-types";
+
 import NoTeams from "@/components/NoTeams";
 
 export default {
   components: {
     NoTeams,
   },
-  computed: mapState({
-    teams: (state) => state.teams,
-  }),
+
+  computed: {
+    ...mapState({
+      teams: (state) => state.teams,
+    }),
+    ...mapGetters({
+      defaultTeamId: DEFAULT_TEAM_ID,
+    }),
+  },
+
   mounted() {
     if (this.teams.length) {
-      const defaultTeam = this.teams[0];
       this.$router.push({
         name: "teamHome",
-        params: { teamId: defaultTeam.id },
+        params: { teamId: this.defaultTeamId ?? this.teams[0].id },
       });
     }
   },

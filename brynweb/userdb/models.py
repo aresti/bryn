@@ -221,8 +221,10 @@ class Team(models.Model):
 
 
 class TeamMember(models.Model):
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="memberships")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="team_memberships"
+    )
     is_admin = models.BooleanField(default=False)
 
     @property
@@ -291,7 +293,10 @@ class Profile(models.Model):
     )
     email_validated = models.BooleanField(default=False)
     default_keypair = models.ForeignKey(
-        "openstack.KeyPair", on_delete=models.SET_NULL, blank=True, null=True
+        "openstack.KeyPair", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    default_team_membership = models.ForeignKey(
+        TeamMember, on_delete=models.SET_NULL, null=True, blank=True
     )
     new_email_pending_verification = models.EmailField(blank=True, null=True)
 

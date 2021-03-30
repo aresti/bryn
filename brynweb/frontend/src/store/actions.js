@@ -176,9 +176,18 @@ const actions = {
     commit(SET_USER, user);
   },
 
-  async [UPDATE_USER]({ commit }, userData) {
+  async [UPDATE_USER](
+    { commit },
+    { firstName, lastName, email, defaultTeamMembership }
+  ) {
     const url = getAPIRoute("userProfile");
-    const response = await axios.patch(url, userData);
+    const payload = {
+      firstName,
+      lastName,
+      email,
+      profile: { defaultTeamMembership },
+    };
+    const response = await axios.patch(url, payload);
     const user = response.data;
     commit(SET_USER, user);
   },

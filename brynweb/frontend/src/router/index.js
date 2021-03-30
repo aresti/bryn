@@ -21,8 +21,8 @@ const routes = [
     path: "/teams/:teamId",
     name: "teamHome",
     component: TeamHome,
-    redirect: (to) => {
-      return to.path + "/dashboard";
+    redirect: () => {
+      return { name: "dashboard" };
     },
     children: [
       {

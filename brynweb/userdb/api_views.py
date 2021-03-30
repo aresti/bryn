@@ -74,7 +74,8 @@ class TeamMemberDetailView(generics.RetrieveDestroyAPIView):
         return TeamMember.objects.filter(team__in=teams)
 
     def delete(self, request, team_id, pk):
-        if get_object_or_404(TeamMember, pk=pk).user == request.user:
+        teammember = get_object_or_404(TeamMember, pk=pk)
+        if teammember.user == request.user:
             # Don't allow a team member to delete themselves
             raise exceptions.MethodNotAllowed("Own team membership cannot be deleted.")
         return super().delete(self, request, team_id, pk)

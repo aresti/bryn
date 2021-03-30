@@ -1,9 +1,11 @@
 /* -- ROOT STORE -- */
+export const DEFAULT_TEAM_ID = "DEFAULT_TEAM_ID";
 export const DEFAULT_TENANT = "DEFAULT_TENANT";
 export const FILTER_TENANT = "FILTER_TENANT";
 export const GET_REGION_BY_ID = "GET_REGION_BY_ID";
 export const GET_REGION_FOR_TENANT = "GET_REGION_FOR_TENANT";
 export const GET_REGION_NAME_FOR_TENANT = "GET_REGION_NAME_FOR_TENANT";
+export const GET_TEAM_BY_ID = "GET_TEAM_BY_ID";
 export const GET_TENANT_BY_ID = "GET_TENANT_BY_ID";
 export const LOADING = "LOADING";
 export const TEAM = "TEAM";
