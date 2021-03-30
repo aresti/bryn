@@ -1,6 +1,5 @@
 <template>
   <div class="box">
-    <h3 class="subtitle">CLIMB-BIG-DATA - Service status</h3>
     <table class="table is-fullwidth">
       <thead>
         <tr>
@@ -9,7 +8,6 @@
           <th>VMs</th>
           <th class="has-text-centered">vCPUs</th>
           <th class="has-text-centered">Memory</th>
-          <th class="has-text-centered is-hidden-mobile">Storage</th>
         </tr>
       </thead>
       <tbody>

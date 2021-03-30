@@ -13,8 +13,10 @@
       :announcement="announcement"
     />
 
+    <h4 class="is-size-4 mb-4">Team resources</h4>
     <dashboard-team-tiles />
 
+    <h4 class="is-size-4 mb-4">Service status</h4>
     <dashboard-service-status />
 
     <hr />

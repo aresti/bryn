@@ -35,12 +35,6 @@
       </p>
       <base-progress :value="memoryPercent" :max="100" color="info" />
     </td>
-    <td class="is-hidden-mobile">
-      <p class="is-size-7 has-text-centered is-hidden-touch">
-        {{ GBtoPB(stats.localGbUsed) }} / {{ GBtoPB(stats.localGb) }} PB
-      </p>
-      <base-progress :value="localGbPercent" :max="100" color="info" />
-    </td>
   </tr>
 </template>
 
