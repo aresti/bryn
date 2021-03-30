@@ -2,7 +2,6 @@ from django.contrib import admin
 
 from .models import (
     ActionLog,
-    HypervisorStats,
     Tenant,
     Region,
     RegionSettings,
@@ -145,6 +144,5 @@ class RegionAdmin(admin.ModelAdmin):
 admin.site.register(Tenant, TenantAdmin)
 admin.site.register(Region, RegionAdmin)
 admin.site.register(ActionLog, ActionLogAdmin)
-admin.site.register(HypervisorStats)
 admin.site.register(ServerLease, ServerLeaseAdmin)
 admin.site.register(ServerLeaseRequest, ServerLeaseRequestAdmin)
