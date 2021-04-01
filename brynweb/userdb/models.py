@@ -15,6 +15,7 @@ from tinymce import models as tinymce_models
 
 from core import hashids
 from core.tasks import send_mail
+from core.utils import main_text_from_html
 from .tokens import account_activation_token
 
 User = get_user_model()
@@ -36,6 +37,11 @@ class Institution(models.Model):
 
 def licence_expiry_default():
     return timezone.now() + datetime.timedelta(days=30)
+
+
+class VerifiedTeamManager(models.Manager):
+    def get_queryset(self) -> models.QuerySet["Team"]:
+        return super().get_queryset().filter(verified=True)
 
 
 class Team(models.Model):
@@ -75,6 +81,10 @@ class Team(models.Model):
         blank=True, null=True, editable=False
     )
 
+    # managers
+    objects = models.Manager()
+    verified_teams = VerifiedTeamManager()
+
     @property
     def hashid(self):
         """
@@ -87,14 +97,14 @@ class Team(models.Model):
         """
         Return users with admin privileges for this team (queryset)
         """
-        return self.users.filter(teammember__is_admin=True)
+        return self.users.filter(team_memberships__is_admin=True)
 
     @property
     def regular_users(self):
         """
         Return users with regular privileges for this team (queryset)
         """
-        return self.users.filter(teammember__is_admin=False)
+        return self.users.filter(team_memberships__is_admin=False)
 
     @property
     def latest_licence_acceptance(self):
@@ -122,13 +132,11 @@ class Team(models.Model):
         context = {"user": self.creator, "team": self}
         subject = render_to_string(
             "userdb/email/new_registration_admin_subject.txt", context
-        )
-        text_content = render_to_string(
-            "userdb/email/new_registration_admin_email.txt", context
-        )
+        ).strip()
         html_content = render_to_string(
             "userdb/email/new_registration_admin_email.html", context
         )
+        text_content = main_text_from_html(html_content)
 
         send_mail(
             subject,
@@ -146,13 +154,11 @@ class Team(models.Model):
         context = {"user": self.creator, "team": self}
         subject = render_to_string(
             "userdb/email/notify_team_verified_subject.txt", context
-        )
-        text_content = render_to_string(
-            "userdb/email/notify_team_verified_email.txt", context
-        )
+        ).strip()
         html_content = render_to_string(
             "userdb/email/notify_team_verified_email.html", context
         )
+        text_content = main_text_from_html(html_content)
 
         send_mail(
             subject,
@@ -172,12 +178,10 @@ class Team(models.Model):
         """
         context = {
             "team": self,
-            "team_management_url": f"{settings.DEFAULT_DOMAIN}/teams/{self.hashid}/team",
+            "team_management_url": f"/teams/{self.hashid}/team",  # Vue route, can't use reverse
             "time_remaining": (self.licence_expiry - timezone.now()),
             "termination_date": self.licence_expiry
             + datetime.timedelta(days=settings.LICENCE_TERMINATION_DAYS),
-            "licence_terms_url": settings.DEFAULT_DOMAIN + reverse("user:licence"),
-            "licence_email_signatories": settings.LICENCE_EMAIL_SIGNATORIES,
         }
 
         # Email each team member
@@ -185,24 +189,18 @@ class Team(models.Model):
             context["user"] = user
             subject = render_to_string(
                 "userdb/email/team_licence_reminder_subject.txt", context
-            )
+            ).strip()
             if user in self.admin_users.all():
-                text_content = render_to_string(
-                    "userdb/email/team_licence_reminder_primary_user_email.txt", context
-                )
                 html_content = render_to_string(
                     "userdb/email/team_licence_reminder_primary_user_email.html",
                     context,
                 )
             else:
-                text_content = render_to_string(
-                    "userdb/email/team_licence_reminder_secondary_user_email.txt",
-                    context,
-                )
                 html_content = render_to_string(
                     "userdb/email/team_licence_reminder_secondary_user_email.html",
                     context,
                 )
+            text_content = main_text_from_html(html_content)
             send_mail(
                 subject,
                 text_content,
@@ -267,9 +265,11 @@ class Invitation(models.Model):
             "invitation": self,
             "url": reverse("user:accept_invitation", args=[self.uuid]),
         }
-        subject = render_to_string("userdb/email/user_invite_subject.txt", context)
-        text_content = render_to_string("userdb/email/user_invite_email.txt", context)
+        subject = render_to_string(
+            "userdb/email/user_invite_subject.txt", context
+        ).strip()
         html_content = render_to_string("userdb/email/user_invite_email.html", context)
+        text_content = main_text_from_html(html_content)
 
         send_mail(
             subject,
@@ -315,13 +315,11 @@ class Profile(models.Model):
         }
         subject = render_to_string(
             "userdb/email/user_verification_subject.txt", context
-        )
-        text_content = render_to_string(
-            "userdb/email/user_verification_email.txt", context
-        )
+        ).strip()
         html_content = render_to_string(
             "userdb/email/user_verification_email.html", context
         )
+        text_content = main_text_from_html(html_content)
 
         send_mail(
             subject,
@@ -364,25 +362,21 @@ class Profile(models.Model):
         user = self.user
         context = {
             "user": user,
-            "validation_link": request.build_absolute_uri(
-                reverse(
-                    "user:validate_email_change",
-                    kwargs={
-                        "uidb64": urlsafe_base64_encode(force_bytes(user.id)),
-                        "token": account_activation_token.make_token(user),
-                    },
-                )
+            "validation_link": reverse(
+                "user:validate_email_change",
+                kwargs={
+                    "uidb64": urlsafe_base64_encode(force_bytes(user.id)),
+                    "token": account_activation_token.make_token(user),
+                },
             ),
         }
         subject = render_to_string(
             "userdb/email/user_email_change_verification_subject.txt", context
-        )
-        text_content = render_to_string(
-            "userdb/email/user_email_change_verification_email.txt", context
-        )
+        ).strip()
         html_content = render_to_string(
             "userdb/email/user_email_change_verification_email.html", context
         )
+        text_content = main_text_from_html(html_content)
         send_mail(
             subject,
             text_content,
@@ -400,13 +394,11 @@ class Profile(models.Model):
         }
         subject = render_to_string(
             "userdb/email/user_email_change_notification_subject.txt", context
-        )
-        text_content = render_to_string(
-            "userdb/email/user_email_change_notification_email.txt", context
-        )
+        ).strip()
         html_content = render_to_string(
             "userdb/email/user_email_change_notification_email.html", context
         )
+        text_content = main_text_from_html(html_content)
         send_mail(
             subject,
             text_content,

@@ -86,8 +86,12 @@ class ServerLeaseAdmin(admin.ModelAdmin):
         )
 
     def send_renewal_reminder_email(self, request, queryset):
+        n = 0
         for server_lease in queryset:
-            server_lease.send_email_renewal_reminder()
+            if server_lease.expiry:
+                server_lease.send_email_renewal_reminder()
+                n += 1
+        self.message_user(request, f"Reminder emails sent for {n} server(s)")
 
     def renew_lease(self, request, queryset):
         for server_lease in queryset:

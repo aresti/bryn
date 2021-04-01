@@ -192,10 +192,8 @@ SERVER_LEASE_DEFAULT_DAYS = 14
 SERVER_LEASE_REMINDER_DAYS = [0, 1, 3, 7]
 LICENCE_TERMINATION_DAYS = 90
 LICENCE_RENEWAL_REMINDER_DAYS = [3, 7, 14, 28]
-LICENCE_EMAIL_SIGNATORIES = "Lisa Marchioretto"
 
 # Local secrets
-
 try:
     from .locals import *  # noqa: F401,F403
 except ImportError:

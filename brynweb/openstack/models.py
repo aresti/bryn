@@ -14,6 +14,7 @@ from sshpubkeys import SSHKey
 
 from .validators import validate_public_key
 from core.tasks import send_mail
+from core.utils import main_text_from_html
 from userdb.models import Region, Team, TeamMember
 
 
@@ -154,7 +155,7 @@ class ServerLease(models.Model):
         context = {
             "user": user,
             "server_name": self.server_name,
-            "renewal_url": settings.DEFAULT_DOMAIN + self.renewal_url,
+            "renewal_url": self.renewal_url,
             "expiry": self.expiry,
             "days_remaining": self.time_remaining.days,
             "hours_remaining": self.time_remaining.days * 24
@@ -162,13 +163,11 @@ class ServerLease(models.Model):
         }
         subject = render_to_string(
             "openstack/email/server_lease_expiry_reminder_subject.txt", context
-        )
-        text_content = render_to_string(
-            "openstack/email/server_lease_expiry_reminder_email.txt", context
-        )
+        ).strip()
         html_content = render_to_string(
             "openstack/email/server_lease_expiry_reminder_email.html", context
         )
+        text_content = main_text_from_html(html_content)
         send_mail(
             subject,
             text_content,
@@ -216,7 +215,7 @@ class ServerLeaseRequest(models.Model):
         subject = render_to_string(
             "openstack/email/server_lease_request_admin_notification_subject.txt",
             context,
-        )
+        ).strip()
         text_content = render_to_string(
             "openstack/email/server_lease_request_admin_notification_email.txt", context
         )
@@ -245,13 +244,11 @@ class ServerLeaseRequest(models.Model):
         context = {"server_lease_request": self}
         subject = render_to_string(
             "openstack/email/server_lease_request_granted_subject.txt", context,
-        )
-        text_content = render_to_string(
-            "openstack/email/server_lease_request_granted_email.txt", context
-        )
+        ).strip()
         html_content = render_to_string(
             "openstack/email/server_lease_request_granted_email.html", context
         )
+        text_content = main_text_from_html(html_content)
         send_mail(
             subject,
             text_content,
@@ -273,13 +270,11 @@ class ServerLeaseRequest(models.Model):
         context = {"server_lease_request": self}
         subject = render_to_string(
             "openstack/email/server_lease_request_rejected_subject.txt", context,
-        )
-        text_content = render_to_string(
-            "openstack/email/server_lease_request_rejected_email.txt", context
-        )
+        ).strip()
         html_content = render_to_string(
             "openstack/email/server_lease_request_rejected_email.html", context
         )
+        text_content = main_text_from_html(html_content)
         send_mail(
             subject,
             text_content,

@@ -1,4 +1,5 @@
 {% extends "email/email_base.html" %}
+{% load custom_tags %}
 
 {% block title %}{% include 'openstack/email/server_lease_expiry_reminder_subject.txt' %}{% endblock %}
 {% block subject %}{% include 'openstack/email/server_lease_expiry_reminder_subject.txt' %}{% endblock %}
@@ -10,9 +11,6 @@
 
   <p><strong>If you do not renew your lease, this server may be automatically shelved to free up capacity.</strong></p>
 
-  <p>If you are still using this server, you can renew your lease by clicking the following link:
-  <a href="{{ renewal_url }}">{{ renewal_url }}</a></p>
-
-  <p>Best regards,<br>
-  <p>The CLIMB Project</p>
+  <p>If you are still using this server, you can renew your lease by clicking the following link:<br />
+  <span style="white-space: nowrap; font-size: 0.8em;">{{ renewal_url|absolute_url|urlize }}</span></p>
 {% endblock %}

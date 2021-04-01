@@ -9,5 +9,5 @@ class HashidsConverter:
     def to_python(self, value: str) -> int:
         return hashids.decode(value)
 
-    def to_url(self, value):
+    def to_url(self, value: int) -> str:
         return hashids.encode(value)

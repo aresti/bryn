@@ -316,13 +316,17 @@ class InstanceDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
         # Lease TeamMember assignment
         if lease_assigned_teammember:
             # Check request user is team admin
-            if not request.user.teams.filter(teammember__is_admin=True):
+            try:
+                TeamMember.objects.get(
+                    user=request.user, team_id=team_id, is_admin=True
+                )
+            except TeamMember.DoesNotExist:
                 raise drf_exceptions.PermissionDenied
 
             # Check assigned user is team member
             try:
                 teammember_id = hashids.decode(lease_assigned_teammember)
-                teammember = TeamMember.objects.get(pk=teammember_id)
+                teammember = TeamMember.objects.get(pk=teammember_id, team_id=team_id)
             except TeamMember.DoesNotExist:
                 raise drf_exceptions.ValidationError(
                     "Not a member of the team to which this server belongs"
