@@ -122,7 +122,6 @@ import {
 const statusColorMap = {
   ACTIVE: "success",
   SHUTDOWN: "grey-light",
-  SHELVED: "grey-lighter",
 };
 
 /*
@@ -307,8 +306,8 @@ export default {
     },
 
     statusColor() {
-      const { [this.instance.status]: color } = statusColorMap;
-      return color;
+      if (this.isPolling) return "info";
+      return statusColorMap[this.instance.status] ?? "grey-lighter";
     },
 
     stateTransitionActions() {
