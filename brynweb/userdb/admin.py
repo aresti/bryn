@@ -8,6 +8,7 @@ from django.utils.html import format_html, mark_safe
 from inline_actions.admin import InlineActionsMixin, InlineActionsModelAdminMixin
 
 from openstack.models import Region, Tenant
+from .custom_filters import TeamLicenceFilter
 from .models import (
     LicenceVersion,
     LicenceAcceptance,
@@ -155,12 +156,11 @@ class TeamAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     list_display = (
         "name",
         "institution",
-        "creator",
         "licence_expiry",
         "verified",
         "tenants_available",
     )
-    list_filter = ("verified",)
+    list_filter = ("verified", "tenants_available", TeamLicenceFilter)
 
     search_fields = ("name", "institution")
 

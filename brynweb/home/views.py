@@ -20,7 +20,7 @@ class FrontendView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *args, **kwargs):
         user = self.request.user
         user_data = camelize(UserSerializer(user).data)
-        user_teams = user.teams.filter(verified=True)
+        user_teams = user.teams.verified()
         team_data = camelize(TeamSerializer(user_teams, many=True).data)
         region_data = camelize(RegionSerializer(Region.objects.all(), many=True).data)
 

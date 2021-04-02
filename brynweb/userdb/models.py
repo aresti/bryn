@@ -39,9 +39,15 @@ def licence_expiry_default():
     return timezone.now() + datetime.timedelta(days=30)
 
 
-class VerifiedTeamManager(models.Manager):
-    def get_queryset(self) -> models.QuerySet["Team"]:
-        return super().get_queryset().filter(verified=True)
+class TeamQuerySet(models.QuerySet):
+    def verified(self):
+        return self.filter(verified=True)
+
+    def licence_expired(self):
+        return self.verified().filter(licence_expiry__lt=timezone.now())
+
+    def licence_valid(self):
+        return self.verified().filter(licence_expiry__gte=timezone.now())
 
 
 class Team(models.Model):
@@ -82,8 +88,7 @@ class Team(models.Model):
     )
 
     # managers
-    objects = models.Manager()
-    verified_teams = VerifiedTeamManager()
+    objects = TeamQuerySet.as_manager()
 
     @property
     def hashid(self):

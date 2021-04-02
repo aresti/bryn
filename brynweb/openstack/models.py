@@ -4,6 +4,7 @@ import uuid
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Q
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
@@ -78,12 +79,12 @@ def get_default_server_lease_expiry():
     return timezone.now() + datetime.timedelta(days=settings.SERVER_LEASE_DEFAULT_DAYS)
 
 
-class ServerLeaseManager(models.Manager):
-    def all_active(self):
-        return super().get_queryset().filter(deleted=False, shelved=False)
+class ServerLeaseQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(deleted=False, shelved=False)
 
     def active_with_expiry(self):
-        return self.all_active().filter(expiry__isnull=False)
+        return self.active().filter(expiry__isnull=False)
 
     def active_overdue(self):
         return self.active_with_expiry().filter(expiry__lte=timezone.now())
@@ -92,7 +93,16 @@ class ServerLeaseManager(models.Manager):
         return self.active_with_expiry().filter(expiry__gte=timezone.now())
 
     def active_indefinite(self):
-        return self.all_active().filter(expiry__isnull=True)
+        return self.active().filter(expiry__isnull=True)
+
+    def deleted(self):
+        return self.filter(deleted=True)
+
+    def shelved(self):
+        return self.filter(shelved=True)
+
+    def inactive(self):
+        return self.filter(Q(deleted=True) | Q(shelved=True))
 
 
 class ServerLease(models.Model):
@@ -114,7 +124,7 @@ class ServerLease(models.Model):
     deleted = models.BooleanField(default=False)
     last_reminder_sent_at = models.DateTimeField(blank=True, null=True, editable=False)
 
-    objects = ServerLeaseManager()
+    objects = ServerLeaseQuerySet.as_manager()
 
     @property
     def time_remaining(self):

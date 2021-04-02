@@ -44,7 +44,7 @@ class CustomAuthenticationForm(AuthenticationForm):
         pending_invitations = Invitation.objects.filter(
             email=user.email, accepted=False
         )
-        if not (teams.filter(verified=True).count() or pending_invitations.count()):
+        if not (teams.verified().count() or pending_invitations.count()):
             if not len(teams):
                 # No teams whatsoever
                 raise forms.ValidationError(_("You have no current team memberships."))

@@ -11,8 +11,8 @@ from .models import Team
 def send_team_licence_expiry_reminder_emails():
     """Send team licence expiry reminder emails, on specified days until expiry"""
     reminder_days = settings.LICENCE_RENEWAL_REMINDER_DAYS
-    active_teams = Team.verified_teams.filter(licence_expiry__gte=timezone.now())
-    for team in active_teams:
+    licenced_teams = Team.objects.licence_valid()
+    for team in licenced_teams:
         time_remaining = team.licence_expiry - timezone.now()
         if time_remaining.days in reminder_days:
             last_reminder = team.licence_last_reminder_sent_at

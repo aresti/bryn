@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from .custom_filters import ServerLeaseStatusFilter
 from .models import (
     Tenant,
     Region,
@@ -18,10 +19,9 @@ model_str.short_description = "Description"
 
 
 class TenantAdmin(admin.ModelAdmin):
-    list_display = (
-        "created_tenant_name",
-        "team",
-    )
+    list_display = ("created_tenant_name", "team", "region")
+
+    list_filter = ("region",)
 
     search_fields = ("created_tenant_id", "created_tenant_name")
 
@@ -29,18 +29,16 @@ class TenantAdmin(admin.ModelAdmin):
 class ServerLeaseAdmin(admin.ModelAdmin):
     list_display = (
         "server_name",
-        "server_id",
         "team",
         "region",
         "last_renewed_at",
-        "last_reminder_sent_at",
         "expiry",
-        "renewal_count",
-        "tenant",
         "user",
         "deleted",
         "shelved",
     )
+
+    list_filter = (ServerLeaseStatusFilter,)
 
     search_fields = ("server_id", "server_name")
 
@@ -102,6 +100,11 @@ class ServerLeaseRequestAdmin(admin.ModelAdmin):
         "created_at",
         "responded_at",
         "actioned_by",
+    )
+
+    list_filter = (
+        "closed",
+        "granted",
     )
 
     readonly_fields = (
