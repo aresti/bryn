@@ -288,21 +288,6 @@ class ServerLeaseRequest(models.Model):
         return f"Indefinite lease request for {self.server_lease.server_name}"
 
 
-class ActionLog(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, default=None, null=True, on_delete=models.CASCADE)
-    date = models.DateTimeField(auto_now_add=True)
-    message = models.TextField()
-    error = models.BooleanField()
-
-    def __str__(self):
-        if self.error:
-            error_type = "ERROR"
-        else:
-            error_type = "SUCCESS"
-        return "%s %s %s %s" % (self.date, error_type, self.tenant, self.message)
-
-
 class HypervisorStats(models.Model):
     region = models.OneToOneField(Region, on_delete=models.CASCADE)
 

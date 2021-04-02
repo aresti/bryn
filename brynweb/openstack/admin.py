@@ -1,7 +1,6 @@
 from django.contrib import admin
 
 from .models import (
-    ActionLog,
     Tenant,
     Region,
     RegionSettings,
@@ -25,10 +24,6 @@ class TenantAdmin(admin.ModelAdmin):
     )
 
     search_fields = ("created_tenant_id", "created_tenant_name")
-
-
-class ActionLogAdmin(admin.ModelAdmin):
-    list_filter = ("error",)
 
 
 class ServerLeaseAdmin(admin.ModelAdmin):
@@ -147,6 +142,5 @@ class RegionAdmin(admin.ModelAdmin):
 
 admin.site.register(Tenant, TenantAdmin)
 admin.site.register(Region, RegionAdmin)
-admin.site.register(ActionLog, ActionLogAdmin)
 admin.site.register(ServerLease, ServerLeaseAdmin)
 admin.site.register(ServerLeaseRequest, ServerLeaseRequestAdmin)
