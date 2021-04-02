@@ -285,13 +285,15 @@ class TestUserProfileAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(User.objects.get(pk=self.user_a.pk).first_name, "Jim")
 
-    def test_updating_email_sets_email_validated_false(self):
-        """Does updating user email (previously validated) set the validation status to false?"""
+    def test_updating_email_sets_new_email_pending_verification(self):
+        """Does updating user email set Profile.new_email_pending_verification?"""
         self.user_a.profile.email_validated = True
         self.client.force_login(user=self.user_a)
         self.client.patch(reverse(self.path_name), data={"email": "something@new.com"})
         updated_user = User.objects.get(pk=self.user_a.pk)
-        self.assertEqual(updated_user.profile.email_validated, False)
+        self.assertEqual(
+            updated_user.profile.new_email_pending_verification, "something@new.com"
+        )
 
     def test_user_profile_cannot_be_deleted(self):
         """Is user profile deletion not allowed?"""
