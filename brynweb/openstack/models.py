@@ -135,12 +135,6 @@ class ServerLease(models.Model):
             kwargs={"server_id": self.server_id, "renewal_count": self.renewal_count},
         )
 
-    @property
-    def time_since_last_reminder(self):
-        if self.last_reminder_sent_at:
-            return self.expiry - self.last_reminder_sent_at
-        return None
-
     def renew_lease(self, days=settings.SERVER_LEASE_DEFAULT_DAYS, user=None):
         self.expiry = timezone.now() + datetime.timedelta(days=days)
         self.renewal_count += 1
