@@ -86,6 +86,18 @@ const toastOptions = {
 };
 app.use(Toast, toastOptions);
 
+// Error handling (Sentry, pending official Vue 3 integration)
+import { captureException, init, setTag } from "@sentry/browser";
+app.config.errorHandler = (error, _, info) => {
+  setTag("info", info);
+  captureException(error);
+};
+
+init({
+  dsn:
+    "https://ecce5d21027544c8b534f2f9c4e51514@o563550.ingest.sentry.io/5703644",
+});
+
 // Global base component registration
 app.component("font-awesome-icon", FontAwesomeIcon);
 

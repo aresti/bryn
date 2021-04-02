@@ -3,8 +3,10 @@ Django settings for brynweb project.
 """
 
 import os
+import sentry_sdk
 
 from django.contrib.messages import constants as messages
+from sentry_sdk.integrations.django import DjangoIntegration
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -227,6 +229,15 @@ TINYMCE_DEFAULT_CONFIG = {
         "bullist numlist outdent indent | removeformat | codesample | code | help"
     ),
 }
+
+# Sentry
+
+sentry_sdk.init(
+    dsn="https://02ed2c71582747179e83a1ccd77b7cda@o563550.ingest.sentry.io/5703634",
+    integrations=[DjangoIntegration()],
+    traces_sample_rate=0.3,
+    send_default_pii=True,
+)
 
 if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
