@@ -15,7 +15,7 @@ from userdb.models import TeamMember
 from userdb.permissions import IsTeamMemberPermission
 
 from .service import OpenstackService, ServiceUnavailable, OpenstackException
-from .models import HypervisorStats, ServerLease, ServerLeaseRequest, Tenant
+from .models import HypervisorStats, KeyPair, ServerLease, ServerLeaseRequest, Tenant
 from .serializers import (
     AttachmentSerializer,
     FlavorSerializer,
@@ -250,6 +250,12 @@ class InstanceListView(OpenstackListView, OpenstackCreateMixin):
     serializer_class = InstanceSerializer
     service = OpenstackService.Services.SERVERS
     get_transform_func = get_instance_transform_func
+
+    def post(self, request, *args, **kwargs):
+        # Grab local keypair, append public key to data dict
+        keypair_local = get_object_or_404(KeyPair, pk=request.data["keypair"])
+        request.data["public_key"] = keypair_local.public_key
+        return super().post(request, *args, **kwargs)
 
 
 class InstanceDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
