@@ -90,7 +90,8 @@ export const getters = {
           })
           .map((tenant) => {
             const region = getters[GET_REGION_FOR_TENANT](tenant);
-            tenant.disableNewInstances = region.disableNewInstances; // Convenience disableNewInstances property
+            tenant.newInstancesDisabled = region.newInstancesDisabled; // Convenience newInstancesDisabled property
+            tenant.unshelvingDisabled = region.unshelvingDisabled;
             return tenant;
           })
       : [];

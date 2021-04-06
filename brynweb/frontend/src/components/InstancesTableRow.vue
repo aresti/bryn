@@ -30,9 +30,16 @@
           />
         </base-tag>
       </base-tag-control>
-      <span class="is-family-monospace is-size-7 is-hidden-mobile">{{
-        instance.ip
-      }}</span>
+      <span
+        v-if="!isShelved"
+        class="is-family-monospace is-size-7 is-hidden-mobile"
+        >{{ instance.ip }}</span
+      >
+      <span
+        v-else-if="tenant.unshelvingDisabled"
+        class="is-size-7 has-text-danger is-hidden-mobile"
+        >Unshelving temporarily disabled</span
+      >
     </td>
 
     <td class="is-hidden-mobile">
@@ -239,13 +246,20 @@ export default {
       return minutesSince(this.instance.created) < 3;
     },
 
+    isShelved() {
+      return this.instance.status.includes("SHELVED");
+    },
+
     isPolling() {
       return this.getInstanceIsPolling(this.instance);
     },
 
+    tenant() {
+      return this.getTenantById(this.instance.tenant);
+    },
+
     regionName() {
-      const tenant = this.getTenantById(this.instance.tenant);
-      return this.getRegionNameForTenant(tenant);
+      return this.getRegionNameForTenant(this.tenant);
     },
 
     flavor() {
@@ -311,7 +325,14 @@ export default {
     },
 
     stateTransitionActions() {
-      return stateTransitions[this.instance.status];
+      const transitions = stateTransitions[this.instance.status];
+      if (this.isShelved && this.tenant.unshelvingDisabled) {
+        return transitions.filter((transition) => {
+          return transition.verb.toLowerCase() !== "unshelve";
+        });
+      } else {
+        return transitions;
+      }
     },
   },
 

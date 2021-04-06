@@ -303,6 +303,13 @@ class InstanceDetailView(OpenstackDeleteMixin, OpenstackRetrieveView):
             try:
                 server = service.get(pk)
                 current_status = server.status
+                if (
+                    current_status in ["SHELVED", "SHELVED_OFFLOADED"]
+                    and tenant.region.unshelving_disabled
+                ):
+                    raise drf_exceptions.PermissionDenied(
+                        f"Unshelving is disabled at {tenant.region.description}"
+                    )
                 method_name = self.state_transitions[current_status][target_status]
                 methodcaller(method_name, server)(service)
             except Exception as e:

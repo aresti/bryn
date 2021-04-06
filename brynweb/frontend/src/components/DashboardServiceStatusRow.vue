@@ -10,7 +10,7 @@
     </td>
     <td class="is-hidden-mobile">
       <base-icon
-        v-if="region.disableNewInstances"
+        v-if="region.newInstancesDisabled"
         color="danger"
         size="large"
         :icon="['fas', 'times-circle']"

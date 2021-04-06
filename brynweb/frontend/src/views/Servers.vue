@@ -190,7 +190,7 @@ export default {
       }
     },
     launchingDisabledAllTenants() {
-      return this.tenants.every((tenant) => tenant.disableNewInstances);
+      return this.tenants.every((tenant) => tenant.newInstancesDisabled);
     },
   },
 

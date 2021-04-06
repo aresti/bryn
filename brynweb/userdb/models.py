@@ -25,7 +25,8 @@ class Region(models.Model):
     name = models.CharField(max_length=40)
     description = models.CharField(max_length=40)
     disabled = models.BooleanField(default=False)
-    disable_new_instances = models.BooleanField(default=False)
+    new_instances_disabled = models.BooleanField(default=False)
+    unshelving_disabled = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name

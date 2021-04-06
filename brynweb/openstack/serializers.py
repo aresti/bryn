@@ -31,7 +31,8 @@ class RegionSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "disabled",
-            "disable_new_instances",
+            "new_instances_disabled",
+            "unshelving_disabled",
             "settings",
         ]
 

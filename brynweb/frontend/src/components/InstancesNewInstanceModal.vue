@@ -115,7 +115,7 @@ export default {
         : null;
     },
     tenantsLaunchingEnabled() {
-      return this.tenants.filter((tenant) => !tenant.disableNewInstances);
+      return this.tenants.filter((tenant) => !tenant.newInstancesDisabled);
     },
     tenantOptions() {
       return this.tenantsLaunchingEnabled.map((tenant) => {
@@ -185,11 +185,11 @@ export default {
 
   mounted() {
     this.form.fields.tenant.options = this.tenantOptions;
-    if (this.filterTenant && !this.filterTenant.disableNewInstances) {
+    if (this.filterTenant && !this.filterTenant.newInstancesDisabled) {
       this.form.fields.tenant.value = this.filterTenant.id;
     } else if (this.tenantsLaunchingEnabled.length === 1) {
       this.form.fields.tenant.value = this.tenantsLaunchingEnabled[0].id;
-    } else if (this.defaultTenant && !this.defaultTenant.disableNewInstances) {
+    } else if (this.defaultTenant && !this.defaultTenant.newInstancesDisabled) {
       this.form.fields.tenant.value = this.defaultTenant.id;
     }
   },
