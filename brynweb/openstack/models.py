@@ -13,6 +13,7 @@ from django.utils.translation import ugettext_lazy as _
 from slugify import slugify
 from sshpubkeys import SSHKey
 
+# from .service import OpenstackService
 from .validators import validate_public_key
 from core.tasks import send_mail
 from core.utils import main_text_from_html
@@ -152,6 +153,9 @@ class ServerLease(models.Model):
             self.user = user
         self.last_reminder_sent_at = None
         self.save()
+
+    def shelve_server(self):
+        pass
 
     def send_email_renewal_reminder(self):
         """Send an email renewal reminder"""

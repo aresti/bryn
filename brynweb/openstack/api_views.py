@@ -242,7 +242,7 @@ def get_instance_transform_func(self, tenant):
     return transform_func
 
 
-class InstanceListView(OpenstackListView, OpenstackCreateMixin):
+class InstanceListView(OpenstackCreateMixin, OpenstackListView):
     """
     Instance list view.
     """
@@ -258,7 +258,7 @@ class InstanceListView(OpenstackListView, OpenstackCreateMixin):
         return super().post(request, *args, **kwargs)
 
 
-class InstanceDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
+class InstanceDetailView(OpenstackDeleteMixin, OpenstackRetrieveView):
     """
     Instance detail view.
     """
@@ -409,7 +409,7 @@ def get_volume_transform_func(self, tenant):
     return transform_func
 
 
-class VolumeDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
+class VolumeDetailView(OpenstackDeleteMixin, OpenstackRetrieveView):
     """
     Volume detail view.
     """
@@ -444,7 +444,7 @@ class VolumeDetailView(OpenstackRetrieveView, OpenstackDeleteMixin):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class VolumeListView(OpenstackListView, OpenstackCreateMixin):
+class VolumeListView(OpenstackCreateMixin, OpenstackListView):
     """
     Volume list view.
     """
