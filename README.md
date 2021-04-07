@@ -9,8 +9,8 @@
 
   <p align="center">
     The CLIMB-BIG-DATA web management interface
-    <br />
-    <a href="https://github.com/MRC-CLIMB/bryn/wiki"><strong>Explore the docs »</strong></a>
+    <!-- <br />
+    <a href="https://github.com/MRC-CLIMB/bryn/wiki"><strong>Explore the docs »</strong></a> -->
     <br />
     <br />
     <a href="https://bryn.climb.ac.uk/">Login</a>
@@ -43,7 +43,7 @@ Bryn is the web management interface for CLIMB-BIG-DATA, supporting the followin
 
 - [Django](https://www.djangoproject.com/)
 - [Django REST Framework](https://www.django-rest-framework.org/)
-- [Vue 3](https://jquery.com)
+- [Vue 3](https://v3.vuejs.org/)
 - [Openstack Python API bindings](https://www.openstack.org/)
 
 <!-- ARCHITECTURE OVERVIEW -->
@@ -52,8 +52,7 @@ Bryn is the web management interface for CLIMB-BIG-DATA, supporting the followin
 
 Bryn predominantly uses Vue 3 on the frontend, with Django + Django Rest Framework on the backend.
 
-It should be noted that the latest overhaul of Bryn was intended as an in-place upgrade for the existing production version. As such, certain legacy constraints we adhered to, such as sticking with SQlite on production. Since Bryn is largely an
-interface around an Openstack service layer, there are relateively few database writes - so this is a non-issue in terms of performance.
+It should be noted that the latest overhaul of Bryn was intended as an in-place upgrade for the existing production version. As such, certain legacy constraints we adhered to (e.g., compatibility with the existing production database)
 
 The backend uses Django 3.1, leveraging vanilla Django views & templates for authentication, password reset & registration.
 All API views use Django REST Framework.
@@ -66,7 +65,7 @@ The frontend uses Vue 3 (installed with vue-cli) with two entrypoints/pages:
 The advantage of this setup is that you get the benefits of webpack for both vanilla Django templates and your Vue SPA.
 See `frontend/vue.config.js` for further details.
 
-You can use npm to manage all js dependencies, even outside of the Vue SPA, and webpack will deal with bundling, tree shaking and asset injection. Whitenoise is used to serve static files, and the directory `frontend/build/templates` is included in Django's template dirs setting.
+You can use npm to manage all js dependencies, even outside of the Vue SPA, and webpack will deal with bundling, tree shaking and asset injection. Whitenoise is used to serve static files, and the directory `frontend/build/templates` is included in Django's template dirs.
 
 <!-- GETTING STARTED -->
 
@@ -117,7 +116,7 @@ You can use npm to manage all js dependencies, even outside of the Vue SPA, and 
    npm run serve
    ```
 
-Note: if you are working from home, you're probably not whitelisted for the Openstack APIs at the various sites. The simplest solution is tunnel through a whitelisted VM within the CLIMB network, if you wish to test against live API endpoints:
+Note: if you are working from home, you're probably not whitelisted for the Openstack APIs at the various sites. The simplest solution is to tunnel through a whitelisted VM within the CLIMB network, if you wish to test against live API endpoints:
 
 - In a separate teminal: `sshuttle --dns -H -r user@someVMwithinCLIMB 0/0`
 
