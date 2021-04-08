@@ -101,7 +101,7 @@ const actions = {
         /* Fulfilled case: check status against target */
         const target = state.pollingTargets[index];
         const newStatus = result.value.status;
-        if (target.targetStatuses.includes(newStatus)) {
+        if (target.targetStatuses?.includes(newStatus)) {
           commit(REMOVE_POLLING_TARGET, index);
         }
       } else if (
