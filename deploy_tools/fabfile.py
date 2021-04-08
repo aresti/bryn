@@ -21,8 +21,8 @@ def deploy(c):
 
     _create_directory_structure(c, site_dir)
     _get_latest_source(c, site_dir)
-    _update_settings(c, source_dir)
     _copy_local_settings(c, local_source_dir, source_dir)
+    _update_settings(c, source_dir)
     _update_virtualenv(c, site_dir)
     _build_frontend(c, source_dir)
     _update_static_files(c, source_dir)
@@ -45,6 +45,17 @@ def _get_latest_source(c, site_dir):
     c.run(f"cd {site_dir} && git reset --hard {current_commit}")
 
 
+def _copy_local_settings(c, local_source_dir, source_dir):
+    c.put(
+        str(local_source_dir / "brynweb/locals.py"),
+        str(source_dir / "brynweb/locals.py"),
+    )
+    c.put(
+        str(local_source_dir / "openstack/auth_settings.py"),
+        str(source_dir / "openstack/auth_settings.py"),
+    )
+
+
 def _update_settings(c, source_dir):
     # Disable debug
     settings_path = source_dir / "brynweb/settings.py"
@@ -55,6 +66,16 @@ def _update_settings(c, source_dir):
     hosts_replace = f'ALLOWED_HOSTS = ["{c.host}"]'
     c.run(f"sed -i 's/{hosts_find}/{hosts_replace}/g' {settings_path}")
 
+    # Update SITE_SCHEME
+    site_scheme_find = "SITE_SCHEME =.\\+$"
+    site_scheme_replace = 'SITE_SCHEME = "https"'
+    c.run(f"sed -i 's/{site_scheme_find}/{site_scheme_replace}/g' {settings_path}")
+
+    # Update SITE_DOMAIN
+    site_domain_find = "SITE_DOMAIN =.\\+$"
+    site_domain_replace = f'SITE_DOMAIN = "{c.host}"'
+    c.run(f"sed -i 's/{site_domain_find}/{site_domain_replace}/g' {settings_path}")
+
     # Create and import secret key
     secret_key_path = source_dir / "brynweb/secret_key.py"
     if not exists(c, secret_key_path):
@@ -62,17 +83,6 @@ def _update_settings(c, source_dir):
         key = "".join(random.SystemRandom().choice(chars) for _ in range(50))
         append(c, secret_key_path, f'SECRET_KEY = "{key}"')
     append(c, settings_path, "\nfrom .secret_key import SECRET_KEY")
-
-
-def _copy_local_settings(c, local_source_dir, source_dir):
-    c.put(
-        str(local_source_dir / "brynweb/locals.py"),
-        str(source_dir / "brynweb/locals.py"),
-    )
-    c.put(
-        str(local_source_dir / "openstack/auth_settings.py"),
-        str(source_dir / "openstack/auth_settings.py"),
-    )
 
 
 def _update_virtualenv(c, site_dir):
