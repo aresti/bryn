@@ -48,11 +48,9 @@ Bryn is the web management interface for CLIMB-BIG-DATA, supporting the followin
 
 <!-- ARCHITECTURE OVERVIEW -->
 
-## Architecture Overview
+## Stack Overview
 
 Bryn predominantly uses Vue 3 on the frontend, with Django + Django Rest Framework on the backend.
-
-It should be noted that the latest overhaul of Bryn was intended as an in-place upgrade for the existing production version. As such, certain legacy constraints we adhered to (e.g., compatibility with the existing production database)
 
 The backend uses Django 3.1, leveraging vanilla Django views & templates for authentication, password reset & registration.
 All API views use Django REST Framework.
@@ -62,10 +60,7 @@ The frontend uses Vue 3 (installed with vue-cli) with two entrypoints/pages:
 - The first `frontend/src/base.js` (template `frontend/public/base.html`) serves as the Django base template, which is extended by all 'vanilla' Django templates.
 - The second `frontend/src/main.js` (template `frontend/public/index.html`) serves as the entrypoint for the main Vue SPA.
 
-The advantage of this setup is that you get the benefits of webpack for both vanilla Django templates and your Vue SPA.
 See `frontend/vue.config.js` for further details.
-
-You can use npm to manage all js dependencies, even outside of the Vue SPA, and webpack will deal with bundling, tree shaking and asset injection. Whitenoise is used to serve static files, and the directory `frontend/build/templates` is included in Django's template dirs.
 
 <!-- GETTING STARTED -->
 
@@ -133,10 +128,3 @@ See [provisioning_notes](deploy_tools/provisioning_notes.md)
 ## License
 
 Distributed under GPLv3. See [LICENSE](LICENCE) for more information.
-
-<!-- ACKNOWLEDGEMENTS -->
-
-## Acknowledgements
-
-- Bryn was originally created by Nick Loman, 2016-2021
-- Overhauled by Andy Smith, 2021
