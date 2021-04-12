@@ -1,7 +1,7 @@
 <template>
   <tr>
     <td>
-      <span>{{ region?.description?.replace("University of ", "") }}</span
+      <span>{{ regionName }}</span
       ><br />
       <span v-if="region.disabled" class="is-size-7 has-text-danger"
         >Offline</span
@@ -56,6 +56,11 @@ export default {
     }),
     region() {
       return this.getRegionById(this.stats.region);
+    },
+    regionName() {
+      return this.region.description
+        .replace("University", "")
+        .replace(" of ", "");
     },
     localGbPercent() {
       return Math.round((this.stats.localGbUsed / this.stats.localGb) * 100);

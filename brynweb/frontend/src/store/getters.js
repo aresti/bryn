@@ -69,7 +69,7 @@ export const getters = {
   [GET_REGION_NAME_FOR_TENANT](_state, getters) {
     return (tenant) => {
       const region = getters[GET_REGION_FOR_TENANT](tenant);
-      return region?.description?.replace("University of ", "");
+      return region?.description?.replace("University", "").replace(" of ", "");
     };
   },
 
