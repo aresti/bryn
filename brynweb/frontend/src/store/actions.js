@@ -31,12 +31,13 @@ import {
   INIT_REGIONS,
   INIT_TEAMS,
   INIT_USER,
+  MODIFY_TEAM,
   SET_ACTIVE_TEAM_ID,
   SET_HYPERVISOR_STATS,
-  SET_FILTER_TENANT_ID,
-  SET_TEAM_INITIALIZED,
-  MODIFY_TEAM,
   SET_FAQS,
+  SET_FILTER_TENANT_ID,
+  SET_READY,
+  SET_TEAM_INITIALIZED,
   SET_USER,
 } from "./mutation-types";
 
@@ -53,6 +54,7 @@ const actions = {
       dispatch(FETCH_ANNOUNCEMENTS),
       dispatch(FETCH_FAQS),
     ]);
+    commit(SET_READY);
   },
 
   [SET_ACTIVE_TEAM]({ commit }, team) {
@@ -130,8 +132,10 @@ const actions = {
     /* Fetch all team specific data (for the active team) */
     if (!getters[TEAM].initialized) {
       try {
-        await dispatch(FETCH_TEAM_MEMBERS);
-        await dispatch(FETCH_INVITATIONS);
+        await Promise.all([
+          dispatch(FETCH_TEAM_MEMBERS),
+          dispatch(FETCH_INVITATIONS),
+        ]);
         commit(SET_TEAM_INITIALIZED);
       } catch (err) {
         const msg = `Error fetching team data for ${getters[TEAM].name}`;

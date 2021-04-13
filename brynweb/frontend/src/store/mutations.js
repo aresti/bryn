@@ -8,6 +8,7 @@ import {
   SET_FAQS,
   SET_FILTER_TENANT_ID,
   SET_HYPERVISOR_STATS,
+  SET_READY,
   SET_TEAM_INITIALIZED,
   SET_USER,
 } from "@/store/mutation-types";
@@ -49,6 +50,10 @@ const mutations = {
 
   [SET_HYPERVISOR_STATS](state, hypervisorStats) {
     state.hypervisorStats = hypervisorStats;
+  },
+
+  [SET_READY](state) {
+    state.ready = true;
   },
 
   [SET_TEAM_INITIALIZED](state) {

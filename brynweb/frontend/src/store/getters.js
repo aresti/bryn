@@ -4,7 +4,6 @@ import {
   DEFAULT_TEAM_ID,
   DEFAULT_TENANT,
   FILTER_TENANT,
-  LOADING,
   TEAM,
   TENANTS,
   USER_IS_ADMIN,
@@ -71,10 +70,6 @@ export const getters = {
       const region = getters[GET_REGION_FOR_TENANT](tenant);
       return region?.description?.replace("University", "").replace(" of ", "");
     };
-  },
-
-  [LOADING](_state, getters) {
-    return !getters[TEAM].initialized;
   },
 
   [TEAM](state) {

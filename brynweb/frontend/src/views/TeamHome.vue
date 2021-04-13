@@ -19,7 +19,7 @@
         </base-message>
       </base-flex-centered>
 
-      <base-flex-centered v-else-if="loading">
+      <base-flex-centered v-else-if="!ready">
         <div class="loader is-loading"></div>
       </base-flex-centered>
 
@@ -49,7 +49,6 @@ import {
 import {
   GET_REGION_BY_ID,
   GET_TENANT_BY_ID,
-  LOADING,
   TEAM,
   TENANTS,
 } from "@/store/getter-types";
@@ -81,13 +80,13 @@ export default {
 
   computed: {
     ...mapState({
+      ready: (state) => state.ready,
       teams: (state) => state.teams,
       user: (state) => state.user,
     }),
     ...mapGetters({
       getRegionId: GET_REGION_BY_ID,
       getTenantById: GET_TENANT_BY_ID,
-      loading: LOADING,
       team: TEAM,
       tenants: TENANTS,
     }),

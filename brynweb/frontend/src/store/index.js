@@ -24,6 +24,7 @@ const state = {
   faqs: [],
   filterTenantId: null,
   licenceTerms: null,
+  ready: false,
   regions: [],
   teams: [],
   user: null,

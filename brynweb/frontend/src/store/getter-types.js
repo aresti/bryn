@@ -7,7 +7,6 @@ export const GET_REGION_FOR_TENANT = "GET_REGION_FOR_TENANT";
 export const GET_REGION_NAME_FOR_TENANT = "GET_REGION_NAME_FOR_TENANT";
 export const GET_TEAM_BY_ID = "GET_TEAM_BY_ID";
 export const GET_TENANT_BY_ID = "GET_TENANT_BY_ID";
-export const LOADING = "LOADING";
 export const TEAM = "TEAM";
 export const TENANTS = "TENANTS";
 export const USER_IS_ADMIN = "USER_IS_ADMIN";
