@@ -3,6 +3,8 @@ from operator import methodcaller
 from django.contrib.auth import get_user_model
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.vary import vary_on_cookie
 
 from rest_framework.views import APIView
 from rest_framework import permissions, generics, status
@@ -120,6 +122,7 @@ class OpenstackListView(OpenstackAPIView):
     Base class for simple openstack collection views.
     """
 
+    @method_decorator(vary_on_cookie)
     def get(self, request, team_id, tenant_id):
         tenant = get_tenant_for_user(
             request.user, team_id=team_id, tenant_id=tenant_id

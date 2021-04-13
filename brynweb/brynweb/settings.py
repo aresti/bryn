@@ -246,5 +246,9 @@ sentry_sdk.init(
     send_default_pii=True,
 )
 
+
+# CACHE
+CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+
 if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

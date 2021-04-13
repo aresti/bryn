@@ -1,3 +1,4 @@
+from django.views.decorators.cache import cache_page
 from django.urls import path
 
 from . import api_views as core_views
@@ -6,6 +7,7 @@ from openstack import api_views as openstack_views
 from userdb import api_views as userdb_views
 
 app_name = "api"
+TWO_HOURS = 60 * 60 * 2
 
 # Note: serial/int internal keys are not exposed externally, to avoid exposing implementation details
 # & possible attack surfaces.
@@ -65,13 +67,13 @@ urlpatterns = [
     # {% url "api:flavors" team_id=team.id tenant_id=tenant.id %}
     path(
         "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/flavors/",
-        openstack_views.FlavorListView.as_view(),
+        cache_page(TWO_HOURS)(openstack_views.FlavorListView.as_view()),
         name="flavors",
     ),
     # {% url "api:images" team_id=team.id tenant_id=tenant.id %}
     path(
         "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/images/",
-        openstack_views.ImageListView.as_view(),
+        cache_page(TWO_HOURS)(openstack_views.ImageListView.as_view()),
         name="images",
     ),
     # {% url "api:volumes" team_id=team.id tenant_id=tenant.id %}
@@ -89,7 +91,7 @@ urlpatterns = [
     # {% url "api:volume_types" team_id=team.id tenant_id=tenant.id %}
     path(
         "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/volumetypes/",
-        openstack_views.VolumeTypeListView.as_view(),
+        cache_page(TWO_HOURS)(openstack_views.VolumeTypeListView.as_view()),
         name="volume_types",
     ),
     # {% url "api:team" team_id=team.id %}
