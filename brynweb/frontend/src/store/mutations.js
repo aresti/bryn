@@ -24,7 +24,9 @@ const mutations = {
   },
 
   [INIT_TEAMS](state) {
-    state.teams = JSON.parse(document.getElementById("teamsData").textContent);
+    const parsed = JSON.parse(document.getElementById("teamsData").textContent);
+    parsed.forEach((team) => (team.initialized = false));
+    state.teams = parsed;
   },
 
   [INIT_USER](state) {

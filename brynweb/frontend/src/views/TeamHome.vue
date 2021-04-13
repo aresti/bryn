@@ -97,7 +97,7 @@ export default {
     async team() {
       this.getTeamData();
       if (this.tenants.length) {
-        this.getTenantData();
+        this.getAllTenantData();
       }
     },
   },
@@ -156,7 +156,7 @@ export default {
       }
     },
 
-    async getTenantData() {
+    async getAllTenantData() {
       /* Fetch data for all of the active team's tenants */
       this.allTenantsErroredOnGet = false;
       try {

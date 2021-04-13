@@ -25,7 +25,12 @@ import {
   UPDATE_TEAM,
   UPDATE_USER,
 } from "./action-types";
-import { GET_REGION_NAME_FOR_TENANT, TEAM, TENANTS } from "./getter-types";
+import {
+  GET_REGION_NAME_FOR_TENANT,
+  GET_TEAM_BY_ID,
+  TEAM,
+  TENANTS,
+} from "./getter-types";
 import {
   INIT_LICENCE_TERMS,
   INIT_REGIONS,
@@ -105,14 +110,18 @@ const actions = {
 
   async [FETCH_TENANT_SPECIFIC_DATA]({ dispatch, getters }, tenant) {
     /* Fetch all tenant-specific data */
+    const team = getters[GET_TEAM_BY_ID](tenant.team);
+    const fetchAlways = [FETCH_TENANT_INSTANCES, FETCH_TENANT_VOLUMES];
+    const fetchOnce = [
+      FETCH_TENANT_FLAVORS,
+      FETCH_TENANT_IMAGES,
+      FETCH_TENANT_VOLUME_TYPES,
+    ];
+    const fetchActions = team.initialized
+      ? fetchAlways
+      : [...fetchAlways, ...fetchOnce];
     try {
-      await Promise.all([
-        dispatch(FETCH_TENANT_FLAVORS, tenant),
-        dispatch(FETCH_TENANT_IMAGES, tenant),
-        dispatch(FETCH_TENANT_INSTANCES, tenant),
-        dispatch(FETCH_TENANT_VOLUME_TYPES, tenant),
-        dispatch(FETCH_TENANT_VOLUMES, tenant),
-      ]);
+      await Promise.all(fetchActions.map((action) => dispatch(action, tenant)));
     } catch (err) {
       const msg = `Error fetching data from ${getters[
         GET_REGION_NAME_FOR_TENANT
