@@ -19,7 +19,10 @@ User = get_user_model()
 
 class ProfileSerializer(serializers.ModelSerializer):
     default_team_membership = serializers.PrimaryKeyRelatedField(
-        pk_field=HashidsIntegerField(), queryset=TeamMember.objects.all()
+        pk_field=HashidsIntegerField(),
+        queryset=TeamMember.objects.all(),
+        required=False,
+        allow_null=True,
     )
 
     class Meta:

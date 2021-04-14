@@ -127,7 +127,11 @@ class Form {
      * Trim string inputs.
      */
     return Object.entries(this.fields).reduce((acc, [key, field]) => {
-      acc[key] = field.value.trim();
+      if (typeof field.value === "string") {
+        acc[key] = field.value.trim();
+      } else {
+        acc[key] = field.value;
+      }
       return acc;
     }, {});
   }

@@ -109,6 +109,17 @@ export default {
         this.form.resetValidation();
       } catch (err) {
         if (err.response?.status === 400) {
+          // Flatten nested profile fields
+          if (
+            Object.prototype.hasOwnProperty.call(err.response.data, "profile")
+          ) {
+            Object.entries(err.response.data.profile).forEach(
+              ([key, value]) => {
+                err.response.data[key] = value;
+              }
+            );
+            delete err.response.data["profile"];
+          }
           this.form.parseResponseError(err.response.data);
         } else {
           this.toast.error(
