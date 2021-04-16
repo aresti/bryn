@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.views.decorators.cache import cache_page
 from django.urls import path
 
@@ -133,3 +134,8 @@ urlpatterns = [
         "userprofile/", userdb_views.OwnUserDetailView.as_view(), name="user_profile",
     ),
 ]
+
+# For integration testing, DEBUG only:
+reset_path = path("reset/", core_views.reset_db_for_tests, name="reset_db")
+if settings.DEBUG:
+    urlpatterns.append(reset_path)

@@ -21,8 +21,6 @@
   </p>
 </p>
 
-<!-- ABOUT THE PROJECT -->
-
 ## About The Project
 
 The CLIMB-BIG-DATA project (Cloud Infrastructure for Big Data Microbial Bioinformatics) is a collaboration between Warwick, Birmingham, Cardiff, Swansea, Bath and Leicester Universities, the MRC Unit the Gambia at the London School of Hygiene and Tropical Medicine and the Quadram Institute Bioscience.
@@ -46,8 +44,6 @@ Bryn is the web management interface for CLIMB-BIG-DATA, supporting the followin
 - [Vue 3](https://v3.vuejs.org/)
 - [Openstack Python API bindings](https://www.openstack.org/)
 
-<!-- ARCHITECTURE OVERVIEW -->
-
 ## Stack Overview
 
 Bryn predominantly uses Vue 3 on the frontend, with Django + Django Rest Framework on the backend.
@@ -61,8 +57,6 @@ The frontend uses Vue 3 (installed with vue-cli) with two entrypoints/pages:
 - The second `frontend/src/main.js` (template `frontend/public/index.html`) serves as the entrypoint for the main Vue SPA.
 
 See `frontend/vue.config.js` for further details.
-
-<!-- GETTING STARTED -->
 
 ## Getting Started (local development)
 
@@ -117,13 +111,29 @@ Note: if you are working from home, you're probably not whitelisted for the Open
 
 Now, `http://localhost:8080` should give you hot module reloading. Any non-vue routes will be automatically proxied to the django dev server on port 8000. You can find the config for this in `frontend/vue.config.js`
 
-<!-- DEPLOYMENT -->
-
 ## Deployment
 
 See [provisioning_notes](deploy_tools/provisioning_notes.md)
 
-<!-- LICENSE -->
+## Integration tests
+
+Cypress is used for integration testing.
+
+To access the test suite:
+
+- From the `brynweb/frontend` dir:
+  - `npm run cypress:open`
+- You'll need to start the backend and frontend dev servers as above
+- You'll need to run migrate if you don't already have a local db
+- Be aware, any data in your current local db will be flushed
+
+To update the fixtures used to reset/reseed the backend database:
+
+- First, loaddata from the existing fixture
+  - `python manage.py loaddata frontend/cypress/fixtures/default_seed.json`
+- Use the admin site to add the additional data you require
+- Update the default_seed fixture:
+  - `python manage.py dumpdata -o frontend/cypress/fixtures/default_seed.json --natural-primary`
 
 ## License
 

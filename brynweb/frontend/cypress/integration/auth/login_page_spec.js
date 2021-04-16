@@ -1,8 +1,10 @@
-const { getYear } = require("date-fns/esm");
-
 describe("The Login Page", () => {
-  const username = "lisa";
-  const password = "rAnd0mPa22w0rD";
+  const username = "prestigious.prof@bham.ac.uk";
+  const password = "1nt3grAT10nTesting";
+
+  before(() => {
+    cy.resetDB();
+  });
 
   context("Unauthorized", () => {
     it("is redirected on visit to / when no session", () => {
@@ -21,8 +23,6 @@ describe("The Login Page", () => {
   context("/user/login", () => {
     beforeEach(() => {
       cy.visit("/user/login");
-      cy.get("#id_username").type(username);
-      cy.get("#id_password").type(password);
     });
 
     it("greets you with an obvious login form", () => {
@@ -54,7 +54,7 @@ describe("The Login Page", () => {
     });
 
     it("requires a username (which may be an email)", () => {
-      cy.get("#id_username").clear();
+      cy.get("#id_password").type(password, { delay: 0 });
       cy.getBySel("login-form").submit();
       cy.url().should("eq", Cypress.config().baseUrl + "/user/login/");
 
@@ -65,7 +65,7 @@ describe("The Login Page", () => {
     });
 
     it("requires a password", () => {
-      cy.get("#id_password").clear();
+      cy.get("#id_username").type(username, { delay: 0 });
       cy.getBySel("login-form").submit();
       cy.url().should("eq", Cypress.config().baseUrl + "/user/login/");
 
@@ -75,12 +75,57 @@ describe("The Login Page", () => {
         .should("contain", "required");
     });
 
-    it.only("requires valid credentials", () => {
+    it("requires valid credentials", () => {
+      cy.get("#id_username").type("some");
       cy.get("#id_password").type("nonsense");
       cy.getBySel("login-form").submit();
 
       cy.url().should("eq", Cypress.config().baseUrl + "/user/login/");
       cy.get(".message.is-danger").should("contain", "username and password");
+    });
+
+    it("navigates to dashboard on valid login", () => {
+      cy.get("#id_username").type(username, { delay: 0 });
+      cy.get("#id_password").type(password + "{enter}", { delay: 0 });
+      cy.location().should((loc) => {
+        expect(loc.pathname).to.not.contain("/user/login");
+        expect(loc.pathname).to.contain("/dashboard");
+      });
+    });
+
+    it("won't authenticate inactive users", () => {
+      cy.get("#id_username").type("inactiveUser", { delay: 0 });
+      cy.get("#id_password").type(password + "{enter}", { delay: 0 });
+
+      cy.url().should("eq", Cypress.config().baseUrl + "/user/login/");
+      cy.get(".message.is-danger").should("contain", "disabled");
+    });
+
+    it("won't authenticate users with no team memberships", () => {
+      cy.get("#id_username").type("legacyUserNoTeams", { delay: 0 });
+      cy.get("#id_password").type(password + "{enter}", { delay: 0 });
+
+      cy.url().should("eq", Cypress.config().baseUrl + "/user/login/");
+      cy.get(".message.is-danger").should(
+        "contain",
+        "no current team memberships"
+      );
+    });
+
+    it("won't authenticate users who have not verified their email", () => {
+      cy.get("#id_username").type("user.pending.email@bham.uk", { delay: 0 });
+      cy.get("#id_password").type(password + "{enter}", { delay: 0 });
+
+      cy.url().should("eq", Cypress.config().baseUrl + "/user/login/");
+      cy.get(".message.is-danger").should("contain", "account activation");
+    });
+
+    it("won't authenticate users who's only team is not verified'", () => {
+      cy.get("#id_username").type("userPendingTeamVerification", { delay: 0 });
+      cy.get("#id_password").type(password + "{enter}", { delay: 0 });
+
+      cy.url().should("eq", Cypress.config().baseUrl + "/user/login/");
+      cy.get(".message.is-danger").should("contain", "pending approval");
     });
   });
 });
