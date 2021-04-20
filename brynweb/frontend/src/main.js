@@ -98,6 +98,11 @@ init({
     "https://ecce5d21027544c8b534f2f9c4e51514@o563550.ingest.sentry.io/5703644",
 });
 
+// Expose store for cypress only
+if (window.Cypress) {
+  window.store = store;
+}
+
 // Global base component registration
 app.component("font-awesome-icon", FontAwesomeIcon);
 

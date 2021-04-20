@@ -1,11 +1,11 @@
 {% if messages %}
   <div class="content">
     {% for message in messages %}
-      <article class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+      <div {% if 'is-danger' in message.tags %}role="alert" {% endif %}class="message {% if message.tags %}{{ message.tags }}{% endif %}">
         <div class="message-body">
           {{ message }}
         </div>
-      </article>
+      </div>
     {% endfor %}
   </div>
 {% endif %}

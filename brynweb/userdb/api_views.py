@@ -20,6 +20,17 @@ from .helpers import get_teams_for_user
 User = get_user_model()
 
 
+class TeamListView(generics.ListAPIView):
+    """
+    API list endpoint for Teams.
+    """
+
+    serializer_class = TeamSerializer
+
+    def get_queryset(self):
+        return get_teams_for_user(self.request.user)
+
+
 class TeamDetailView(generics.RetrieveUpdateAPIView):
     """
     API detail endpoint for Team.

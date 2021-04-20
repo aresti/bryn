@@ -1,5 +1,5 @@
 <template>
-  <article :class="classes">
+  <div :class="classes">
     <div v-if="headed" class="message-header">
       <p>
         <slot name="header"></slot>
@@ -14,7 +14,7 @@
     <div class="message-body">
       <slot></slot>
     </div>
-  </article>
+  </div>
 </template>
 
 <script>
@@ -23,23 +23,28 @@ import bulmaSizeMixin from "@/mixins/bulmaSizeMixin";
 
 export default {
   mixins: [bulmaColorMixin, bulmaSizeMixin],
+
   emits: {
     dismissed: null,
   },
+
   props: {
     dismissable: {
       type: Boolean,
       default: false,
     },
   },
+
   computed: {
     classes() {
       return ["message", this.colorClass, this.sizeClass];
     },
+
     headed() {
       return this.$slots.header !== undefined;
     },
   },
+
   methods: {
     dismiss() {
       this.$emit("dismissed");

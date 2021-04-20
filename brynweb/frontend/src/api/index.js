@@ -11,15 +11,16 @@ const instanceBase = tenantBase + "instances/INSTANCE_ID/";
 
 const apiRoutes = {
   announcements: apiBase + "announcements/",
+  faqs: apiBase + "faqs/",
+  flavors: tenantBase + "flavors/",
   hypervisorStats: apiBase + "hypervisor-stats/",
   images: tenantBase + "images/",
   instances: tenantBase + "instances/",
   invitations: teamBase + "invitations/",
-  faqs: apiBase + "faqs/",
-  flavors: tenantBase + "flavors/",
   keyPairs: apiBase + "keypairs/",
   licenceAcceptances: teamBase + "licence-acceptances/",
   messages: apiBase + "messages/",
+  regions: apiBase + "regions/",
   serverLeaseRequest: instanceBase + "lease-requests/",
   teams: apiBase + "teams/",
   teamMembers: teamBase + "members/",

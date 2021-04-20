@@ -21,7 +21,7 @@ class UniqueEmailBackend(ModelBackend):
         except User.DoesNotExist:
             return None
         except User.MultipleObjectsReturned:
-            messages.warning(
+            messages.error(
                 request,
                 "There are multiple accounts associated with your email address. Please login using your username.",
             )

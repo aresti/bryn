@@ -1,6 +1,6 @@
 {% load widget_tweaks %}
 
-<div class="field" data-testid="{{ testid }}">
+<div class="field">
   <label class="label {% if hide_label %}is-sr-only{% endif %}" for="{{ field.id_for_label }}">{{ field.label }}</label>
   <div class="control {% if fa_class %}has-icons-left{% endif %}">
     {% if field.errors %}

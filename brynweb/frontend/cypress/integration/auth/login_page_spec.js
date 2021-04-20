@@ -1,9 +1,44 @@
 describe("The Login Page", () => {
-  const username = "prestigious.prof@bham.ac.uk";
-  const password = "1nt3grAT10nTesting";
+  const password = Cypress.env("dummy_password");
+  const usernames = {
+    ACTIVE_NO_TEAMS: "activeNoTeams",
+    ACTIVE_PENDING_TEAM_VERIFICATION: "activePendingTeamVerification",
+    ACTIVE_TEAM_ADMIN: "activeTeamAdmin",
+    ACTIVE_TEAM_MEMBER: "activeTeamMember",
+    DUPLICATE_EMAIL_USER_1: "duplicateEmailUser1",
+    DUPLICATE_EMAIL_USER_2: "duplicateEmailUser2",
+    INACTIVE: "inactive",
+    NO_TEAMS_INVITE_ONLY: "noTeamsInviteOnly",
+    PENDING_EMAIL_VERIFICATION: "pendingEmailVerification",
+  };
 
-  before(() => {
+  const beAtLogin = (loc) => {
+    expect(loc.pathname).to.contain(Cypress.env("login_url"));
+  };
+
+  const beAtDashboard = (loc) => {
+    expect(loc.pathname).to.not.contain(Cypress.env("login_url"));
+    expect(loc.pathname).to.contain("/dashboard");
+  };
+
+  before(function() {
+    // "this" points at the test context object
     cy.resetDB();
+
+    cy.fixture("default_seed.json").then((json) => {
+      // Seeded usernames for specific scenarious:
+      this.users = json
+        .filter((obj) => {
+          return obj.model === "auth.user";
+        })
+        .map((obj) => {
+          return obj.fields;
+        })
+        .reduce((acc, obj) => {
+          acc[obj.username] = obj;
+          return acc;
+        }, {});
+    });
   });
 
   context("Unauthorized", () => {
@@ -23,109 +58,168 @@ describe("The Login Page", () => {
   context("/user/login", () => {
     beforeEach(() => {
       cy.visit("/user/login");
+      cy.findByRole("form", { name: /login form/i }).as("loginForm");
+      cy.findByLabelText(/username/i).as("usernameInput");
+      cy.findByLabelText(/password/i).as("passwordInput");
     });
 
     it("greets you with an obvious login form", () => {
-      cy.get("#id_username")
+      cy.get("@usernameInput")
+        .should("be.visible")
         .invoke("attr", "placeholder")
-        .should("eq", "Email or username");
+        .should("match", /email or username/i);
 
-      cy.get("#id_password")
+      cy.get("@passwordInput")
+        .should("be.visible")
         .invoke("attr", "placeholder")
-        .should("eq", "Password");
+        .should("match", /password/i);
 
-      cy.getBySel("login-submit-btn").should("contain", "Login");
-    });
-
-    it("has labels for screen readers", () => {
-      cy.getBySel("login-field-username")
-        .find("label")
-        .should("have.class", "is-sr-only")
-        .should("have.text", "Username");
-
-      cy.getBySel("login-field-password")
-        .find("label")
-        .should("have.class", "is-sr-only")
-        .should("have.text", "Password");
+      cy.findByRole("button", { name: /login/i })
+        .should("be.visible")
+        .and("have.attr", "type", "submit");
     });
 
     it("has a link to reset your password", () => {
-      cy.getBySel("password-reset-link").should("contain", "password");
+      cy.findByRole("link", { name: /password/i })
+        .should("be.visible")
+        .and("have.attr", "href", "/user/password_reset/");
     });
 
     it("requires a username (which may be an email)", () => {
-      cy.get("#id_password").type(password, { delay: 0 });
-      cy.getBySel("login-form").submit();
-      cy.url().should("eq", Cypress.config().baseUrl + "/user/login/");
+      cy.get("@passwordInput").type(password, { delay: 0 });
+      cy.get("@loginForm").submit();
+      cy.location().should(beAtLogin);
 
-      cy.getBySel("login-field-username")
-        .find(".help")
-        .first()
-        .should("contain", "required");
+      cy.findByText(/is required/i)
+        .should("be.visible")
+        .and("have.class", "is-danger");
     });
 
-    it("requires a password", () => {
-      cy.get("#id_username").type(username, { delay: 0 });
-      cy.getBySel("login-form").submit();
-      cy.url().should("eq", Cypress.config().baseUrl + "/user/login/");
-
-      cy.getBySel("login-field-password")
-        .find(".help")
-        .first()
-        .should("contain", "required");
-    });
-
-    it("requires valid credentials", () => {
-      cy.get("#id_username").type("some");
-      cy.get("#id_password").type("nonsense");
-      cy.getBySel("login-form").submit();
-
-      cy.url().should("eq", Cypress.config().baseUrl + "/user/login/");
-      cy.get(".message.is-danger").should("contain", "username and password");
-    });
-
-    it("navigates to dashboard on valid login", () => {
-      cy.get("#id_username").type(username, { delay: 0 });
-      cy.get("#id_password").type(password + "{enter}", { delay: 0 });
-      cy.location().should((loc) => {
-        expect(loc.pathname).to.not.contain("/user/login");
-        expect(loc.pathname).to.contain("/dashboard");
+    it("requires a password", function() {
+      cy.get("@usernameInput").type(usernames.ACTIVE_TEAM_MEMBER, {
+        delay: 0,
       });
+      cy.get("@loginForm").submit();
+      cy.location().should(beAtLogin);
+
+      cy.findByText(/is required/i)
+        .should("be.visible")
+        .and("have.class", "is-danger");
     });
 
-    it("won't authenticate inactive users", () => {
-      cy.get("#id_username").type("inactiveUser", { delay: 0 });
-      cy.get("#id_password").type(password + "{enter}", { delay: 0 });
+    it("won't authenticate invalid credentials", () => {
+      cy.get("@usernameInput").type("some");
+      cy.get("@passwordInput").type("nonsense");
+      cy.get("@loginForm").submit();
 
-      cy.url().should("eq", Cypress.config().baseUrl + "/user/login/");
-      cy.get(".message.is-danger").should("contain", "disabled");
+      cy.location().should(beAtLogin);
+      cy.findByRole("alert").should("contain", "username and password");
     });
 
-    it("won't authenticate users with no team memberships", () => {
-      cy.get("#id_username").type("legacyUserNoTeams", { delay: 0 });
-      cy.get("#id_password").type(password + "{enter}", { delay: 0 });
+    it("will authenticate valid credentials", function() {
+      cy.get("@usernameInput").type(usernames.ACTIVE_TEAM_MEMBER, {
+        delay: 0,
+      });
+      cy.get("@passwordInput").type(password + "{enter}", { delay: 0 });
 
-      cy.url().should("eq", Cypress.config().baseUrl + "/user/login/");
-      cy.get(".message.is-danger").should(
-        "contain",
-        "no current team memberships"
-      );
+      cy.getCookie("sessionid").should("exist");
+      cy.location().should(beAtDashboard);
     });
 
-    it("won't authenticate users who have not verified their email", () => {
-      cy.get("#id_username").type("user.pending.email@bham.uk", { delay: 0 });
-      cy.get("#id_password").type(password + "{enter}", { delay: 0 });
+    it("won't authenticate inactive users", function() {
+      cy.get("@usernameInput").type(usernames.INACTIVE, {
+        delay: 0,
+      });
+      cy.get("@passwordInput").type(password + "{enter}", { delay: 0 });
 
-      cy.url().should("eq", Cypress.config().baseUrl + "/user/login/");
-      cy.get(".message.is-danger").should("contain", "account activation");
+      cy.location().should(beAtLogin);
+      cy.findByRole("alert")
+        .should("contain", "disabled")
+        .and("have.class", "is-danger");
+    });
+
+    it("won't authenticate users with no team memberships", function() {
+      cy.get("@usernameInput").type(usernames.ACTIVE_NO_TEAMS, {
+        delay: 0,
+      });
+      cy.get("@passwordInput").type(password + "{enter}", { delay: 0 });
+
+      cy.location().should(beAtLogin);
+      cy.findByRole("alert")
+        .should("contain", "no current team memberships")
+        .and("have.class", "is-danger");
+    });
+
+    it("won't authenticate users who have not verified their email", function() {
+      cy.get("@usernameInput").type(usernames.PENDING_EMAIL_VERIFICATION, {
+        delay: 0,
+      });
+      cy.get("@passwordInput").type(password + "{enter}", { delay: 0 });
+
+      cy.location().should(beAtLogin);
+      cy.findByRole("alert")
+        .should("contain", "account activation")
+        .and("have.class", "is-danger");
     });
 
     it("won't authenticate users who's only team is not verified'", () => {
-      cy.get("#id_username").type("userPendingTeamVerification", { delay: 0 });
-      cy.get("#id_password").type(password + "{enter}", { delay: 0 });
+      cy.get("@usernameInput").type(
+        usernames.ACTIVE_PENDING_TEAM_VERIFICATION,
+        {
+          delay: 0,
+        }
+      );
+      cy.get("@passwordInput").type(password + "{enter}", { delay: 0 });
 
-      cy.url().should("eq", Cypress.config().baseUrl + "/user/login/");
-      cy.get(".message.is-danger").should("contain", "pending approval");
+      cy.location().should(beAtLogin);
+      cy.findByRole("alert")
+        .should("contain", "pending approval")
+        .and("have.class", "is-danger");
+    });
+
+    it("won't authenticate an existing user with no teams, but with a pending invitation, navigating to dashboard", () => {
+      cy.get("@usernameInput").type(usernames.NO_TEAMS_INVITE_ONLY);
+      cy.get("@passwordInput").type(password);
+      cy.get("@loginForm").submit();
+
+      cy.location().should(beAtLogin);
+      cy.findByRole("alert")
+        .should("contain", "no current team")
+        .and("contain", "invitation");
+    });
+
+    it("will allow login with email instead of username", function() {
+      // use function so "this" points at test context obj
+      cy.get("@usernameInput").type(
+        this.users[usernames.ACTIVE_TEAM_MEMBER].email
+      );
+      cy.get("@passwordInput").type(password);
+      cy.get("@loginForm").submit();
+
+      cy.location().should(beAtDashboard);
+    });
+
+    it("won't allow legacy users to use email for login, where it is not unique", function() {
+      // use function so "this" points at test context obj
+      cy.get("@usernameInput").type(
+        this.users[usernames.DUPLICATE_EMAIL_USER_1].email
+      );
+      cy.get("@passwordInput").type(password);
+      cy.get("@loginForm").submit();
+
+      cy.location().should(beAtLogin);
+      cy.findAllByRole("alert")
+        .first()
+        .should("contain", "login using your username");
+    });
+
+    it("will allow users with duplicate emails to login using their username", function() {
+      // use function so "this" points at test context obj
+      cy.get("@usernameInput").type(usernames.DUPLICATE_EMAIL_USER_1);
+      cy.get("@passwordInput").type(password);
+      cy.get("@loginForm").submit();
+
+      cy.location().should(beAtDashboard);
     });
   });
 });

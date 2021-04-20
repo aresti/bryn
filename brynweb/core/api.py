@@ -41,6 +41,14 @@ urlpatterns = [
     ),
     # {%url "api:messages" % }
     path("messages/", core_views.MessagesListView.as_view(), name="messages"),
+    # {%url "api:messages" % }
+    path("regions/", openstack_views.RegionListView.as_view(), name="regions"),
+    # {% url "api:teams" %}
+    path("teams/", userdb_views.TeamListView.as_view(), name="teams",),
+    # {% url "api:teams" team_id=team.id %}
+    path(
+        "teams/<hashids:team_id>", userdb_views.TeamDetailView.as_view(), name="teams",
+    ),
     # {% url "api:tenants" team_id=team.id %}
     path(
         "teams/<hashids:team_id>/tenants/",
@@ -94,10 +102,6 @@ urlpatterns = [
         "teams/<hashids:team_id>/tenants/<hashids:tenant_id>/volumetypes/",
         cache_page(TWO_HOURS)(openstack_views.VolumeTypeListView.as_view()),
         name="volume_types",
-    ),
-    # {% url "api:team" team_id=team.id %}
-    path(
-        "teams/<hashids:team_id>", userdb_views.TeamDetailView.as_view(), name="teams",
     ),
     # {% url "api:invitations" team_id=team.id %}
     path(

@@ -17,7 +17,14 @@ from userdb.models import TeamMember
 from userdb.permissions import IsTeamMemberPermission
 
 from .service import OpenstackService, ServiceUnavailable, OpenstackException
-from .models import HypervisorStats, KeyPair, ServerLease, ServerLeaseRequest, Tenant
+from .models import (
+    HypervisorStats,
+    KeyPair,
+    Region,
+    ServerLease,
+    ServerLeaseRequest,
+    Tenant,
+)
 from .serializers import (
     AttachmentSerializer,
     FlavorSerializer,
@@ -25,6 +32,7 @@ from .serializers import (
     ImageSerializer,
     InstanceSerializer,
     KeyPairSerializer,
+    RegionSerializer,
     ServerLeaseRequestSerializer,
     TenantSerializer,
     VolumeSerializer,
@@ -68,6 +76,15 @@ def get_tenant_for_user(user: User, tenant_id: int, team_id: int = None) -> Tena
         raise ServiceUnavailable
 
     return tenant
+
+
+class RegionListView(generics.ListAPIView):
+    """
+    API list endpoint for Regions.
+    """
+
+    serializer_class = RegionSerializer
+    queryset = Region.objects.all()
 
 
 class OpenstackAPIView(APIView):

@@ -9,11 +9,13 @@ import {
   FETCH_HYPERVISOR_STATS,
   FETCH_INVITATIONS,
   FETCH_KEY_PAIRS,
+  FETCH_REGIONS,
   FETCH_TENANT_FLAVORS,
   FETCH_TENANT_IMAGES,
   FETCH_TEAM,
   FETCH_TEAM_MEMBERS,
   FETCH_TEAM_SPECIFIC_DATA,
+  FETCH_TEAMS,
   FETCH_TENANT_INSTANCES,
   FETCH_TENANT_SPECIFIC_DATA,
   FETCH_TENANT_VOLUME_TYPES,
@@ -33,33 +35,33 @@ import {
 } from "./getter-types";
 import {
   INIT_LICENCE_TERMS,
-  INIT_REGIONS,
-  INIT_TEAMS,
-  INIT_USER,
   MODIFY_TEAM,
   SET_ACTIVE_TEAM_ID,
   SET_HYPERVISOR_STATS,
   SET_FAQS,
   SET_FILTER_TENANT_ID,
   SET_READY,
+  SET_REGIONS,
   SET_TEAM_INITIALIZED,
+  SET_TEAMS,
   SET_USER,
 } from "./mutation-types";
 
 const actions = {
   async [INIT_STORE]({ commit, dispatch }) {
-    /* Initialise store from embedded Django template json */
+    /* Initialise store  */
     commit(INIT_LICENCE_TERMS);
-    commit(INIT_REGIONS);
-    commit(INIT_TEAMS);
-    commit(INIT_USER);
+    await dispatch(FETCH_USER);
     await Promise.all([
+      dispatch(FETCH_TEAMS),
+      dispatch(FETCH_REGIONS),
       dispatch(FETCH_KEY_PAIRS),
-      dispatch(FETCH_HYPERVISOR_STATS),
-      dispatch(FETCH_ANNOUNCEMENTS),
-      dispatch(FETCH_FAQS),
     ]);
     commit(SET_READY);
+    // Non-essential, don't wait
+    dispatch(FETCH_HYPERVISOR_STATS);
+    dispatch(FETCH_ANNOUNCEMENTS);
+    dispatch(FETCH_FAQS);
   },
 
   [SET_ACTIVE_TEAM]({ commit }, team) {
@@ -101,11 +103,24 @@ const actions = {
     commit(SET_HYPERVISOR_STATS, hypervisorStats);
   },
 
+  async [FETCH_REGIONS]({ commit }) {
+    const url = getAPIRoute("regions");
+    const response = await axios.get(url);
+    commit(SET_REGIONS, response.data);
+  },
+
   async [FETCH_TEAM]({ commit, state }) {
     const url = getAPIRoute("teams") + state.activeTeamId;
     const response = await axios.get(url);
     const team = response.data;
     commit(MODIFY_TEAM, team);
+  },
+
+  async [FETCH_TEAMS]({ commit }) {
+    const url = getAPIRoute("teams");
+    const response = await axios.get(url);
+    const teams = response.data;
+    commit(SET_TEAMS, teams);
   },
 
   async [FETCH_TENANT_SPECIFIC_DATA]({ dispatch, getters }, tenant) {

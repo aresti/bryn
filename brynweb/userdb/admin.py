@@ -222,6 +222,10 @@ class TeamAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             )
 
 
+class TeamMemberAdmin(admin.ModelAdmin):
+    autocomplete_fields = ("team", "user")
+
+
 class ProfileInline(admin.StackedInline):
     model = Profile
     readonly_fields = (
@@ -259,8 +263,19 @@ class LicenceVersionAdmin(admin.ModelAdmin):
     )
 
 
+class InvitationAdmin(admin.ModelAdmin):
+    list_display = (
+        model_str,
+        "accepted",
+        "date",
+    )
+
+    autocomplete_fields = ("to_team", "made_by")
+
+
 admin.site.register(LicenceVersion, LicenceVersionAdmin)
+admin.site.register(Invitation, InvitationAdmin)
 admin.site.register(Team, TeamAdmin)
-admin.site.register(TeamMember)
+admin.site.register(TeamMember, TeamMemberAdmin)
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)

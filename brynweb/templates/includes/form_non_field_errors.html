@@ -1,11 +1,11 @@
 {% if errors %}
   <div class="content">
     {% for error in errors %}
-      <article class="message is-danger">
+      <div role="alert" class="message is-danger">
         <div class="message-body">
           {{ error }}
         </div>
-      </article>
+      </p>
     {% endfor %}
   </div>
 {% endif %}

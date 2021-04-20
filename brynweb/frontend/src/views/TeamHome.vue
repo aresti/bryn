@@ -95,16 +95,16 @@ export default {
   // Events
   watch: {
     async team() {
-      this.getTeamData();
+      await this.getTeamData();
       if (this.tenants.length) {
-        this.getAllTenantData();
+        await this.getAllTenantData();
       }
     },
-  },
 
-  created() {
-    /* Set activeTeamId for initial route */
-    this.setTeamForRoute(this.$route);
+    ready() {
+      /* Set activeTeamId for initial route */
+      this.setTeamForRoute(this.$route);
+    },
   },
 
   beforeRouteUpdate(to, from) {

@@ -8,17 +8,17 @@
 {% endblock %}
 
 {% block card_content %}
-  <form method="post" data-testid="login-form">
+  <form method="post" aria-label="Login form">
     {% csrf_token %}
 
     {% include 'includes/form_non_field_errors.html' with errors=form.non_field_errors %}
 
-    {% include 'includes/form_field.html' with field=form.username|attr:'placeholder:Email or username'|add_class:'is-medium' fa_class="fas fa-user" hide_label="True" testid="login-field-username" only %}
-    {% include 'includes/form_field.html' with field=form.password|attr:'placeholder:Password'|add_class:'is-medium' fa_class="fas fa-lock" hide_label="True" testid="login-field-password" only %}
+    {% include 'includes/form_field.html' with field=form.username|attr:'placeholder:Email or username'|add_class:'is-medium' fa_class="fas fa-user" hide_label="True" only %}
+    {% include 'includes/form_field.html' with field=form.password|attr:'placeholder:Password'|add_class:'is-medium' fa_class="fas fa-lock" hide_label="True" only %}
     
     <div class="field">
       <div class="control">
-        <button type="submit" class="button is-success is-medium is-fullwidth" data-testid="login-submit-btn">
+        <button type="submit" class="button is-success is-medium is-fullwidth">
           Login
         </button>
       </div>
@@ -29,7 +29,7 @@
 
 {% block below_card %}
   <p class="mt-4 has-text-centered">
-    <a class="has-text-link-light" href="{% url 'user:password_reset' %}" data-testid="password-reset-link">Forgot your password?</a>
+    <a class="has-text-link-light" href="{% url 'user:password_reset' %}">Forgot your password?</a>
   </p>
 {% endblock %}
             

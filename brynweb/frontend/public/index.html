@@ -23,10 +23,6 @@
 
     {% include "includes/top_menu.html" %}
     
-    {{ regions|json_script:'regionsData' }}
-    {{ teams|json_script:'teamsData' }}
-    {{ user|json_script:'userData' }}
-
     <div style="display: none" id="licenceTerms">
       {{ licence_terms|safe }}
     </div>

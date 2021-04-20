@@ -30,6 +30,7 @@
   "devDependencies": {
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.12.13",
     "@babel/plugin-proposal-optional-chaining": "^7.12.13",
+    "@testing-library/cypress": "^7.0.6",
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-eslint": "~4.5.0",
     "@vue/cli-service": "~4.5.0",

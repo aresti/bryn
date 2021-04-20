@@ -1,9 +1,9 @@
 <template>
-  <base-hero-full v-if="teams.length" centered>
+  <base-hero-full v-if="!ready" centered>
     <h2 class="subtitle">Initializing team admin console...</h2>
     <base-progress indeterminate color="success" />
   </base-hero-full>
-  <no-teams v-else />
+  <no-teams v-else-if="!teams.length" />
 </template>
 
 <script>
@@ -20,19 +20,22 @@ export default {
   computed: {
     ...mapState({
       teams: (state) => state.teams,
+      ready: (state) => state.ready,
     }),
     ...mapGetters({
       defaultTeamId: DEFAULT_TEAM_ID,
     }),
   },
 
-  mounted() {
-    if (this.teams.length) {
-      this.$router.push({
-        name: "teamHome",
-        params: { teamId: this.defaultTeamId ?? this.teams[0].id },
-      });
-    }
+  watch: {
+    teams() {
+      if (this.teams.length) {
+        this.$router.push({
+          name: "teamHome",
+          params: { teamId: this.defaultTeamId ?? this.teams[0].id },
+        });
+      }
+    },
   },
 };
 </script>
