@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
-from django.views.decorators.vary import vary_on_cookie
+from django.views.decorators.cache import never_cache
 
 from rest_framework.views import APIView
 from rest_framework import permissions, generics, status
@@ -115,6 +115,7 @@ class OpenstackRetrieveView(OpenstackAPIView):
     Base class for simple openstack detail views.
     """
 
+    @method_decorator(never_cache)
     def get(self, request, team_id, tenant_id, pk):
         tenant = get_tenant_for_user(
             request.user, tenant_id=tenant_id, team_id=team_id
@@ -139,7 +140,7 @@ class OpenstackListView(OpenstackAPIView):
     Base class for simple openstack collection views.
     """
 
-    @method_decorator(vary_on_cookie)
+    @method_decorator(never_cache)
     def get(self, request, team_id, tenant_id):
         tenant = get_tenant_for_user(
             request.user, team_id=team_id, tenant_id=tenant_id
@@ -403,6 +404,10 @@ class KeyPairListView(generics.ListCreateAPIView):
         user = self.request.user
         return user.keypairs.all()
 
+    @method_decorator(never_cache)
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
+
 
 class KeyPairDetailView(generics.RetrieveDestroyAPIView):
     """
@@ -415,6 +420,10 @@ class KeyPairDetailView(generics.RetrieveDestroyAPIView):
     def get_queryset(self):
         user = self.request.user
         return user.keypairs.all()
+
+    @method_decorator(never_cache)
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
 
 
 def get_volume_transform_func(self, tenant):

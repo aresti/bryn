@@ -28,7 +28,7 @@ export default {
   },
 
   watch: {
-    teams() {
+    ready() {
       if (this.teams.length) {
         this.$router.push({
           name: "teamHome",

@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 
 from rest_framework import exceptions, generics, permissions
 
@@ -30,6 +32,10 @@ class TeamListView(generics.ListAPIView):
     def get_queryset(self):
         return get_teams_for_user(self.request.user)
 
+    @method_decorator(never_cache)
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
+
 
 class TeamDetailView(generics.RetrieveUpdateAPIView):
     """
@@ -49,6 +55,10 @@ class TeamDetailView(generics.RetrieveUpdateAPIView):
     def get_queryset(self):
         return get_teams_for_user(self.request.user)
 
+    @method_decorator(never_cache)
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
+
 
 class TeamMemberListView(generics.ListAPIView):
     """
@@ -67,6 +77,10 @@ class TeamMemberListView(generics.ListAPIView):
         teams = get_teams_for_user(self.request.user, team=team_id)
         return TeamMember.objects.filter(team__in=teams)
 
+    @method_decorator(never_cache)
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
+
 
 class TeamMemberDetailView(generics.RetrieveDestroyAPIView):
     """
@@ -83,6 +97,10 @@ class TeamMemberDetailView(generics.RetrieveDestroyAPIView):
     def get_queryset(self):
         teams = get_teams_for_user(self.request.user)
         return TeamMember.objects.filter(team__in=teams)
+
+    @method_decorator(never_cache)
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
 
     def delete(self, request, team_id, pk):
         teammember = get_object_or_404(TeamMember, pk=pk)
@@ -117,6 +135,10 @@ class InvitationListView(generics.ListCreateAPIView):
         invitation = serializer.save(to_team=team)
         invitation.send_invitation_email()
 
+    @method_decorator(never_cache)
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
+
 
 class InvitationDetailView(generics.RetrieveDestroyAPIView):
     """
@@ -139,6 +161,10 @@ class InvitationDetailView(generics.RetrieveDestroyAPIView):
             raise exceptions.MethodNotAllowed("Accepted invitations cannot be deleted.")
         return obj
 
+    @method_decorator(never_cache)
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
+
 
 class OwnUserDetailView(generics.RetrieveUpdateAPIView):
     """
@@ -150,6 +176,10 @@ class OwnUserDetailView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+    @method_decorator(never_cache)
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
 
 
 class LicenceAcceptanceListView(generics.ListCreateAPIView):
@@ -184,3 +214,7 @@ class LicenceAcceptanceListView(generics.ListCreateAPIView):
         serializer.save(
             licence_version=licence_version, team=team, user=self.request.user
         )
+
+    @method_decorator(never_cache)
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
