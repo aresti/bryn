@@ -7,7 +7,6 @@ from huey.contrib.djhuey import db_periodic_task
 from .models import Team
 
 
-@db_periodic_task(crontab(minute="0", hour="8"))
 def send_team_licence_expiry_reminder_emails():
     """Send team licence expiry reminder emails, on specified days until expiry"""
     reminder_days = settings.LICENCE_RENEWAL_REMINDER_DAYS
@@ -19,3 +18,9 @@ def send_team_licence_expiry_reminder_emails():
             if last_reminder and (timezone.now() - last_reminder).days < 1:
                 continue  # Don't send reminder more than once every 24 hours
             team.send_team_licence_reminder_emails()
+
+
+if getattr(settings, "LICENCE_RENEWAL_SCHEDULED_EMAILS", False):
+    db_periodic_task(crontab(minute="0", hour="8"))(
+        send_team_licence_expiry_reminder_emails
+    )

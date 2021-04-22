@@ -8,7 +8,6 @@ from .models import HypervisorStats, Region, ServerLease
 from .service import OpenstackService
 
 
-@db_periodic_task(crontab(minute="10", hour="*/1"))
 def update_hypervisor_stats():
     for region in Region.objects.filter(disabled=False):
         service = OpenstackService(region=region)
@@ -29,7 +28,10 @@ def update_hypervisor_stats():
         HypervisorStats.objects.update_or_create(defaults=defaults, region=region)
 
 
-@db_periodic_task(crontab(minute="*/30"))
+if getattr(settings, "POLL_FOR_HYPERVISOR_STATS", False):
+    db_periodic_task(crontab(minute="10", hour="*/1"))(update_hypervisor_stats)
+
+
 def send_server_lease_expiry_reminder_emails():
     """Send server lease expiry reminder emails, on specified days until expiry"""
     reminder_days = settings.SERVER_LEASE_REMINDER_DAYS
@@ -40,3 +42,7 @@ def send_server_lease_expiry_reminder_emails():
             if last_reminder and (timezone.now() - last_reminder).days < 1:
                 continue  # Don't send reminder more than once every 24 hours
             lease.send_email_renewal_reminder()
+
+
+if getattr(settings, "SERVER_LEASE_SCHEDULED_EMAILS", False):
+    db_periodic_task(crontab(minute="*/30"))(send_server_lease_expiry_reminder_emails)
