@@ -139,7 +139,7 @@ export default {
       if (toTeam === undefined) {
         this.$router.push({
           name: "notfound",
-          params: { pathMatch: route.path.split("/") },
+          params: { pathMatch: route.path.split("/").slice(1) },
         });
       }
       this.setActiveTeam(toTeam);
