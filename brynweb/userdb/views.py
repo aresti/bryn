@@ -190,7 +190,7 @@ def accept_invitation_view(request, uuid):
     if request.method == "GET":
         # Handle logged in user case
         if request.user.is_authenticated:
-            if request.user.email != invitation.email:
+            if request.user.email.lower() != invitation.email.lower():
                 # Email does not match
                 messages.error(
                     request,
