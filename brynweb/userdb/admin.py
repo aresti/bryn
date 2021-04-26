@@ -167,10 +167,6 @@ class TeamAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     actions = (
         "verify_and_send_notification_email",
         "send_licence_renewal_reminder_emails",
-        "create_warwick_tenant",
-        "create_bham_tenant",
-        "create_cardiff_tenant",
-        "create_swansea_tenant",
     )
 
     inlines = (
