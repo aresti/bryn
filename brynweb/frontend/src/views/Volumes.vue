@@ -170,7 +170,7 @@ export default {
 
   computed: {
     ...mapState({
-      loading: (state) => state.volumes.loading,
+      loading: (state) => state.tenantsLoading,
     }),
     ...mapGetters({
       faqsVolumes: FAQS_VOLUMES,

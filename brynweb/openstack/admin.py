@@ -25,6 +25,7 @@ class TenantAdmin(admin.ModelAdmin):
     list_display = ("created_tenant_name", "team", "region")
     list_filter = ("region",)
     search_fields = ("created_tenant_id", "created_tenant_name")
+    autocomplete_fields = ("team",)
 
 
 class ServerLeaseAdmin(admin.ModelAdmin):

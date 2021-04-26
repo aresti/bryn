@@ -10,6 +10,7 @@ export const SET_READY = "SET_READY";
 export const SET_REGIONS = "SET_REGIONS";
 export const SET_TEAMS = "SET_TEAMS";
 export const SET_TEAM_INITIALIZED = "SET_TEAM_INITIALIZED";
+export const SET_TENANTS_LOADING = "SET_TENANTS_LOADING";
 export const SET_USER = "UPDATE_USER";
 
 /* -- MODULES (not namespaced) -- */
@@ -27,7 +28,6 @@ export const SET_IMAGES = "SET_IMAGES";
 export const ADD_INSTANCE = "ADD_INSTANCE";
 export const MODIFY_INSTANCE = "MODIFY_INSTANCE";
 export const SET_INSTANCES = "SET_INSTANCE";
-export const SET_INSTANCES_LOADING = "SET_INSTANCES_LOADING";
 
 // Invitations
 export const ADD_INVITATION = "ADD_INVITATION";
@@ -57,4 +57,3 @@ export const ADD_VOLUME = "ADD_VOLUME";
 export const MODIFY_VOLUME = "MODIFY_VOLUME";
 export const REMOVE_VOLUME_BY_ID = "REMOVE_VOLUME_BY_ID";
 export const SET_VOLUMES = "SET_VOLUMES";
-export const SET_VOLUMES_LOADING = "SET_VOLUMES_LOADING";

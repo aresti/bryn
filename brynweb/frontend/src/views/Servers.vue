@@ -158,7 +158,7 @@ export default {
 
   computed: {
     ...mapState({
-      loading: (state) => state.instances.loading,
+      loading: (state) => state.tenantsLoading,
       keyPairs: (state) => state.keyPairs.all,
     }),
     ...mapGetters({

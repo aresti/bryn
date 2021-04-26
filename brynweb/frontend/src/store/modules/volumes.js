@@ -32,14 +32,12 @@ import {
   ADD_VOLUME,
   MODIFY_VOLUME,
   SET_VOLUMES,
-  SET_VOLUMES_LOADING,
   REMOVE_VOLUME_BY_ID,
 } from "../mutation-types";
 
 const state = () => {
   return {
     all: [],
-    loading: false,
   };
 };
 
@@ -50,9 +48,6 @@ const mutations = {
   [SET_VOLUMES](state, { volumes, team, tenant }) {
     /* Update all volumes for a team (fetch [and replace]) */
     updateTeamCollection(state.all, volumes, team, tenant);
-  },
-  [SET_VOLUMES_LOADING](state, loading) {
-    state.loading = loading;
   },
   [MODIFY_VOLUME](state, volume) {
     /* Update an existing volume, maintaining the ref */
@@ -184,13 +179,11 @@ const actions = {
 
   async [FETCH_TENANT_VOLUMES]({ commit, rootGetters }, tenant) {
     /* Fetch [and replace] all volumes for the active team */
-    commit(SET_VOLUMES_LOADING, true);
     const team = rootGetters[TEAM];
     const url = getAPIRoute("volumes", team.id, tenant.id);
     const response = await axios.get(url);
     const volumes = response.data;
     commit(SET_VOLUMES, { volumes, team, tenant });
-    commit(SET_VOLUMES_LOADING, false);
   },
 };
 

@@ -14,7 +14,7 @@
     />
 
     <h4 class="is-size-4 mb-4">Team resources</h4>
-    <base-progress v-if="resourcesLoading" color="info" indeterminate />
+    <base-progress v-if="tenantsLoading" color="info" indeterminate />
     <dashboard-team-tiles v-else />
 
     <h4 class="is-size-4 mb-4">Service status</h4>
@@ -58,19 +58,14 @@ export default {
 
   computed: {
     ...mapState({
-      instancesLoading: (state) => state.instances.loading,
+      tenantsLoading: (state) => state.tenantsLoading,
       user: (state) => state.user,
-      volumesLoading: (state) => state.volumes.loading,
     }),
 
     ...mapGetters({
       newsAnnouncements: NEWS_ANNOUNCEMENTS,
       serviceAnnouncements: SERVICE_ANNOUNCEMENTS,
     }),
-
-    resourcesLoading() {
-      return this.instancesLoading || this.volumesLoading;
-    },
   },
 };
 </script>

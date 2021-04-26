@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import { mapActions, mapGetters, mapState } from "vuex";
+import { mapActions, mapGetters, mapMutations, mapState } from "vuex";
 import {
   FETCH_ALL_TENANT_DATA,
   FETCH_TEAM_SPECIFIC_DATA,
@@ -52,6 +52,7 @@ import {
   TEAM,
   TENANTS,
 } from "@/store/getter-types";
+import { SET_TEAM_INITIALIZED } from "@/store/mutation-types";
 
 import TheContent from "@/components/TheContent";
 import TheHeader from "@/components/TheHeader";
@@ -99,6 +100,7 @@ export default {
       if (this.tenants.length) {
         await this.getAllTenantData();
       }
+      this.setTeamInitialized(this.team);
     },
 
     ready() {
@@ -133,6 +135,10 @@ export default {
       setActiveTeam: SET_ACTIVE_TEAM,
     }),
 
+    ...mapMutations({
+      setTeamInitialized: SET_TEAM_INITIALIZED,
+    }),
+
     setTeamForRoute(route) {
       /* Set the activeTeamId state from route params */
       const toTeam = this.teams.find((team) => team.id === route.params.teamId);
@@ -149,7 +155,7 @@ export default {
       /* Fetch data for the active team */
       this.teamErroredOnGet = false;
       try {
-        await this.fetchTeamSpecificData();
+        await this.fetchTeamSpecificData(this.team);
       } catch (err) {
         this.teamErroredOnGet = true;
         this.toast.error(err.toString());
@@ -160,7 +166,7 @@ export default {
       /* Fetch data for all of the active team's tenants */
       this.allTenantsErroredOnGet = false;
       try {
-        const results = await this.fetchAllTenantData();
+        const results = await this.fetchAllTenantData(this.team);
         /*
          * Result is per-tenant, from Promise.allSettled
          * Trigger toasts for errors

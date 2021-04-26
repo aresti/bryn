@@ -27,6 +27,7 @@ const state = {
   ready: false,
   regions: [],
   teams: [],
+  tenantsLoading: false,
   user: null,
 };
 

@@ -28,10 +28,10 @@ import {
   UPDATE_USER,
 } from "./action-types";
 import {
+  GET_REGION_FOR_TENANT,
   GET_REGION_NAME_FOR_TENANT,
   GET_TEAM_BY_ID,
   TEAM,
-  TENANTS,
 } from "./getter-types";
 import {
   INIT_LICENCE_TERMS,
@@ -42,22 +42,23 @@ import {
   SET_FILTER_TENANT_ID,
   SET_READY,
   SET_REGIONS,
-  SET_TEAM_INITIALIZED,
   SET_TEAMS,
+  SET_TENANTS_LOADING,
   SET_USER,
 } from "./mutation-types";
 
 const actions = {
   async [INIT_STORE]({ commit, dispatch }) {
     /* Initialise store  */
-    commit(INIT_LICENCE_TERMS);
+    commit(INIT_LICENCE_TERMS); // embedded in Django template
+
+    // Required in order
     await dispatch(FETCH_USER);
-    await Promise.all([
-      dispatch(FETCH_TEAMS),
-      dispatch(FETCH_REGIONS),
-      dispatch(FETCH_KEY_PAIRS),
-    ]);
+    await dispatch(FETCH_REGIONS),
+      // Required before ready
+      await Promise.all([dispatch(FETCH_TEAMS), dispatch(FETCH_KEY_PAIRS)]);
     commit(SET_READY);
+
     // Non-essential, don't wait
     dispatch(FETCH_HYPERVISOR_STATS);
     dispatch(FETCH_ANNOUNCEMENTS);
@@ -116,10 +117,20 @@ const actions = {
     commit(MODIFY_TEAM, team);
   },
 
-  async [FETCH_TEAMS]({ commit }) {
+  async [FETCH_TEAMS]({ commit, getters }) {
     const url = getAPIRoute("teams");
     const response = await axios.get(url);
     const teams = response.data;
+    // Convenience modifications
+    teams.forEach((team) => {
+      team.initialized = false;
+      team.tenants.forEach((tenant) => {
+        const region = getters[GET_REGION_FOR_TENANT](tenant);
+        tenant.disabled = region.disabled;
+        tenant.newInstancesDisabled = region.newInstancesDisabled;
+        tenant.unshelvingDisabled = region.unshelvingDisabled;
+      });
+    });
     commit(SET_TEAMS, teams);
   },
 
@@ -152,39 +163,36 @@ const actions = {
     }
   },
 
-  async [FETCH_TEAM_SPECIFIC_DATA]({ commit, dispatch, getters }) {
-    /* Fetch all team specific data (for the active team) */
-    if (!getters[TEAM].initialized) {
-      try {
-        await Promise.all([
-          dispatch(FETCH_TEAM_MEMBERS),
-          dispatch(FETCH_INVITATIONS),
-        ]);
-        commit(SET_TEAM_INITIALIZED);
-      } catch (err) {
-        const msg = `Error fetching team data for ${getters[TEAM].name}`;
-        if (
-          err.response &&
-          Object.prototype.hasOwnProperty.call(err.response.data, "detail")
-        ) {
-          throw new Error(`${msg}: ${err.response.data.detail}`);
-        } else {
-          throw new Error(`${msg}: ${err.message}`);
-        }
+  async [FETCH_TEAM_SPECIFIC_DATA]({ dispatch }, team) {
+    /* Fetch all team specific data */
+    try {
+      await Promise.all([
+        dispatch(FETCH_TEAM_MEMBERS),
+        dispatch(FETCH_INVITATIONS),
+      ]);
+    } catch (err) {
+      const msg = `Error fetching team data for ${team.name}`;
+      if (
+        err.response &&
+        Object.prototype.hasOwnProperty.call(err.response.data, "detail")
+      ) {
+        throw new Error(`${msg}: ${err.response.data.detail}`);
+      } else {
+        throw new Error(`${msg}: ${err.message}`);
       }
     }
   },
 
-  async [FETCH_ALL_TENANT_DATA]({ dispatch, getters }) {
-    const tenants = getters[TENANTS]; // remember, active team/tenants may have changed by the time function returns
-
+  async [FETCH_ALL_TENANT_DATA]({ commit, dispatch }, team) {
+    const tenants = team.tenants.filter((tenant) => !tenant.disabled);
     if (!tenants.length) {
-      throw new Error(`The current team has no tenants.`);
+      return {};
     }
-
+    commit(SET_TENANTS_LOADING, true);
     const results = await Promise.allSettled(
       tenants.map((tenant) => dispatch(FETCH_TENANT_SPECIFIC_DATA, tenant))
     );
+    commit(SET_TENANTS_LOADING, false);
     return results.map(({ status, value, reason }, index) => {
       return { status, value, reason, tenant: tenants[index].id };
     });

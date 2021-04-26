@@ -78,17 +78,7 @@ export const getters = {
 
   [TENANTS](state, getters) {
     return state.activeTeamId
-      ? getters[TEAM].tenants
-          .filter((tenant) => {
-            const region = getters[GET_REGION_FOR_TENANT](tenant);
-            return !region.disabled; // Exclude tenants at disabled regions
-          })
-          .map((tenant) => {
-            const region = getters[GET_REGION_FOR_TENANT](tenant);
-            tenant.newInstancesDisabled = region.newInstancesDisabled; // Convenience newInstancesDisabled property
-            tenant.unshelvingDisabled = region.unshelvingDisabled;
-            return tenant;
-          })
+      ? getters[TEAM].tenants.filter((tenant) => !tenant.disabled)
       : [];
   },
 

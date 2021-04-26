@@ -36,7 +36,6 @@ import {
   ADD_INSTANCE,
   MODIFY_INSTANCE,
   SET_INSTANCES,
-  SET_INSTANCES_LOADING,
 } from "../mutation-types";
 
 const SHELVED_STATUSES = ["SHELVED", "SHELVED_OFFLOADED"];
@@ -47,7 +46,6 @@ const getInstanceDetailUri = (instance) =>
 const state = () => {
   return {
     all: [],
-    loading: false,
   };
 };
 
@@ -57,9 +55,6 @@ const mutations = {
   },
   [SET_INSTANCES](state, { instances, team, tenant }) {
     updateTeamCollection(state.all, instances, team, tenant);
-  },
-  [SET_INSTANCES_LOADING](state, loading) {
-    state.loading = loading;
   },
   [MODIFY_INSTANCE](state, instance) {
     /* Update an existing instance, maintaining the ref */
@@ -190,13 +185,11 @@ const actions = {
   },
 
   async [FETCH_TENANT_INSTANCES]({ rootGetters, commit }, tenant) {
-    commit(SET_INSTANCES_LOADING, true);
     const team = rootGetters[TEAM];
     const url = getAPIRoute("instances", team.id, tenant.id);
     const response = await axios.get(url);
     const instances = response.data;
     commit(SET_INSTANCES, { instances, team, tenant });
-    commit(SET_INSTANCES_LOADING, false);
   },
 
   async [RENEW_INSTANCE_LEASE]({ commit }, instance) {

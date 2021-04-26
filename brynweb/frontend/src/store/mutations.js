@@ -9,6 +9,7 @@ import {
   SET_REGIONS,
   SET_TEAM_INITIALIZED,
   SET_TEAMS,
+  SET_TENANTS_LOADING,
   SET_USER,
 } from "@/store/mutation-types";
 
@@ -46,17 +47,17 @@ const mutations = {
     state.regions = regions;
   },
 
-  [SET_TEAM_INITIALIZED](state) {
-    state.teams.find(
-      (team) => team.id === state.activeTeamId
-    ).initialized = true;
+  [SET_TEAM_INITIALIZED](state, team) {
+    const teamId = team.id;
+    state.teams.find((team) => team.id === teamId).initialized = true;
   },
 
   [SET_TEAMS](state, teams) {
-    if (state.teams.length === 0) {
-      teams.forEach((team) => (team.initialized = false));
-    }
     state.teams = teams;
+  },
+
+  [SET_TENANTS_LOADING](state, loading) {
+    state.tenantsLoading = loading;
   },
 
   [SET_USER](state, user) {
