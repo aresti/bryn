@@ -94,7 +94,7 @@ const actions = {
   },
 
   async [SET_DEFAULT_KEY_PAIR]({ dispatch }, { id }) {
-    const userData = { profile: { default_keypair: id } };
+    const userData = { profile: { defaultKeypair: id } };
     await dispatch(UPDATE_USER, userData, { root: true });
   },
 };

@@ -30,7 +30,10 @@ import { mapActions, mapGetters, mapState } from "vuex";
 import { UPDATE_USER } from "@/store/action-types";
 import { GET_TEAM_BY_ID } from "@/store/getter-types";
 
-import { isRequired } from "@/composables/formValidation/validators";
+import {
+  isRequired,
+  isValidEmailSyntax,
+} from "@/composables/formValidation/validators";
 import useFormValidation from "@/composables/formValidation";
 
 export default {
@@ -51,7 +54,7 @@ export default {
         },
         email: {
           label: "Email",
-          validators: [isRequired],
+          validators: [isRequired, isValidEmailSyntax],
         },
         defaultTeamMembership: {
           label: "Default Team",
@@ -103,7 +106,18 @@ export default {
       }
       this.submitted = true;
       try {
-        await this.updateUser(this.form.values);
+        const {
+          firstName,
+          lastName,
+          email,
+          defaultTeamMembership,
+        } = this.form.values;
+        await this.updateUser({
+          firstName,
+          lastName,
+          email,
+          profile: { defaultTeamMembership },
+        });
         this.toast.success("User profile saved");
         this.form.fields.email.value = this.user.email;
         this.form.resetValidation();
