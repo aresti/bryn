@@ -22,15 +22,10 @@ export default {
     return { toast };
   },
 
-  // Local state
-  computed: mapActions({
-    initStore: INIT_STORE,
-  }),
-
   // Events
   async beforeMount() {
     try {
-      await this.initStore(); // Initialises global & user data (non-team sepecifc)
+      await this.initStore();
     } catch (err) {
       this.toast.error(
         `Failed to initialise team admin console: ${
@@ -56,6 +51,11 @@ export default {
       });
     }
   },
+
+  // Non-reactive
+  methods: mapActions({
+    initStore: INIT_STORE,
+  }),
 };
 </script>
 

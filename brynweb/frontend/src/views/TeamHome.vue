@@ -103,9 +103,13 @@ export default {
       this.setTeamInitialized(this.team);
     },
 
-    ready() {
-      /* Set activeTeamId for initial route */
-      this.setTeamForRoute(this.$route);
+    ready: {
+      handler(ready) {
+        if (ready) {
+          this.setTeamForRoute(this.$route);
+        }
+      },
+      immediate: true,
     },
   },
 
