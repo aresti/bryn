@@ -2,9 +2,10 @@ import { CREATE_POLLING_TARGET, FETCH_POLLING_TARGETS } from "../action-types";
 import { GET_ITEM_IS_POLLING } from "../getter-types";
 import {
   SET_POLLING_SYMBOL,
+  SET_POLLING_TARGET_FULFILLED,
+  CLEAR_FULFILLED_POLLING_TARGETS,
   CLEAR_POLLING_SYMBOL,
   UPDATE_OR_CREATE_POLLING_TARGET,
-  REMOVE_POLLING_TARGET,
 } from "../mutation-types";
 
 const state = () => {
@@ -38,9 +39,6 @@ const mutations = {
     state,
     { collection, item, fetchAction, targetStatuses = [] }
   ) {
-    /*
-     * Update or create a polling target
-     */
     const targets = state.pollingTargets;
     const existingTarget = targets.find(
       (target) => target.collection === collection && target.itemId == item.id
@@ -54,12 +52,19 @@ const mutations = {
         itemId: item.id,
         fetchAction,
         targetStatuses,
+        fulfilled: false,
       });
     }
   },
 
-  [REMOVE_POLLING_TARGET](state, index) {
-    state.pollingTargets.splice(index, 1);
+  [SET_POLLING_TARGET_FULFILLED](state, index) {
+    state.pollingTargets[index].fulfilled = true;
+  },
+
+  [CLEAR_FULFILLED_POLLING_TARGETS](state) {
+    state.pollingTargets = state.pollingTargets.filter(
+      (target) => !target.fulfilled
+    );
   },
 };
 
@@ -74,12 +79,11 @@ const actions = {
       fetchAction,
       targetStatuses,
     });
-    dispatch(FETCH_POLLING_TARGETS); // First/immediate update
     if (!state.pollingSymbol) {
       /* Start polling */
-      const pollingSymbol = setInterval(() => {
+      const pollingSymbol = setTimeout(() => {
         dispatch(FETCH_POLLING_TARGETS);
-      }, 5000);
+      }, 0);
       commit(SET_POLLING_SYMBOL, pollingSymbol);
     }
   },
@@ -102,21 +106,26 @@ const actions = {
         const target = state.pollingTargets[index];
         const newStatus = result.value.status;
         if (target.targetStatuses?.includes(newStatus)) {
-          commit(REMOVE_POLLING_TARGET, index);
+          commit(SET_POLLING_TARGET_FULFILLED, index);
         }
       } else if (
         result.status == "rejected" &&
         result.reason.response?.status === 404
       ) {
         /* 404 case (e.g., item deleted) */
-        commit(REMOVE_POLLING_TARGET, index);
+        commit(SET_POLLING_TARGET_FULFILLED, index);
       }
     });
 
+    /* Remove fulfilled targets, enque next if required */
+    commit(CLEAR_FULFILLED_POLLING_TARGETS);
+
     if (state.pollingTargets.length === 0) {
-      /* Stop polling */
-      clearInterval(state.pollingSymbol);
       commit(CLEAR_POLLING_SYMBOL);
+    } else {
+      setTimeout(() => {
+        dispatch(FETCH_POLLING_TARGETS);
+      }, 5000);
     }
   },
 };
