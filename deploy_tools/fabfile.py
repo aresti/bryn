@@ -109,8 +109,8 @@ def _update_database(c, source_dir):
 
 
 def _restart_gunicorn(c):
-    c.run(f"sudo systemctl restart gunicorn-{c.host}")
+    c.run(f"sudo systemctl restart gunicorn-{c.host.split('.')[0]}")
 
 
 def _restart_nginx(c):
-    c.run("sudo service nginx restart")
+    c.run("sudo systemctl restart nginx")
