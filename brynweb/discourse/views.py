@@ -3,13 +3,12 @@
 import base64
 import hmac
 import hashlib
-import urllib
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest, HttpResponseRedirect
 from django.conf import settings
 
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, unquote, urlencode
 
 
 @login_required
@@ -25,16 +24,16 @@ def sso(request):
     # Validate the payload
 
     try:
-        payload = urllib.unquote(payload)
-        decoded = base64.decodestring(payload)
-        assert "nonce" in decoded
-        assert len(payload) > 0
+        payload = unquote(payload).encode("ascii")
+        decoded = base64.b64decode(payload).decode("ascii")
+        # assert "nonce" in decoded
+        # assert len(payload) > 0
     except AssertionError:
         return HttpResponseBadRequest(
             "Invalid payload. Please contact support if this problem persists."
         )
 
-    key = str(settings.DISCOURSE_SSO_SECRET)  # must not be unicode
+    key = settings.DISCOURSE_SSO_SECRET.encode("ascii")
     h = hmac.new(key, payload, digestmod=hashlib.sha256)
     this_signature = h.hexdigest()
 
@@ -53,9 +52,9 @@ def sso(request):
         "username": request.user.username,
     }
 
-    return_payload = base64.encodestring(urllib.urlencode(params))
+    return_payload = base64.b64encode(urlencode(params).encode("ascii"))
     h = hmac.new(key, return_payload, digestmod=hashlib.sha256)
-    query_string = urllib.urlencode({"sso": return_payload, "sig": h.hexdigest()})
+    query_string = urlencode({"sso": return_payload, "sig": h.hexdigest()})
 
     # Redirect back to Discourse
 
