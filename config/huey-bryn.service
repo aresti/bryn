@@ -1,0 +1,12 @@
+[Unit]
+Description=Huey consumer for bryn.climb.ac.uk
+After=network.target
+
+[Service]
+User=ubuntu
+ExecStart=/home/ubuntu/sites/bryn.climb.ac.uk/venv/bin/python manage.py run_huey -l /var/log/huey/bryn-huey.log
+ExecStop=/bin/true
+WorkingDirectory=/home/ubuntu/sites/bryn.climb.ac.uk/brynweb
+
+[Install]
+WantedBy=multi-user.target

@@ -4,7 +4,7 @@ from pathlib import Path
 from fabric import task
 from patchwork.files import append, exists
 
-REPO_URL = "https://github.com/MRC-CLIMB/bryn"
+REPO_URL = "https://github.com/aresti/bryn"
 
 
 @task

@@ -4,11 +4,11 @@ server {
 
     location '/.well-known/acme-challenge' {
         default_type "text/plain";
-        root /tmp/letsencrypt;
+        root /var/www/letsencrypt;
     }
 
     location / {
-        return 301 https://bryn.climb.ac.uk$request_uri;
+        return 301 https://$host$request_uri;
     }
 }
 
@@ -16,12 +16,18 @@ server {
     listen 443 ssl http2;
     server_name bryn.climb.ac.uk;
 
+    ssl_protocols TLSv1.3;
+    ssl_prefer_server_ciphers off;
     ssl_certificate /etc/letsencrypt/live/bryn.climb.ac.uk/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/bryn.climb.ac.uk/privkey.pem;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:MozSSL:10m;  # about 40000 sessions
+    ssl_session_tickets off;
+    add_header Strict-Transport-Security "max-age=63072000" always;
 
-    if ($host != $server_name) {
-        return 444;
-    }
+    # OCSP stapling
+    ssl_stapling on;
+    ssl_stapling_verify on;
 
     access_log                      /var/log/nginx/bryn.climb.ac.uk.access.log;
     error_log                       /var/log/nginx/bryn.climb.ac.uk.error.log;
@@ -37,4 +43,6 @@ server {
         proxy_set_header            X-Forwarded-Proto $scheme;
         proxy_set_header            X-Real-IP $remote_addr;
     }
+
+    resolver 8.8.8.8;
 }

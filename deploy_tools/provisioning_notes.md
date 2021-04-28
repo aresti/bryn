@@ -6,30 +6,12 @@ Make sure 443 is open in security group for new server.
 
 ### Required packages:
 
-- nginx
 - Python >= 3.8
 - Git
-- pip
+- pip3
 - python3-venv
-- certbot (letsencrypt)
 - nodejs + npm
-
-##### Notes:
-
-- Alias python to python3
-  ** add `alias python=python3` and `alias pip=pip3` to `~/.bash_aliases`
-  ** source `~/.bash_aliases`
-
-### Nginx
-
-- Copy `nginx.conf` template to `/etc/nginx/`
-- Copy `ssl-params.conf` template to `/etc/nginx/snippets`
-- Copy `bryn.climb.ac.uk` template to `/etc/nginx/sites-available`
-- `ln -s /etc/nginx/sites-available/bryn.climb.ac.uk /etc/nginx/sites-enabled/bryn.climb.ac.uk`
-- disable default site `rm /etc/nginx/sites-enabled/default`
-- `mkdir /tmp/letsencrypt`
-- `cd /etc/ssl/certs`
-- `openssl dhparam -out dhparam.pem 4096`
+- Redis
 
 ##### If transferring from existing server:
 
@@ -63,7 +45,7 @@ Make sure 443 is open in security group for new server.
 
 ##### On local machine:
 
-- `pip install fabric`
+- `pip3 install fabric`
 - Clone the repo from https://github.com/MRC-CLIMB/bryn
 - Obtain local settings files (from previous server, or Nick)
   1. `~/sites/bryn.climb.ac.uk/brynweb/locals.py`
