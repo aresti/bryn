@@ -28,6 +28,7 @@ def deploy(c):
     _update_static_files(c, source_dir)
     _update_database(c, source_dir)
     _restart_gunicorn(c)
+    _restart_huey(c)
     _restart_nginx(c)
 
 
@@ -110,6 +111,10 @@ def _update_database(c, source_dir):
 
 def _restart_gunicorn(c):
     c.run(f"sudo systemctl restart gunicorn-{c.host.split('.')[0]}")
+
+
+def _restart_huey(c):
+    c.run(f"sudo systemctl restart huey-{c.host.split('.')[0]}")
 
 
 def _restart_nginx(c):
