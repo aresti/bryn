@@ -134,7 +134,7 @@ const actions = {
     commit(SET_TEAMS, teams);
   },
 
-  async [FETCH_TENANT_SPECIFIC_DATA]({ dispatch, getters }, tenant) {
+  async [FETCH_TENANT_SPECIFIC_DATA]({ commit, dispatch, getters }, tenant) {
     /* Fetch all tenant-specific data */
     const team = getters[GET_TEAM_BY_ID](tenant.team);
     const fetchAlways = [FETCH_TENANT_INSTANCES, FETCH_TENANT_VOLUMES];
@@ -148,6 +148,7 @@ const actions = {
       : [...fetchAlways, ...fetchOnce];
     try {
       await Promise.all(fetchActions.map((action) => dispatch(action, tenant)));
+      commit(SET_TENANTS_LOADING, false); // first tenant to return will unlock interface
     } catch (err) {
       const msg = `Error fetching data from ${getters[
         GET_REGION_NAME_FOR_TENANT
@@ -188,7 +189,7 @@ const actions = {
     if (!tenants.length) {
       return {};
     }
-    commit(SET_TENANTS_LOADING, true);
+    commit(SET_TENANTS_LOADING, true); // may be set to false early by FETCH_TENANT_SPECIFIC_DATA
     const results = await Promise.allSettled(
       tenants.map((tenant) => dispatch(FETCH_TENANT_SPECIFIC_DATA, tenant))
     );
