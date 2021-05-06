@@ -86,7 +86,7 @@ class ServerLeaseAdmin(admin.ModelAdmin):
         self.message_user(
             request,
             ngettext(
-                f"Indefinite lease granted for '{queryset.first().server_name}'.",
+                f"Indefinite lease granted for {updated} server.",
                 f"Indefinite leases granted for {updated} servers.",
                 updated,
             ),
@@ -158,7 +158,7 @@ class ServerLeaseAdmin(admin.ModelAdmin):
         self.message_user(
             request,
             ngettext(
-                f"Server lease reminder emails sent for '{queryset.first().server_name}'.",
+                f"Server lease reminder emails sent for {updated} server.",
                 f"Server lease reminder emails sent for {updated} servers.",
                 updated,
             ),
@@ -175,7 +175,7 @@ class ServerLeaseAdmin(admin.ModelAdmin):
         self.message_user(
             request,
             ngettext(
-                f"Server lease renewed fpr '{queryset.first().server_name}'.",
+                f"Server lease renewed for {updated} server.",
                 f"Server leases renewed for {updated} servers.",
                 updated,
             ),
