@@ -1,0 +1,9 @@
+#!/bin/sh
+
+RSYNC=/usr/bin/rsync
+RUSER=ubuntu
+RHOST=XXX.XXX.XXX.XXX
+RPATH=~/backups/bryn.climb.ac.uk/
+LPATH=~/backups/bryn.climb.ac.uk/
+
+$RSYNC -avz --delete $LPATH $RUSER@$RHOST:$RPATH
