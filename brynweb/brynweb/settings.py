@@ -207,7 +207,7 @@ except ImportError:
 
 # Hashids
 
-HASHIDS = {"SALT": HASHIDS_SALT, "MIN_LENGTH": 11}  # noqa: F405
+HASHIDS = {"SALT": HASHIDS_SALT_SECRET, "MIN_LENGTH": 11}  # noqa: F405
 
 # HUEY Task Scheduler
 
