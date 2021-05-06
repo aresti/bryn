@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.utils import timezone
 
@@ -6,6 +8,8 @@ from huey.contrib.djhuey import db_periodic_task
 
 from .models import HypervisorStats, Region, ServerLease
 from .service import OpenstackService
+
+logger = logging.getLogger(__name__)
 
 
 def update_hypervisor_stats():
@@ -42,7 +46,10 @@ def send_server_lease_expiry_reminder_emails():
             if last_reminder and (timezone.now() - last_reminder).days < 1:
                 continue  # Don't send reminder more than once every 24 hours
             lease.send_email_renewal_reminder()
+            logger.info(
+                f"Sent server lease expiry reminder for '{lease.server_name}' to {lease.assigned_teammember.user.email}"
+            )
 
 
 if getattr(settings, "SERVER_LEASE_SCHEDULED_EMAILS", False):
-    db_periodic_task(crontab(minute="*/30"))(send_server_lease_expiry_reminder_emails)
+    db_periodic_task(crontab(minute="*/15"))(send_server_lease_expiry_reminder_emails)

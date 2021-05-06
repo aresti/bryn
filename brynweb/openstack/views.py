@@ -17,18 +17,27 @@ def server_lease_renewal_view(request, server_id, renewal_count):
     POST: Renew server lease and return json serialized representation
     """
 
-    # Renew lease
-    lease = get_object_or_404(
-        ServerLease, server_id=server_id, renewal_count=renewal_count
-    )  # Prevent double renewal
-    lease.renew_lease(user=request.user)
+    did_renew = False
 
-    # GET: Message and redirect
+    # Renew lease
+    lease = get_object_or_404(ServerLease, server_id=server_id)
+    if lease.renewal_count == renewal_count:
+        lease.renew_lease(user=request.user)
+        did_renew = True
+
+    # GET: Redirect with message
     if request.method == "GET":
-        messages.success(
-            request,
-            f"The lease for server {lease.server_name} has been renewed for {settings.SERVER_LEASE_DEFAULT_DAYS} days",
-        )
+        if did_renew:
+            messages.success(
+                request,
+                f"The lease for server {lease.server_name} has been renewed for {settings.SERVER_LEASE_DEFAULT_DAYS} "
+                "days",
+            )
+        else:
+            messages.warning(
+                request,
+                "You've already used this server renewal link",
+            )
         return HttpResponseRedirect(reverse("home:home"))
 
     # POST: Return JSON serialized representation
