@@ -9,7 +9,7 @@ from huey.contrib.djhuey import db_periodic_task
 from .models import HypervisorStats, Region, ServerLease
 from .service import OpenstackService
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("huey")
 
 
 def update_hypervisor_stats():

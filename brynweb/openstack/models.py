@@ -110,7 +110,7 @@ class ServerLease(models.Model):
     server_id = models.UUIDField(unique=True, editable=False)
     server_name = models.CharField(max_length=255, editable=False)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
-    last_renewed_at = models.DateTimeField(auto_now=True, editable=False)
+    last_renewed_at = models.DateTimeField(editable=False)
     expiry = models.DateTimeField(
         default=get_default_server_lease_expiry, blank=True, null=True
     )
@@ -119,7 +119,9 @@ class ServerLease(models.Model):
         Tenant, on_delete=models.CASCADE, related_name="server_leases", editable=False
     )
     assigned_teammember = models.ForeignKey(
-        TeamMember, on_delete=models.PROTECT, related_name="server_leases",
+        TeamMember,
+        on_delete=models.PROTECT,
+        related_name="server_leases",
     )
     shelved = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)
@@ -149,6 +151,7 @@ class ServerLease(models.Model):
     def renew_lease(self, days=settings.SERVER_LEASE_DEFAULT_DAYS, user=None):
         self.expiry = timezone.now() + datetime.timedelta(days=days)
         self.renewal_count += 1
+        self.last_renewed_at = timezone.now()
         if user:
             self.user = user
         self.last_reminder_sent_at = None
@@ -199,7 +202,10 @@ class ServerLeaseRequest(models.Model):
         ServerLease, on_delete=models.CASCADE, editable=False
     )
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="lease_requests", editable=False,
+        User,
+        on_delete=models.CASCADE,
+        related_name="lease_requests",
+        editable=False,
     )
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
@@ -251,7 +257,8 @@ class ServerLeaseRequest(models.Model):
     def send_lease_granted_email(self):
         context = {"server_lease_request": self}
         subject = render_to_string(
-            "openstack/email/server_lease_request_granted_subject.txt", context,
+            "openstack/email/server_lease_request_granted_subject.txt",
+            context,
         ).strip()
         html_content = render_to_string(
             "openstack/email/server_lease_request_granted_email.html", context
@@ -277,7 +284,8 @@ class ServerLeaseRequest(models.Model):
     def send_lease_rejected_email(self):
         context = {"server_lease_request": self}
         subject = render_to_string(
-            "openstack/email/server_lease_request_rejected_subject.txt", context,
+            "openstack/email/server_lease_request_rejected_subject.txt",
+            context,
         ).strip()
         html_content = render_to_string(
             "openstack/email/server_lease_request_rejected_email.html", context
