@@ -110,7 +110,7 @@ class ServerLease(models.Model):
     server_id = models.UUIDField(unique=True, editable=False)
     server_name = models.CharField(max_length=255, editable=False)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
-    last_renewed_at = models.DateTimeField(editable=False)
+    last_renewed_at = models.DateTimeField(editable=False, null=True)
     expiry = models.DateTimeField(
         default=get_default_server_lease_expiry, blank=True, null=True
     )

@@ -31,12 +31,12 @@ def server_lease_renewal_view(request, server_id, renewal_count):
             messages.success(
                 request,
                 f"The lease for server {lease.server_name} has been renewed for {settings.SERVER_LEASE_DEFAULT_DAYS} "
-                "days",
+                "days.",
             )
         else:
             messages.warning(
                 request,
-                "You've already used this server renewal link",
+                "This server lease has already been renewed.",
             )
         return HttpResponseRedirect(reverse("home:home"))
 
