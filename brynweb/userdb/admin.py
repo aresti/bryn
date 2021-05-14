@@ -82,7 +82,7 @@ class TenantInline(admin.TabularInline):
     def server_lease_links(self, instance):
         links = []
         url_name = "admin:openstack_serverlease_change"
-        for server_lease in instance.server_leases.filter(deleted=False, shelved=False):
+        for server_lease in instance.server_leases.filter(deleted=False):
             url = reverse(url_name, args=(server_lease.pk,))
             links.append(
                 format_html('<a href="{}">{}</a>', url, f"{server_lease.server_name}")
