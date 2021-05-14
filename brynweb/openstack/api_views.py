@@ -172,9 +172,12 @@ class OpenstackCreateMixin(OpenstackAPIView):
 
         serialized = self.serializer_class(data=request.data)
         serialized.is_valid(raise_exception=True)
+        serialized_data = serialized.data
+        serialized_data["team"] = team_id
+        serialized_data["tenant_id"] = tenant_id
 
         try:
-            response = methodcaller("create", serialized.data)(
+            response = methodcaller("create", serialized_data)(
                 getattr(openstack, self.service.value)
             )
             transformed_response = transform_func(response)

@@ -273,13 +273,16 @@ class ServersService:
         keypair = data["keypair"]
         public_key = data["public_key"]
         name = data["name"]
+        team = data["team"]
 
         # Create keypair if it doesn't yet exist for this tenant
         self.openstack.keypairs.find_or_create(keypair, public_key)
 
         # Create boot volume
         volume = self.cinder.volumes.create(
-            imageRef=image, name=f"{name}: BOOT VOLUME", size=120,
+            imageRef=image,
+            name=f"bryn:{team}_{name}_boot_volume",
+            size=120,
         )
         self.cinder.volumes.set_bootable(volume, True)
 
