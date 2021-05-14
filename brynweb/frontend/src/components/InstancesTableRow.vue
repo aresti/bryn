@@ -131,75 +131,58 @@ const statusColorMap = {
   SHUTDOWN: "info",
 };
 
-/*
- * State transitions
- * Top level is current status, 1st level is target status
- */
+/* Actions */
+const actions = {
+  reboot: {
+    targetStatus: "ACTIVE",
+    verb: "Reboot",
+    presentParticiple: "Rebooting",
+    color: "primary",
+    confirm: true,
+  },
+  shutdown: {
+    targetStatus: "SHUTOFF",
+    verb: "Shutdown",
+    presentParticiple: "Stopping",
+    color: "primary",
+    confirm: true,
+  },
+  shelve: {
+    targetStatus: "SHELVED",
+    verb: "Shelve",
+    presentParticiple: "Shelving",
+    color: "primary",
+    confirm: true,
+  },
+  start: {
+    targetStatus: "ACTIVE",
+    verb: "Start",
+    presentParticiple: "Starting",
+    color: "success",
+    confirm: false,
+  },
+  terminate: {
+    targetStatus: "DELETED",
+    verb: "Terminate",
+    presentParticiple: "Terminating",
+    color: "danger",
+    confirm: true,
+  },
+  unshelve: {
+    targetStatus: "ACTIVE",
+    verb: "Unshelve",
+    presentParticiple: "Unshelving",
+    color: "success",
+    confirm: false,
+  },
+};
+
+/* State transitions: available actions from current status */
 const stateTransitions = {
-  ACTIVE: [
-    {
-      targetStatus: "ACTIVE",
-      verb: "Reboot",
-      presentParticiple: "Rebooting",
-      color: "primary",
-      confirm: true,
-    },
-    {
-      targetStatus: "SHUTOFF",
-      verb: "Shutdown",
-      presentParticiple: "Stopping",
-      color: "primary",
-      confirm: true,
-    },
-    {
-      targetStatus: "SHELVED",
-      verb: "Shelve",
-      presentParticiple: "Shelving",
-      color: "danger",
-      confirm: true,
-    },
-  ],
-  SHUTOFF: [
-    {
-      targetStatus: "ACTIVE",
-      verb: "Start",
-      presentParticiple: "Starting",
-      color: "success",
-      confirm: false,
-    },
-    {
-      targetStatus: "SHELVED",
-      verb: "Shelve",
-      presentParticiple: "Shelving",
-      color: "danger",
-      confirm: true,
-    },
-  ],
-  SHELVED: [
-    {
-      targetStatus: "ACTIVE",
-      verb: "Unshelve",
-      presentParticiple: "Unshelving",
-      color: "success",
-      confirm: false,
-    },
-  ],
-  SHELVED_OFFLOADED: [
-    {
-      targetStatus: "ACTIVE",
-      verb: "Unshelve",
-      presentParticiple: "Unshelving",
-      color: "success",
-      confirm: false,
-    },
-    {
-      targetStatus: "DELETED",
-      verb: "Delete",
-      presentParticiple: "Deleting",
-      color: "danger",
-      confirm: true,
-    },
-  ],
+  ACTIVE: [actions.reboot, actions.shutdown, actions.shelve, actions.terminate],
+  SHUTOFF: [actions.start, actions.shelve, actions.terminate],
+  SHELVED: [actions.unshelve, actions.terminate],
+  SHELVED_OFFLOADED: [actions.unshelve, actions.terminate],
 };
 
 export default {
