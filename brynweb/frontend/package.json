@@ -1,13 +1,13 @@
 {
   "name": "frontend",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "watch": "vue-cli-service build --watch --mode development",
-    "cypress:open": "cypress open"
+    "cypress:open": "cypress open",
+    "watch": "vue-cli-service build --watch --mode development"
   },
   "dependencies": {
     "@creativebulma/bulma-tooltip": "^1.2.0",
@@ -21,8 +21,8 @@
     "date-fns": "^2.17.0",
     "dompurify": "^2.2.6",
     "marked": "^2.0.0",
-    "vue": "^3.0.0",
-    "vue-router": "^4.0.3",
+    "vue": "^3.0.11",
+    "vue-router": "^4.0.8",
     "vue-toastification": "^2.0.0-rc.1",
     "vue3-click-away": "^1.1.0",
     "vuex": "^4.0.0"
@@ -31,10 +31,10 @@
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.12.13",
     "@babel/plugin-proposal-optional-chaining": "^7.12.13",
     "@testing-library/cypress": "^7.0.6",
-    "@vue/cli-plugin-babel": "~4.5.0",
-    "@vue/cli-plugin-eslint": "~4.5.0",
-    "@vue/cli-service": "~4.5.0",
-    "@vue/compiler-sfc": "^3.0.0",
+    "@vue/cli-plugin-babel": "^4.5.13",
+    "@vue/cli-plugin-eslint": "^4.5.13",
+    "@vue/cli-service": "^4.5.13",
+    "@vue/compiler-sfc": "^3.0.11",
     "babel-eslint": "^10.1.0",
     "cypress": "^7.1.0",
     "eslint": "^6.7.2",
