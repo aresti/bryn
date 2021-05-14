@@ -218,7 +218,7 @@ HUEY = {
     "consumer": {"workers": 2},
 }
 
-POLL_FOR_HYPERVISOR_STATS = False
+POLL_FOR_HYPERVISOR_STATS = True
 
 # TinyMCE
 

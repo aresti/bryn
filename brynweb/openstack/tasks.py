@@ -30,6 +30,7 @@ def update_hypervisor_stats():
             "vcpus_used": stats.vcpus_used,
         }
         HypervisorStats.objects.update_or_create(defaults=defaults, region=region)
+        logger.info(f"Updated Hypervisor Stats for {region.name}")
 
 
 if getattr(settings, "POLL_FOR_HYPERVISOR_STATS", False):
