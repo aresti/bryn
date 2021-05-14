@@ -301,11 +301,12 @@ class InstanceDetailView(OpenstackDeleteMixin, OpenstackRetrieveView):
     }
 
     def delete(self, request, team_id, tenant_id, pk):
-        # Update lease before delete
+        response = super().delete(request, team_id, tenant_id, pk)
+        # Update lease after deletion
         lease = get_object_or_404(ServerLease, server_id=pk)
         lease.deleted = True
         lease.save()
-        return super().delete(request, team_id, tenant_id, pk)
+        return response
 
     def patch(self, request, team_id, tenant_id, pk):
         # Check for allowed updates
