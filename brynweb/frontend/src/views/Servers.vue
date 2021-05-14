@@ -149,7 +149,7 @@ export default {
   data() {
     return {
       showFaqs: false,
-      showShelved: false,
+      showShelved: true,
       showLeaseRequestModal: false,
       showKeyPairsNewKeyPairModal: false,
       showInstancesNewInstanceModal: false,
