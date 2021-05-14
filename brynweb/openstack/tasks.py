@@ -34,7 +34,7 @@ def update_hypervisor_stats():
 
 
 if getattr(settings, "POLL_FOR_HYPERVISOR_STATS", False):
-    db_periodic_task(crontab(minute="10", hour="*/1"))(update_hypervisor_stats)
+    db_periodic_task(crontab(hour="*/3"))(update_hypervisor_stats)
 
 
 def send_server_lease_expiry_reminder_emails():
@@ -53,4 +53,4 @@ def send_server_lease_expiry_reminder_emails():
 
 
 if getattr(settings, "SERVER_LEASE_SCHEDULED_EMAILS", False):
-    db_periodic_task(crontab(minute="*/15"))(send_server_lease_expiry_reminder_emails)
+    db_periodic_task(crontab(hour="9,14"))(send_server_lease_expiry_reminder_emails)

@@ -29,4 +29,4 @@ def send_team_licence_expiry_reminder_emails():
 
 
 if getattr(settings, "LICENCE_RENEWAL_SCHEDULED_EMAILS", False):
-    db_periodic_task(crontab(minute="*/15"))(send_team_licence_expiry_reminder_emails)
+    db_periodic_task(crontab(hour="10,15"))(send_team_licence_expiry_reminder_emails)
