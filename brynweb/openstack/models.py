@@ -28,22 +28,21 @@ User = get_user_model()
 class Tenant(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="tenants")
     region = models.ForeignKey(Region, on_delete=models.CASCADE)
-    created_tenant_id = models.CharField(max_length=50)
-    created_tenant_name = models.CharField(max_length=255, null=True, blank=True)
+    created_tenant_id = models.CharField(max_length=50, unique=True)
+    created_tenant_name = models.CharField(max_length=255)
     created_network_id = models.CharField(max_length=50, blank=True)
+
+    class Meta:
+        unique_together = [["team", "region"]]
 
     def get_tenant_name(self):
         """Generate slugified tenant name to when creating openstack project"""
         return f"bryn:{self.team.pk}_{slugify(self.team.name)}"
 
-    def get_tenant_description(self):
-        return f"{self.get_tenant_name()} ({self.team.creator.last_name})"
-
     def get_network_id(self):
         if self.region.regionsettings.requires_network_setup:
             return self.created_network_id
         else:
-            # i.e. warwick
             return self.region.regionsettings.public_network_id
 
     def __str__(self):

@@ -1,10 +1,10 @@
 import time
 
+from neutronclient.v2_0 import client as neutronclient
 from novaclient import client as novaclient
 from keystoneauth1 import session as keystonesession
 from keystoneauth1.identity import v3
 
-# from keystoneclient.v2_0 import client as keystoneclient
 from keystoneclient.v3 import client as keystoneclient
 from glanceclient import Client as GlanceClient
 from cinderclient import client as cinderclient
@@ -50,6 +50,7 @@ class OpenstackService:
             self.region = region
 
         self._session = None
+        self._neutron = None
         self._nova = None
         self._cinder = None
         self._glance = None
@@ -87,6 +88,12 @@ class OpenstackService:
             )
             self._session = keystonesession.Session(auth=auth)
         return self._session
+
+    @property
+    def neutron(self):
+        if not self._neutron:
+            self._neutron = neutronclient.Client(session=self.session)
+        return self._neutron
 
     @property
     def nova(self):

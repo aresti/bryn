@@ -1,7 +1,6 @@
 from django.contrib import admin, messages
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
-from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.html import format_html, mark_safe
 
@@ -18,7 +17,24 @@ from .models import (
     Profile,
 )
 
-from scripts.setup_team import setup_tenant
+from openstack.admin_scripts import setup_openstack_project, ExistingTenantError
+
+
+def make_create_tenants_action(region):
+    def create_tenants(modeladmin, request, queryset):
+        n = 0
+        for team in queryset:
+            try:
+                setup_openstack_project(team, region)
+                n += 1
+            except ExistingTenantError as e:
+                modeladmin.message_user(request, str(e))
+        modeladmin.message_user(request, f"Created {n} tenants at {region.name}")
+
+    create_tenants.__name__ = f"create_{region.name}_tenants"
+    create_tenants.short_description = f"Create {region.name} tenants"
+
+    return create_tenants
 
 
 class InvitationInline(InlineActionsMixin, admin.TabularInline):
@@ -124,6 +140,7 @@ class TeamAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             None,
             {
                 "fields": (
+                    "id",
                     "name",
                     "creator",
                     "institution",
@@ -151,10 +168,11 @@ class TeamAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         ),
     )
 
-    readonly_fields = ("creator", "licence_last_reminder_sent_at")
+    readonly_fields = ("id", "creator", "licence_last_reminder_sent_at")
 
     list_display = (
         "name",
+        "id",
         "institution",
         "licence_expiry",
         "verified",
@@ -164,10 +182,10 @@ class TeamAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
     search_fields = ("name", "institution")
 
-    actions = (
+    actions = [
         "verify_and_send_notification_email",
         "send_licence_renewal_reminder_emails",
-    )
+    ]
 
     inlines = (
         TenantInline,
@@ -183,32 +201,6 @@ class TeamAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             n += 1
         self.message_user(request, "%s teams were sent notification email" % (n,))
 
-    def create_tenant(self, region, request, queryset):
-        n = 0
-        for t in queryset:
-            try:
-                setup_tenant(t, region)
-            except Exception as e:
-                self.message_user(request, "Failed to setup tenant %s: %s" % (t, e))
-            n += 1
-        self.message_user(request, "Created %s tenants" % (n,))
-
-    def create_warwick_tenant(self, request, queryset):
-        self.create_tenant(Region.objects.get(name="warwick"), request, queryset)
-
-    def create_bham_tenant(self, request, queryset):
-        self.create_tenant(Region.objects.get(name="bham"), request, queryset)
-
-    def create_cardiff_tenant(self, request, queryset):
-        self.create_tenant(Region.objects.get(name="cardiff"), request, queryset)
-
-    def create_swansea_tenant(self, request, queryset):
-        self.create_tenant(Region.objects.get(name="swansea"), request, queryset)
-
-    def setup_teams(self, request, queryset):
-        teams = [str(t.pk) for t in queryset]
-        return HttpResponseRedirect("/setup/?ids=%s" % (",".join(teams)))
-
     def send_licence_renewal_reminder_emails(self, request, queryset):
         for team in queryset:
             team.send_team_licence_reminder_emails()
@@ -216,6 +208,27 @@ class TeamAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                 request,
                 f"Licence renewal reminder emails sent for {queryset.count()} team(s)",
             )
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+
+        # Setup 'create tenant for region' actions
+        active_regions = Region.objects.filter(disabled=False)
+        for region in active_regions:
+            action = make_create_tenants_action(region)
+            actions[action.__name__] = (
+                action,
+                action.__name__,
+                action.short_description,
+            )
+
+        return actions
+
+    def save_model(self, request, obj, *args):
+        # Set creator when manually creating a team
+        if obj.creator is None:
+            obj.creator = request.user
+        super().save_model(request, obj, *args)
 
 
 class TeamMemberAdmin(admin.ModelAdmin):
