@@ -157,7 +157,7 @@ class KeypairsService:
 
     def delete(self, keypair_id):
         keypair = self.get(keypair_id)
-        return keypair.delete()
+        return (keypair.delete(), keypair)
 
 
 class ImagesService:
@@ -216,7 +216,7 @@ class VolumesService:
             raise OpenstackException(
                 "Only volumes with 'available' status can be deleted."
             )
-        return volume.delete()
+        return (volume.delete(), volume)
 
     def attach(self, volume_id, server_id):
         return self.nova.volumes.create_server_volume(server_id, volume_id, None)
@@ -294,12 +294,12 @@ class ServersService:
         self.cinder.volumes.set_bootable(volume, True)
 
         # Wait for boot volume availability
-        for n in range(60):
+        for n in range(120):
             # TODO: move volume creation to frontend, otherwise tidy up a bit
             v = self.cinder.volumes.get(volume.id)
             if v.status == "available":
                 break
-            time.sleep(1)
+            time.sleep(2)
 
         # Block device mapping
         bdm = [
@@ -324,7 +324,7 @@ class ServersService:
 
     def delete(self, server_id):
         server = self.get(server_id)
-        server.delete()
+        return (server.delete(), server)
 
     def reboot(self, server):
         server.reboot(reboot_type="HARD")

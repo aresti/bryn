@@ -1,0 +1,6 @@
+{% load custom_tags %}:interrobang: *ERROR*: {{ error|escapeslack }}
+
+*URL*: {{ url|escapeslack }}
+*User*: {{ user|escapeslack }}
+
+{{ traceback|escapeslack }}

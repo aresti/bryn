@@ -1,5 +1,9 @@
 from bs4 import BeautifulSoup
 
+from django.template.loader import render_to_string
+
+from .tasks import slack_post_message
+
 
 def main_text_from_html(html):
     """
@@ -11,3 +15,8 @@ def main_text_from_html(html):
     if not main:
         raise ValueError("Passed html does not include a 'main' element")
     return main.get_text()
+
+
+def slack_post_templated_message(template, context=None):
+    text = render_to_string(template, context)
+    slack_post_message(text)

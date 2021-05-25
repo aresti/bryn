@@ -6,6 +6,7 @@ from django.utils import timezone
 from huey import crontab
 from huey.contrib.djhuey import db_periodic_task
 
+from core.utils import slack_post_templated_message
 from .models import HypervisorStats, Region, ServerLease
 from .service import OpenstackService
 
@@ -41,6 +42,7 @@ def send_server_lease_expiry_reminder_emails():
     """Send server lease expiry reminder emails, on specified days until expiry"""
     reminder_days = settings.SERVER_LEASE_REMINDER_DAYS
     due_leases = ServerLease.objects.active_due()
+    sent_count = 0
     for lease in due_leases:
         if lease.time_remaining.days in reminder_days:
             last_reminder = lease.last_reminder_sent_at
@@ -50,6 +52,12 @@ def send_server_lease_expiry_reminder_emails():
             logger.info(
                 f"Sent server lease expiry reminder for '{lease.server_name}' to {lease.assigned_teammember.user.email}"
             )
+            sent_count += 1
+
+    # Slack notification
+    if sent_count:
+        slack_template = "openstack/slack/sent_server_lease_reminder_emails.txt"
+        slack_post_templated_message(slack_template, {"sent_count": sent_count})
 
 
 if getattr(settings, "SERVER_LEASE_SCHEDULED_EMAILS", False):

@@ -1,0 +1,1 @@
+{% load custom_tags %}:rocket: New {{ entity_type|title }} '{{ entity_name|escapeslack }}' *CREATED* at {{ tenant.region.name }} by {{ user.first_name|escapeslack }} {{ user.last_name|escapeslack }} ({{ tenant.team.name|escapeslack }})

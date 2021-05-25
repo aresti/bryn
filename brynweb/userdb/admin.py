@@ -25,7 +25,7 @@ def make_create_tenants_action(region):
         n = 0
         for team in queryset:
             try:
-                setup_openstack_project(team, region)
+                setup_openstack_project(team, region, request)
                 n += 1
             except ExistingTenantError as e:
                 modeladmin.message_user(request, str(e))

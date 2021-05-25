@@ -13,6 +13,7 @@ from rest_framework.response import Response
 
 from core import hashids
 from core.permissions import IsOwner
+from core.utils import slack_post_templated_message
 from userdb.models import TeamMember
 from userdb.permissions import IsTeamMemberPermission
 
@@ -109,6 +110,13 @@ class OpenstackAPIView(APIView):
 
         return transform_func
 
+    @property
+    def entity_type(self):
+        """
+        Return a string describing the entity type (singular) for use in messages
+        """
+        return self.service.value[:-1] if self.service else ""
+
 
 class OpenstackRetrieveView(OpenstackAPIView):
     """
@@ -181,9 +189,20 @@ class OpenstackCreateMixin(OpenstackAPIView):
                 getattr(openstack, self.service.value)
             )
             transformed_response = transform_func(response)
-            return Response(self.serializer_class(transformed_response).data)
         except Exception as e:
             raise OpenstackException(detail=str(e))
+
+        # Slack notification
+        slack_template = "openstack/slack/entity_created.txt"
+        slack_context = {
+            "entity_type": self.entity_type,
+            "entity_name": serialized_data.get("name", "anonymous"),
+            "tenant": tenant,
+            "user": request.user,
+        }
+        slack_post_templated_message(slack_template, slack_context)
+
+        return Response(self.serializer_class(transformed_response).data)
 
 
 class OpenstackDeleteMixin(OpenstackAPIView):
@@ -198,11 +217,23 @@ class OpenstackDeleteMixin(OpenstackAPIView):
 
         openstack = OpenstackService(tenant=tenant)
         try:
-            methodcaller("delete", pk)(getattr(openstack, self.service.value))
+            _response, deleted = methodcaller("delete", pk)(
+                getattr(openstack, self.service.value)
+            )
         except Exception as e:
             if getattr(e, "code", None) == 404:
                 raise drf_exceptions.NotFound
             raise OpenstackException(detail=str(e))
+
+        # Slack notification
+        slack_template = "openstack/slack/entity_deleted.txt"
+        slack_context = {
+            "entity_type": self.entity_type,
+            "entity_name": getattr(deleted, "name", "anonymous"),
+            "tenant": tenant,
+            "user": request.user,
+        }
+        slack_post_templated_message(slack_template, slack_context)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -308,6 +339,72 @@ class InstanceDetailView(OpenstackDeleteMixin, OpenstackRetrieveView):
         lease.save()
         return response
 
+    def _state_transition(self, target_status, request, team_id, tenant_id, pk):
+        tenant = get_tenant_for_user(
+            request.user, team_id=team_id, tenant_id=tenant_id
+        )  # may raise
+        openstack = OpenstackService(tenant=tenant)
+        service = getattr(openstack, self.service.value)
+        try:
+            server = service.get(pk)
+            current_status = server.status
+            if (
+                current_status in ["SHELVED", "SHELVED_OFFLOADED"]
+                and tenant.region.unshelving_disabled
+            ):
+                raise drf_exceptions.PermissionDenied(
+                    f"Unshelving is disabled at {tenant.region.description}"
+                )
+            method_name = self.state_transitions[current_status][target_status]
+            methodcaller(method_name, server)(service)
+        except Exception as e:
+            if getattr(e, "code", None) == 404:
+                raise drf_exceptions.NotFound
+            raise OpenstackException(detail=str(e))
+
+        if "SHELVED" in target_status or "SHELVED" in current_status:
+            # Update lease
+            lease = get_object_or_404(ServerLease, server_id=pk)
+            lease.shelved = "SHELVED" in target_status
+            lease.save()
+            if "SHELVED" in current_status:
+                # Renew lease on unshelve
+                lease.renew_lease(user=request.user)
+
+        # Slack notification
+        slack_template = "openstack/slack/server_action.txt"
+        slack_context = {
+            "action": method_name,
+            "entity_type": self.entity_type,
+            "entity_name": getattr(server, "name", "anonymous"),
+            "tenant": tenant,
+            "user": request.user,
+        }
+        slack_post_templated_message(slack_template, slack_context)
+
+    def _assign_lease_teammember(
+        self, teammember_hashid, request, team_id, tenant_id, pk
+    ):
+        # Check request user is team admin
+        try:
+            TeamMember.objects.get(user=request.user, team_id=team_id, is_admin=True)
+        except TeamMember.DoesNotExist:
+            raise drf_exceptions.PermissionDenied
+
+        # Check assigned user is team member
+        try:
+            teammember_id = hashids.decode(teammember_hashid)
+            teammember = TeamMember.objects.get(pk=teammember_id, team_id=team_id)
+        except TeamMember.DoesNotExist:
+            raise drf_exceptions.ValidationError(
+                "Not a member of the team to which this server belongs"
+            )
+
+        # Update lease
+        lease = ServerLease.objects.get(server_id=pk)
+        lease.assigned_teammember = teammember
+        lease.save()
+
     def patch(self, request, team_id, tenant_id, pk):
         # Check for allowed updates
         target_status = request.data.get("status")
@@ -318,62 +415,15 @@ class InstanceDetailView(OpenstackDeleteMixin, OpenstackRetrieveView):
                 "Only 'status' and 'leaseAssignedTeammember' fields can be updated via PATCH."
             )
 
-        # Status transition
+        # State transition
         if target_status:
-            tenant = get_tenant_for_user(
-                request.user, team_id=team_id, tenant_id=tenant_id
-            )  # may raise
-            openstack = OpenstackService(tenant=tenant)
-            service = getattr(openstack, self.service.value)
-            try:
-                server = service.get(pk)
-                current_status = server.status
-                if (
-                    current_status in ["SHELVED", "SHELVED_OFFLOADED"]
-                    and tenant.region.unshelving_disabled
-                ):
-                    raise drf_exceptions.PermissionDenied(
-                        f"Unshelving is disabled at {tenant.region.description}"
-                    )
-                method_name = self.state_transitions[current_status][target_status]
-                methodcaller(method_name, server)(service)
-            except Exception as e:
-                if getattr(e, "code", None) == 404:
-                    raise drf_exceptions.NotFound
-                raise OpenstackException(detail=str(e))
-
-            if "SHELVED" in target_status or "SHELVED" in current_status:
-                # Update lease
-                lease = get_object_or_404(ServerLease, server_id=pk)
-                lease.shelved = "SHELVED" in target_status
-                lease.save()
-                if "SHELVED" in current_status:
-                    # Renew lease on unshelve
-                    lease.renew_lease(user=request.user)
+            self._state_transition(target_status, request, team_id, tenant_id, pk)
 
         # Lease TeamMember assignment
         if lease_assigned_teammember:
-            # Check request user is team admin
-            try:
-                TeamMember.objects.get(
-                    user=request.user, team_id=team_id, is_admin=True
-                )
-            except TeamMember.DoesNotExist:
-                raise drf_exceptions.PermissionDenied
-
-            # Check assigned user is team member
-            try:
-                teammember_id = hashids.decode(lease_assigned_teammember)
-                teammember = TeamMember.objects.get(pk=teammember_id, team_id=team_id)
-            except TeamMember.DoesNotExist:
-                raise drf_exceptions.ValidationError(
-                    "Not a member of the team to which this server belongs"
-                )
-
-            # Update lease
-            lease = ServerLease.objects.get(server_id=pk)
-            lease.assigned_teammember = teammember
-            lease.save()
+            self._assign_lease_teammember(
+                lease_assigned_teammember, request, team_id, tenant_id, pk
+            )
 
         # Don't return detail representation, to avoid extra openstack api call
         return Response(status=status.HTTP_204_NO_CONTENT)

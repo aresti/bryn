@@ -1,0 +1,1 @@
+:cyclone: Action *{{ action|upper }}* called on {{ entity_type }} '{{ entity_name }}' at {{ tenant.region.name }} by {{ user.first_name }} {{ user.last_name }} ({{ tenant.team.name }})

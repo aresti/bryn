@@ -48,6 +48,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.error_handler.SlackErrorHandlerMiddleware",
 ]
 
 ROOT_URLCONF = "brynweb.urls"
@@ -74,6 +75,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "brynweb.wsgi.application"
 
 # Custom message tags
+
 MESSAGE_TAGS = {
     messages.ERROR: "is-danger",
     messages.INFO: "is-info",
@@ -154,6 +156,8 @@ STATICFILES_DIRS = [
 
 PHONENUMBER_DEFAULT_REGION = "GB"
 
+# Django Rest Framework
+
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_THROTTLE_CLASSES": (
@@ -200,6 +204,7 @@ LICENCE_RENEWAL_REMINDER_DAYS = [0, 3, 7, 12, 28]
 LICENCE_RENEWAL_SCHEDULED_EMAILS = True
 
 # Local secrets
+
 try:
     from .locals import *  # noqa: F401,F403
 except ImportError:
@@ -237,13 +242,19 @@ TINYMCE_DEFAULT_CONFIG = {
 }
 
 # SITE
-
-#  For use in scheduled email tasks etc, where request is not available
+# For use in scheduled email tasks etc, where request is not available
 # Helper template tag in core app '
+
 SITE_SCHEME = "http"
 SITE_DOMAIN = "localhost:8080"
 
+# Slack
+
+SLACK_CHANNEL = "#bryn"
+SLACK_ENABLED = True
+
 # Sentry
+
 if not DEBUG:
     sentry_sdk.init(
         dsn="https://02ed2c71582747179e83a1ccd77b7cda@o563550.ingest.sentry.io/5703634",
@@ -251,6 +262,8 @@ if not DEBUG:
         traces_sample_rate=0.3,
         send_default_pii=True,
     )
+
+# DEBUG overrides
 
 if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

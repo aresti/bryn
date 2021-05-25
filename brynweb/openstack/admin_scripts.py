@@ -1,12 +1,14 @@
 from openstack.service import OpenstackService
 from openstack.models import Tenant
 
+from core.utils import slack_post_templated_message
+
 
 class ExistingTenantError(Exception):
     pass
 
 
-def setup_openstack_project(team, region):
+def setup_openstack_project(team, region, request):
     """
     Setup an openstack project (tenant) for a team at a particular region.
     """
@@ -32,6 +34,16 @@ def setup_openstack_project(team, region):
     tenant.created_tenant_id = openstack_project.id
     tenant.create_tenant_name = project_name
     tenant.save()
+
+    # Slack notification
+    slack_template = "openstack/slack/entity_created.txt"
+    slack_context = {
+        "entity_type": "Tenant",
+        "entity_name": project_name,
+        "tenant": tenant,
+        "user": request.user,
+    }
+    slack_post_templated_message(slack_template, slack_context)
 
     # Set quotas
     admin_client.nova.quotas.update(

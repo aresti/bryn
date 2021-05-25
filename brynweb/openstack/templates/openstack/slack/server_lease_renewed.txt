@@ -1,0 +1,1 @@
+{% load custom_tags %}:clock1: Server *LEASE RENEWED* for '{{ lease.server_name|escapeslack }}' at {{ lease.tenant.region.name }} by {{ user.first_name|escapeslack }} {{ user.last_name|escapeslack }} ({{ lease.tenant.team.name|escapeslack }})

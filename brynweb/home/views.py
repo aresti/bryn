@@ -24,7 +24,7 @@ class FrontendView(LoginRequiredMixin, TemplateView):
         }
 
     def dispatch(self, request, *args, **kwargs):
-        """Handle edge case where use logs in with no team, but pending invite"""
+        """Handle case where user logs in with no team, but pending invite"""
         if request.user.is_authenticated:
             has_teams = bool(request.user.teams.count())
             has_pending_invitations = bool(
