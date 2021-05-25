@@ -45,9 +45,7 @@
     <td class="is-hidden-mobile">
       <template v-if="displayLease">
         <template v-if="leaseHasExpired">
-          <base-tag color="danger has-text-weight-semibold">
-            Lease expired</base-tag
-          ><br />
+          <base-tag color="danger">Lease expired</base-tag><br />
         </template>
 
         <base-tag-control v-else-if="leaseExpiry">
