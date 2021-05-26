@@ -254,7 +254,7 @@ SITE_DOMAIN = "localhost:8080"
 # Slack
 
 SLACK_CHANNEL = "#bryn"
-SLACK_ENABLED = True
+SLACK_ENABLED = not DEBUG
 
 # Sentry
 
