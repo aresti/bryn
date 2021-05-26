@@ -1,23 +1,19 @@
 from operator import methodcaller
 
-from django.contrib.auth import get_user_model
-from django.db.models import QuerySet
-from django.shortcuts import get_object_or_404
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import never_cache
-
-from rest_framework.views import APIView
-from rest_framework import permissions, generics, status
-from rest_framework import exceptions as drf_exceptions
-from rest_framework.response import Response
-
 from core import hashids
 from core.permissions import IsOwner
 from core.utils import slack_post_templated_message
-from userdb.models import TeamMember
+from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
+from rest_framework import exceptions as drf_exceptions
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from userdb.models import Team, TeamMember
 from userdb.permissions import IsTeamMemberPermission
 
-from .service import OpenstackService, ServiceUnavailable, OpenstackException
 from .models import (
     HypervisorStats,
     KeyPair,
@@ -39,38 +35,26 @@ from .serializers import (
     VolumeSerializer,
     VolumeTypeSerializer,
 )
+from .service import OpenstackException, OpenstackService, ServiceUnavailable
 
 User = get_user_model()
 
 
 class InvalidTenant(drf_exceptions.PermissionDenied):
-    default_detail = (
-        "The specified tenant does not exist, or user does not have team membership."
-    )
-
-
-def get_tenants_for_user(
-    user: User, team_id: int = None, tenant_id: int = None
-) -> QuerySet:
-    """
-    Return queryset for all tenant(s) owned by teams that the authenticated user is a member of.
-    If tenant_id is specified: returns a single member queryset (only if the user is a team member).
-    If team_id is specified: returns tenants belonging to this team (only if the user is a team member)
-    """
-    teams = user.teams.filter(pk=team_id) if team_id else user.teams.all()
-    all_tenants = Tenant.objects.filter(team__in=teams).all()
-    return all_tenants.filter(pk=tenant_id) if tenant_id else all_tenants
+    default_detail = "The specified tenant does not exist, or the authenticated user does not have team membership."
 
 
 def get_tenant_for_user(user: User, tenant_id: int, team_id: int = None) -> Tenant:
     """
-    Return a tenant for a given user, only if that user is a team member.
+    Return a tenant obj for a given user & tenant_id, only if that user is a team member.
     If team_id is specified: will raise if the specified tenant does not belong to this team.
-    If admin is specified: will raise if the user is not a team admin.
     """
-    tenant = get_tenants_for_user(user, tenant_id=tenant_id, team_id=team_id).first()
-
-    if not tenant:
+    try:
+        tenant = Tenant.objects.get(pk=tenant_id)
+        TeamMember.objects.get(team_id=team_id, user=user)
+        if team_id:
+            assert tenant.team_id == team_id
+    except (Tenant.DoesNotExist, TeamMember.DoesNotExist, AssertionError):
         raise InvalidTenant
 
     if tenant.region.disabled:
@@ -246,9 +230,13 @@ class TenantListView(generics.ListAPIView):
     serializer_class = TenantSerializer
 
     def get_queryset(self):
-        return get_tenants_for_user(
-            self.request.user, team_id=self.kwargs.get("team_id")
-        )
+        user = self.request.user
+        team = get_object_or_404(Team, pk=self.kwargs.get("team_id"))
+        try:
+            TeamMember.objects.get(team=team, user=user)
+        except TeamMember.DoesNotExist:
+            raise InvalidTenant
+        return team.tenants
 
 
 def get_instance_transform_func(self, tenant):
@@ -456,7 +444,7 @@ class KeyPairListView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return user.keypairs.all()
+        return user.keypairs
 
     @method_decorator(never_cache)
     def get(self, *args, **kwargs):
@@ -473,7 +461,7 @@ class KeyPairDetailView(generics.RetrieveDestroyAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return user.keypairs.all()
+        return user.keypairs
 
     @method_decorator(never_cache)
     def get(self, *args, **kwargs):
