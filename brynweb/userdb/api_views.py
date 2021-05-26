@@ -5,7 +5,7 @@ from django.views.decorators.cache import never_cache
 
 from rest_framework import exceptions, generics, permissions
 
-from .models import Invitation, LicenceAcceptance, LicenceVersion, Team, TeamMember
+from .models import Invitation, LicenceVersion, Team, TeamMember
 from .permissions import (
     IsTeamAdminForUnsafePermission,
     IsTeamMemberPermission,
@@ -73,9 +73,8 @@ class TeamMemberListView(generics.ListAPIView):
     ]
 
     def get_queryset(self):
-        team_id = self.kwargs.get("team_id")
-        teams = get_teams_for_user(self.request.user, team=team_id)
-        return TeamMember.objects.filter(team__in=teams)
+        team = get_object_or_404(Team, pk=self.kwargs.get("team_id"))
+        return team.memberships
 
     @method_decorator(never_cache)
     def get(self, *args, **kwargs):
@@ -95,8 +94,8 @@ class TeamMemberDetailView(generics.RetrieveDestroyAPIView):
     ]
 
     def get_queryset(self):
-        teams = get_teams_for_user(self.request.user)
-        return TeamMember.objects.filter(team__in=teams)
+        team = get_object_or_404(Team, pk=self.kwargs.get("team_id"))
+        return team.memberships
 
     @method_decorator(never_cache)
     def get(self, *args, **kwargs):
@@ -123,9 +122,8 @@ class InvitationListView(generics.ListCreateAPIView):
     ]
 
     def get_queryset(self):
-        team_id = self.kwargs.get("team_id")
-        teams = get_teams_for_user(self.request.user, team=team_id)
-        return Invitation.objects.filter(to_team__in=teams, accepted=False)
+        team = get_object_or_404(Team, pk=self.kwargs.get("team_id"))
+        return team.invitations.filter(accepted=False)
 
     def perform_create(self, serializer):
         """
@@ -195,9 +193,8 @@ class LicenceAcceptanceListView(generics.ListCreateAPIView):
     ]
 
     def get_queryset(self):
-        team_id = self.kwargs.get("team_id")
-        teams = get_teams_for_user(self.request.user, team=team_id)
-        return LicenceAcceptance.objects.filter(team__in=teams)
+        team = get_object_or_404(Team, pk=self.kwargs.get("team_id"))
+        return team.licence_acceptances
 
     def perform_create(self, serializer):
         """
