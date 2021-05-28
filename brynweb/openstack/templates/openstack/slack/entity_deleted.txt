@@ -1,1 +1,1 @@
-{% load custom_tags %}:wastebasket: {{ entity_type|title }} '{{ entity_name|escapeslack }}' *DELETED* at {{ tenant.region.name }} by {{ user.first_name|escapeslack }} {{ user.last_name|escapeslack }} ({{ tenant.team.name|escapeslack }})
+{% load custom_tags %}:wastebasket: {{ entity_type|title }} *'{{ entity_name|escapeslack }}'* *DELETED* at *{{ tenant.region.name|upper }}* by user '{{ user|escapeslack }}' ({{ tenant|escapeslack }})
