@@ -32,7 +32,7 @@ def setup_openstack_project(team, region, request):
 
     # Update & save Bryn tenant record
     tenant.created_tenant_id = openstack_project.id
-    tenant.create_tenant_name = project_name
+    tenant.created_tenant_name = project_name
     tenant.save()
 
     # Slack notification
