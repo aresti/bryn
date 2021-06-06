@@ -144,7 +144,7 @@ const actions = {
   ) {
     const payload = { tenant, keypair, flavor, image, name };
     const url = getAPIRoute("instances", rootState.activeTeamId, tenant);
-    const response = await axios.post(url, payload);
+    const response = await axios.post(url, payload, { timeout: 120000 });
     const instance = response.data;
     commit(ADD_INSTANCE, instance);
     dispatch(CREATE_POLLING_TARGET, {
